@@ -8,7 +8,7 @@
 // config global por proceso. Cuando integremos el MCP necesitamos revisitar esto
 // porque el MCP puede necesitar inyectar credenciales por sesion.
 
-import type { CreateClientConfig } from "./src/client/client.gen";
+import type { CreateClientConfig } from "./client/client.gen";
 
 export const createClientConfig: CreateClientConfig = (config) => ({
   ...config,

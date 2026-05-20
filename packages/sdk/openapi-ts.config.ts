@@ -1,8 +1,11 @@
 import { defineConfig } from "@hey-api/openapi-ts";
 
-// Limpia nombres feos de operaciones: `handlersV2GetChainsHandler` -> `getChains`.
+// Limpia nombres feos del spec.
+// Operation ID original: "handlers/v2.GetChainsHandler"
+// Lo que recibimos (post-normalizacion de hey-api): "handlers.v2.GetChainsHandler"
+// Output buscado: "getChains" (post camelCase).
 const cleanOperationName = (name: string): string =>
-  name.replace(/^handlers[A-Z]?\d*/, "").replace(/Handler$/, "");
+  name.replace(/^handlers\.v\d+\./, "").replace(/Handler$/, "");
 
 export default defineConfig({
   input: "../../openapi.v2.json",
@@ -15,7 +18,7 @@ export default defineConfig({
   plugins: [
     {
       name: "@hey-api/client-fetch",
-      runtimeConfigPath: "./hey-api.runtime.ts",
+      runtimeConfigPath: "./src/runtime-config.ts",
     },
     {
       name: "@hey-api/sdk",
