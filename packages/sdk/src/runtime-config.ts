@@ -11,11 +11,17 @@
 
 import type { CreateClientConfig } from "./client/client.gen";
 
-export const createClientConfig: CreateClientConfig = (config) => ({
-  ...config,
-  baseUrl: process.env.TURTLE_BASE_URL ?? "https://earn.turtle.xyz",
-  headers: {
-    ...config?.headers,
-    Authorization: `Bearer ${process.env.TURTLE_API_KEY ?? ""}`,
-  },
-});
+export const createClientConfig: CreateClientConfig = (config) => {
+  const apiKey = process.env.TURTLE_API_KEY;
+  return {
+    ...config,
+    baseUrl: process.env.TURTLE_BASE_URL ?? "https://earn.turtle.xyz",
+    headers: {
+      ...config?.headers,
+      // Only set Authorization when a key is actually provided. An empty
+      // `Bearer ` string trips some API gateways on otherwise-public
+      // endpoints.
+      ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+    },
+  };
+};

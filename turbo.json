@@ -3,7 +3,7 @@
   "globalDependencies": [".env", "tsconfig.base.json"],
   "tasks": {
     "codegen": {
-      "inputs": ["openapi-ts.config.ts", "hey-api.runtime.ts", "specs/openapi.v2.json"],
+      "inputs": ["openapi-ts.config.ts", "src/runtime-config.ts", "specs/openapi.v2.json"],
       "outputs": ["src/client/**"]
     },
     "build": {

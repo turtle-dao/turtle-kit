@@ -44,24 +44,23 @@
   ],
   "scripts": {
     "codegen": "openapi-ts",
-    "build": "bun run codegen && tsup",
-    "type-check": "bun run codegen && tsc --noEmit",
+    "build": "tsup",
+    "type-check": "tsc --noEmit",
     "clean": "rm -rf dist src/client",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run codegen && bun run build"
   },
   "dependencies": {
-    "@hey-api/client-fetch": "^0.13.1"
+    "@hey-api/client-fetch": "^0.13.1",
+    "zod": "catalog:"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0",
-    "zod": "^4.0.0"
+    "typescript": "^5.0.0"
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "^0.97.1",
     "@types/node": "catalog:",
     "prettier": "catalog:",
     "tsup": "catalog:",
-    "typescript": "catalog:",
-    "zod": "catalog:"
+    "typescript": "catalog:"
   }
 }

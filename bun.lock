@@ -15,6 +15,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@hey-api/client-fetch": "^0.13.1",
+        "zod": "catalog:",
       },
       "devDependencies": {
         "@hey-api/openapi-ts": "^0.97.1",
@@ -22,11 +23,9 @@
         "prettier": "catalog:",
         "tsup": "catalog:",
         "typescript": "catalog:",
-        "zod": "catalog:",
       },
       "peerDependencies": {
         "typescript": "^5.0.0",
-        "zod": "^4.0.0",
       },
     },
   },
