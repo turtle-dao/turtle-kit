@@ -11,11 +11,18 @@
 
 import type { CreateClientConfig } from "./client/client.gen";
 
+// Guarded so the SDK is importable in browser bundles (Vite, Next.js
+// client components, etc.) where the `process` global may not exist.
+// Consumers that want runtime config in those environments can override
+// via the re-exported `client` / `createClient`.
+const getEnv = (key: string): string | undefined =>
+  typeof process !== "undefined" ? process.env?.[key] : undefined;
+
 export const createClientConfig: CreateClientConfig = (config) => {
-  const apiKey = process.env.TURTLE_API_KEY;
+  const apiKey = getEnv("TURTLE_API_KEY");
   return {
     ...config,
-    baseUrl: process.env.TURTLE_BASE_URL ?? "https://earn.turtle.xyz",
+    baseUrl: getEnv("TURTLE_BASE_URL") ?? "https://earn.turtle.xyz",
     headers: {
       ...config?.headers,
       // Only set Authorization when a key is actually provided. An empty
