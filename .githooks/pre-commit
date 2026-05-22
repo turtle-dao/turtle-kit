@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#
+# pre-commit: run Biome on staged JS/TS/JSON files and auto-apply safe
+# fixes (mirrors what `bun run lint:fix` would do, but scoped to what's
+# actually being committed).
+#
+# Enable once per clone: `git config core.hooksPath .githooks`
+#   (or run `bun run setup:hooks` from the repo root once configured).
+# Bypass for a single commit: `git commit --no-verify`.
+#
+# Cheap: Biome is sub-100ms on the entire repo, so the staged-only filter
+# is mostly a UX nicety (clearer log of what's being touched).
+
+set -euo pipefail
+
+# Bash 3.2 compatible (macOS) — no `mapfile`.
+files=()
+while IFS= read -r f; do
+  case "$f" in
+    *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs|*.json|*.jsonc) files+=("$f") ;;
+  esac
+done < <(git diff --cached --name-only --diff-filter=ACMR)
+
+if [ "${#files[@]}" -eq 0 ]; then
+  exit 0
+fi
+
+echo "[pre-commit] biome check on ${#files[@]} staged file(s)..."
+
+# `--write` applies safe fixes. Unfixable errors exit non-zero → commit aborts.
+bun x biome check --write "${files[@]}"
+
+# Re-stage anything Biome rewrote so the commit picks up the fixes.
+git add "${files[@]}"

@@ -8,6 +8,6 @@
 // `baseUrl` / `headers` at runtime (useful when env vars aren't suitable
 // or when juggling multiple client instances).
 
+export { client } from "./client/client.gen";
 export * from "./client/sdk.gen";
 export * as types from "./client/types.gen";
-export { client } from "./client/client.gen";
