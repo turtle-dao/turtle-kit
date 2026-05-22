@@ -1,61 +1,53 @@
-# Setup de turtle-kit
+# turtle-kit setup
 
-Pasos one-time para que la automatizacion funcione.
+One-time setup for the automation to work end-to-end.
 
-## Secrets requeridos en turtle-kit
+## Required secrets in `turtle-kit`
 
-| Secret              | Scope                                                       | Donde se usa           |
-|---------------------|-------------------------------------------------------------|------------------------|
-| `NPM_TOKEN`         | npm publish access a `@turtleclub/sdk`                      | `publish.yml`          |
-| `PARTNERS_READ_TOKEN` | GitHub PAT con `contents:read` sobre `turtle-dao/turtle-partners` | `regen-sdk.yml`        |
+| Secret                | Scope                                                                  | Used by         |
+|-----------------------|------------------------------------------------------------------------|-----------------|
+| `NPM_TOKEN`           | npm publish access to `@turtleclub/sdk` (Granular Access Token recommended, with "bypass 2FA when publishing") | `publish.yml` (currently disabled — rename `publish.yml.disabled` → `publish.yml` to enable) |
+| `PARTNERS_READ_TOKEN` | GitHub PAT with `Contents: read` on `Turtle-DAO/turtle-partners` (only if the repo is private) | `openapi-sync-sdk.yml` |
 
-`GITHUB_TOKEN` (auto-provisto por GitHub Actions) se usa con permisos
-`contents:write` + `pull-requests:write` para crear PRs y mergear.
+`GITHUB_TOKEN` (auto-provided by GitHub Actions) is used with `contents:write`
++ `pull-requests:write` to open PRs and auto-merge.
 
-## Secrets requeridos en turtle-partners
+## Required secrets in `turtle-partners`
 
-| Secret                     | Scope                                                      | Donde se usa                          |
-|----------------------------|------------------------------------------------------------|---------------------------------------|
-| `TURTLE_KIT_DISPATCH_TOKEN` | GitHub PAT con `actions:write` sobre `turtle-dao/turtle-kit` | Workflow de dispatch (lado partners) |
+| Secret                     | Variable    | Used by                |
+|----------------------------|-------------|------------------------|
+| `SDK_REPO_DISPATCH_TOKEN`  | _(secret)_  | `deploy-gke.yml` notify step |
+| `SDK_REPO`                 | _(variable)_| `deploy-gke.yml` notify step (e.g. `Turtle-DAO/turtle-kit`) |
 
-## Branch protection en `turtle-kit/main`
+The PAT needs `Contents: read and write` on `turtle-kit` so it can call the
+`/dispatches` endpoint.
+
+## Branch protection on `turtle-kit/main`
 
 - ✅ Require status checks to pass before merging
-  - `check` (de `ci.yml`)
+  - `check` (from `ci.yml`)
 - ✅ Require linear history
 - ✅ Allow auto-merge
-- ❌ NO require approvals (la idea es bypass humano en non-breaking)
-- ❌ Restrict pushes (todo via PR)
+- ❌ Do NOT require approvals (intentional — non-breaking releases bypass humans)
+- ❌ Restrict pushes (everything goes through PRs)
 
-## Workflow del lado de turtle-partners
+## Partners side workflow
 
-En `turtle-partners`, agregar `.github/workflows/dispatch-openapi-update.yml`:
+The dispatch is already wired into the deploy pipeline:
+`turtle-partners/.github/workflows/deploy-gke.yml` — `notify-sdk-consumer`
+job. It fires after `deploy-services` + `deploy-ingress`, only when the last
+commit on `main` touched `go/services/earn/specs/`. Payload:
 
-```yaml
-name: Notify turtle-kit on OpenAPI update
-
-on:
-  push:
-    branches: [main]
-    paths:
-      - openapi.v2.json
-
-jobs:
-  dispatch:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.TURTLE_KIT_DISPATCH_TOKEN }}
-          script: |
-            await github.rest.repos.createDispatchEvent({
-              owner: 'turtle-dao',
-              repo: 'turtle-kit',
-              event_type: 'openapi-v2-updated',
-              client_payload: { ref: '${{ github.sha }}' }
-            });
+```json
+{
+  "event_type": "openapi-spec-updated",
+  "client_payload": {
+    "source_commit": "<sha>",
+    "source_ref": "main"
+  }
+}
 ```
 
-Y un CI check que valide que `openapi.v2.json` esta al dia respecto a los
-handlers (corre `make openapi` y falla si hay diff sin commitear). Lo
-implementa la tarea de "Backend: dump-openapi cmd" en la Fase 1.
+`openapi-sync-sdk.yml` reads `source_commit` and pulls the spec from
+`raw.githubusercontent.com/Turtle-DAO/turtle-partners/<sha>/go/services/earn/specs/openapi.v2.json`
+— immutable URL, no CDN cache races.

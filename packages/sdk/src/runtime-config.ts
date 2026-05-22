@@ -1,12 +1,13 @@
-// Runtime config para el cliente generado.
+// Runtime configuration for the generated client.
 //
-// Referenciado desde openapi-ts.config.ts via runtimeConfigPath. Hey-api enchufa
-// este createClientConfig al cliente, asi el consumidor no tiene que invocar un
-// wrapper — el cliente ya viene configurado.
+// Wired in via `runtimeConfigPath` in openapi-ts.config.ts. hey-api plugs
+// this `createClientConfig` into the client, so the consumer doesn't need
+// to call any wrapper — importing a function from the SDK already gives
+// you a configured client.
 //
-// Patron actual: singleton, lee process.env. Cero setup en el call site, una sola
-// config global por proceso. Cuando integremos el MCP necesitamos revisitar esto
-// porque el MCP puede necesitar inyectar credenciales por sesion.
+// Pattern: singleton, reads process.env. Zero setup at the call site, one
+// global config per process. When we integrate the MCP we may need to
+// revisit this — the MCP could need to inject credentials per session.
 
 import type { CreateClientConfig } from "./client/client.gen";
 

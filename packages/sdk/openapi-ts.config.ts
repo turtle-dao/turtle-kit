@@ -1,20 +1,15 @@
 import { defineConfig } from "@hey-api/openapi-ts";
 
-// Limpia nombres feos del spec.
-// Operation ID original: "handlers/v2.GetChainsHandler"
-// Lo que recibimos (post-normalizacion de hey-api): "handlers.v2.GetChainsHandler"
-// Output buscado: "getChains" (post camelCase).
+// Clean up operation IDs from the spec.
+// Original: "handlers/v2.GetChainsHandler"
+// Post hey-api normalization: "handlers.v2.GetChainsHandler"
+// Target: "getChains" (after camelCase casing).
 const cleanOperationName = (name: string): string =>
   name.replace(/^handlers\.v\d+\./, "").replace(/Handler$/, "");
 
 export default defineConfig({
-  input: "../../openapi.v2.json",
+  input: "./specs/openapi.v2.json",
   output: { path: "./src/client", format: "prettier" },
-  parser: {
-    // El spec actual mezcla v1 y v2 hasta que partners separe los endpoints.
-    // Cuando eso pase, este filtro se puede borrar.
-    filters: { operations: { include: ["/^[A-Z]+ \\/v2\\//"] } },
-  },
   plugins: [
     {
       name: "@hey-api/client-fetch",
@@ -22,6 +17,10 @@ export default defineConfig({
     },
     {
       name: "@hey-api/sdk",
+      // Wires the zod plugin: each generated operation calls
+      // `requestValidator` / `responseValidator` at runtime against the
+      // zod schemas below. Without this the schemas would be decorative.
+      validator: true,
       operations: {
         strategy: "flat",
         methodName: {
@@ -34,5 +33,6 @@ export default defineConfig({
       name: "@hey-api/typescript",
       enums: "javascript",
     },
+    "zod",
   ],
 });
