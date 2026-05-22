@@ -79,8 +79,13 @@ jobs:
         if: steps.detect.outputs.should_publish == 'true'
         working-directory: packages/sdk
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --provenance --access public
+          # `bun publish` rewrites `catalog:` references in package.json
+          # to actual semver ranges in the tarball — npm consumers don't
+          # need access to the monorepo's catalog. We use bun here for
+          # that reason; npm publish would publish literal `catalog:`
+          # strings and break installs.
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: bun publish --access public
 
       - name: Extract release notes from CHANGELOG
         id: notes
