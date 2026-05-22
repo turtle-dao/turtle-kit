@@ -9,7 +9,7 @@ const cleanOperationName = (name: string): string =>
 
 export default defineConfig({
   input: "./specs/openapi.v2.json",
-  output: { path: "./src/client", format: "prettier" },
+  output: { path: "./src/client", postProcess: ["prettier"] },
   plugins: [
     {
       name: "@hey-api/client-fetch",
