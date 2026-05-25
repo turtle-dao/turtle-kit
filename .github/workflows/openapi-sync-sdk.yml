@@ -1,0 +1,319 @@
+name: OpenAPI Sync SDK
+
+# Fired by a detected open api change. Downloads the openapi.v2.json pinned by the
+# commit SHA in the payload, classifies the diff with oasdiff, 
+# regenerates the client, bumps theversion, prepends a CHANGELOG entry, 
+# opens a PR, and auto-merges if non-breaking.
+#
+# Pipeline:
+#   classify  →  regenerate  →  open-pr
+on:
+  repository_dispatch:
+    types: [openapi-spec-updated]
+  workflow_dispatch:
+    inputs:
+      partners_commit:
+        description: "turtle-partners commit SHA to read the spec from (default: main)"
+        required: false
+        default: main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  PARTNERS_REPO: Turtle-DAO/turtle-partners
+  SPEC_PATH_IN_PARTNERS: go/services/earn/specs/openapi.v2.json
+  SPEC_PATH_IN_KIT: packages/sdk/specs/openapi.v2.json
+
+jobs:
+  # ────────────────────────────────────────────────────────────────────────
+  # 1) Classify the OpenAPI change as breaking | minor | patch.
+  # ────────────────────────────────────────────────────────────────────────
+  classify:
+    name: Classify spec change
+    runs-on: ubuntu-latest
+    outputs:
+      classification: ${{ steps.decide.outputs.classification }}
+      new_version: ${{ steps.decide.outputs.new_version }}
+      partners_ref: ${{ steps.partners-ref.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve partners ref
+        id: partners-ref
+        run: |
+          REF="${{ github.event.client_payload.source_commit || github.event.client_payload.ref || inputs.partners_commit || 'main' }}"
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+          echo "::notice::Reading spec from ${{ env.PARTNERS_REPO }}@$REF"
+
+      - name: Download fresh spec from turtle-partners
+        env:
+          GH_TOKEN: ${{ secrets.PARTNERS_READ_TOKEN }}
+        run: |
+          REF="${{ steps.partners-ref.outputs.ref }}"
+          PATH_IN_PARTNERS="${{ env.SPEC_PATH_IN_PARTNERS }}"
+
+          if [ -n "${GH_TOKEN:-}" ]; then
+            # Private partners — use the contents API
+            gh api "repos/${{ env.PARTNERS_REPO }}/contents/${PATH_IN_PARTNERS}?ref=${REF}" \
+              --jq '.content' | base64 -d > openapi.v2.json.new
+          else
+            # Public partners — raw.githubusercontent.com pinned by SHA is immutable
+            curl -sSfL \
+              "https://raw.githubusercontent.com/${{ env.PARTNERS_REPO }}/${REF}/${PATH_IN_PARTNERS}" \
+              -o openapi.v2.json.new
+          fi
+
+      - name: Check for breaking changes (oasdiff)
+        id: breaking
+        uses: oasdiff/oasdiff-action/breaking@v0.0.47
+        continue-on-error: true
+        with:
+          base: ./${{ env.SPEC_PATH_IN_KIT }}
+          revision: ./openapi.v2.json.new
+          fail-on: ERR
+
+      - name: Generate changelog (oasdiff)
+        uses: oasdiff/oasdiff-action/changelog@v0.0.47
+        continue-on-error: true
+        with:
+          base: ./${{ env.SPEC_PATH_IN_KIT }}
+          revision: ./openapi.v2.json.new
+          format: markup
+          output-to-file: ./oasdiff-changelog.md
+
+      - name: Detect structural diff (to tell minor from patch)
+        id: structural
+        uses: oasdiff/oasdiff-action/diff@v0.0.47
+        continue-on-error: true
+        with:
+          base: ./${{ env.SPEC_PATH_IN_KIT }}
+          revision: ./openapi.v2.json.new
+          format: text
+          output-to-file: ./oasdiff-diff.txt
+
+      - name: Decide classification + next version
+        id: decide
+        run: |
+          if [ "${{ steps.breaking.outcome }}" = "failure" ]; then
+            classification=breaking
+            bump=major
+          elif [ -s ./oasdiff-diff.txt ]; then
+            classification=minor
+            bump=minor
+          else
+            classification=patch
+            bump=patch
+          fi
+          echo "::notice::oasdiff classification: $classification"
+
+          current=$(node -p "require('./packages/sdk/package.json').version")
+          IFS=. read -r maj min pat <<<"$current"
+          case "$bump" in
+            major) new="$((maj+1)).0.0" ;;
+            minor) new="${maj}.$((min+1)).0" ;;
+            patch) new="${maj}.${min}.$((pat+1))" ;;
+          esac
+
+          echo "classification=$classification" >> "$GITHUB_OUTPUT"
+          echo "new_version=$new" >> "$GITHUB_OUTPUT"
+          echo "::notice::next version: v$new ($bump)"
+
+      - name: Upload classify artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: classify-output
+          path: |
+            openapi.v2.json.new
+            oasdiff-changelog.md
+          retention-days: 1
+
+  # ────────────────────────────────────────────────────────────────────────
+  # 2) Regenerate SDK against the new spec, bump version, update CHANGELOG.
+  # ────────────────────────────────────────────────────────────────────────
+  regenerate:
+    name: Regenerate SDK + bump version
+    needs: classify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: classify-output
+
+      - name: Promote new spec as the kit's baseline
+        run: mv openapi.v2.json.new ${{ env.SPEC_PATH_IN_KIT }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Regenerate SDK
+        run: bun run codegen
+
+      - name: Type check
+        run: bun run type-check
+
+      - name: Build
+        run: bun run build
+
+      - name: Bump @turtleclub/sdk version
+        env:
+          CLASSIFICATION: ${{ needs.classify.outputs.classification }}
+        run: |
+          case "$CLASSIFICATION" in
+            breaking) bump=major ;;
+            minor)    bump=minor ;;
+            patch)    bump=patch ;;
+          esac
+          cd packages/sdk
+          npm version "$bump" --no-git-tag-version
+
+      - name: Prepend CHANGELOG entry
+        env:
+          CLASSIFICATION: ${{ needs.classify.outputs.classification }}
+          NEW_VERSION: ${{ needs.classify.outputs.new_version }}
+          PARTNERS_REF: ${{ needs.classify.outputs.partners_ref }}
+        run: |
+          today="$(date -u +%Y-%m-%d)"
+          changelog="$(cat oasdiff-changelog.md 2>/dev/null)"
+          if [ -z "${changelog// }" ]; then
+            changelog="_(no structural changes detected by oasdiff)_"
+          fi
+
+          # Bootstrap CHANGELOG.md if it doesn't exist yet.
+          if [ ! -f CHANGELOG.md ]; then
+            cat > CHANGELOG.md <<'BOOTSTRAP_EOF'
+          # Changelog
+
+          All notable changes to `@turtleclub/sdk` are documented here. Auto-generated by the regen-sdk workflow: oasdiff classifies the OpenAPI diff (breaking → major, structural → minor, doc-only → patch) and an entry per release is prepended below.
+
+          BOOTSTRAP_EOF
+          fi
+
+          # Compose new CHANGELOG.md: keep header, insert release entry on top.
+          {
+            awk '/^## / { exit } { print }' CHANGELOG.md
+            echo "## [${NEW_VERSION}] - ${today} (${CLASSIFICATION})"
+            echo ""
+            echo "Source: \`${{ env.PARTNERS_REPO }}@${PARTNERS_REF}\`"
+            echo ""
+            echo '```'
+            echo "${changelog}"
+            echo '```'
+            echo ""
+            awk '
+              BEGIN { started=0 }
+              /^## / { started=1 }
+              started { print }
+            ' CHANGELOG.md
+          } > CHANGELOG.new.md
+          mv CHANGELOG.new.md CHANGELOG.md
+
+      - name: Upload regenerated tree
+        uses: actions/upload-artifact@v4
+        with:
+          name: regenerate-output
+          path: |
+            ${{ env.SPEC_PATH_IN_KIT }}
+            CHANGELOG.md
+            packages/sdk/package.json
+            packages/sdk/src/client/**
+          retention-days: 1
+
+  # ────────────────────────────────────────────────────────────────────────
+  # 3) Open / update the PR. Auto-merge if non-breaking.
+  # ────────────────────────────────────────────────────────────────────────
+  open-pr:
+    name: Open PR + auto-merge
+    needs: [classify, regenerate]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: classify-output
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: regenerate-output
+
+      - name: Ensure labels exist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create auto-merge --color 0e8a16 --description "Non-breaking sync, merges itself" --force
+          gh label create needs-review --color d93f0b --description "Breaking change detected by oasdiff" --force
+
+      - name: Build PR body
+        id: body
+        env:
+          CLASSIFICATION: ${{ needs.classify.outputs.classification }}
+          NEW_VERSION: ${{ needs.classify.outputs.new_version }}
+          PARTNERS_REF: ${{ needs.classify.outputs.partners_ref }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          changelog="$(cat oasdiff-changelog.md 2>/dev/null)"
+          if [ -z "${changelog// }" ]; then
+            changelog="_(no structural changes detected by oasdiff)_"
+          fi
+
+          if [ "$CLASSIFICATION" = "breaking" ]; then
+            status_line=":warning: **Breaking change** — manual review required. Auto-merge is disabled."
+          else
+            status_line=":white_check_mark: Non-breaking (\`${CLASSIFICATION}\`) — auto-merge enabled."
+          fi
+
+          {
+            echo "body<<PR_BODY_EOF"
+            echo "Auto-generated PR — \`turtle-partners\` deployed a spec change and \`@turtleclub/sdk\` has been regenerated."
+            echo ""
+            echo "**Release on merge:** \`@turtleclub/sdk@${NEW_VERSION}\` (\`${CLASSIFICATION}\`)"
+            echo ""
+            echo "${status_line}"
+            echo ""
+            echo "## Changelog (oasdiff)"
+            echo ""
+            echo "<details><summary>Show diff details</summary>"
+            echo ""
+            echo '```'
+            echo "${changelog}"
+            echo '```'
+            echo ""
+            echo "</details>"
+            echo ""
+            echo "## Trigger info"
+            echo ""
+            echo "- Event: \`${EVENT_NAME}\`"
+            echo "- Partners ref: [\`${PARTNERS_REF}\`](https://github.com/${{ env.PARTNERS_REPO }}/commit/${PARTNERS_REF})"
+            echo "PR_BODY_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create or update PR
+        id: cpr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore(sdk): release v${{ needs.classify.outputs.new_version }} (${{ needs.classify.outputs.classification }})"
+          title: "chore(sdk): release v${{ needs.classify.outputs.new_version }} [${{ needs.classify.outputs.classification }}]"
+          body: ${{ steps.body.outputs.body }}
+          branch: chore/regen-sdk
+          delete-branch: true
+          labels: ${{ needs.classify.outputs.classification == 'breaking' && 'needs-review' || 'auto-merge' }}
+          add-paths: |
+            ${{ env.SPEC_PATH_IN_KIT }}
+            CHANGELOG.md
+            packages/sdk/package.json
+            packages/sdk/src/client/**
+
+      - name: Enable auto-merge for non-breaking PR
+        if: steps.cpr.outputs.pull-request-number && needs.classify.outputs.classification != 'breaking'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge --auto --squash "${{ steps.cpr.outputs.pull-request-number }}"

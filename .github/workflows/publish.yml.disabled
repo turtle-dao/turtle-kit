@@ -1,0 +1,115 @@
+name: Publish SDK
+
+# Publishes @turtleclub/sdk to npm when the version in packages/sdk/package.json
+# isn't already on the registry.
+#
+# Triggers:
+# - workflow_run after OpenAPI Sync SDK completes successfully on main.
+#   We can't use `push: paths: [packages/sdk/**]` because PRs merged with
+#   the default GITHUB_TOKEN do not fire push events (GitHub's anti-loop
+#   rule), and the auto-merge in openapi-sync-sdk runs under that token.
+# - workflow_dispatch for manual re-publish.
+#
+# The "Detect publishable version" step checks the npm registry directly:
+# if @turtleclub/sdk@<version-in-package.json> already exists, the run is a
+# no-op. Idempotent — safe to re-run.
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["OpenAPI Sync SDK"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: write       # to create the release tag
+  id-token: write       # for npm provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Force main HEAD — workflow_run defaults to the SHA of the
+          # upstream run, which may pre-date the merge commit produced by
+          # auto-merge.
+          ref: main
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Detect publishable version
+        id: detect
+        working-directory: packages/sdk
+        run: |
+          name=$(node -p "require('./package.json').name")
+          version=$(node -p "require('./package.json').version")
+          echo "package=$name@$version"
+
+          # npm registry is the source of truth — git diff isn't reliable
+          # when workflow_run fires on a commit that doesn't itself include
+          # the bump (e.g. a retrigger).
+          if npm view "$name@$version" version --silent 2>/dev/null | grep -qx "$version"; then
+            echo "::notice::$name@$version already on npm — skipping"
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::$name@$version not on npm — will publish"
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+            echo "name=$name" >> "$GITHUB_OUTPUT"
+            echo "version=$version" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install dependencies
+        if: steps.detect.outputs.should_publish == 'true'
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        if: steps.detect.outputs.should_publish == 'true'
+        run: bun run build
+
+      - name: Publish to npm
+        if: steps.detect.outputs.should_publish == 'true'
+        working-directory: packages/sdk
+        env:
+          # `bun publish` rewrites `catalog:` references in package.json
+          # to actual semver ranges in the tarball — npm consumers don't
+          # need access to the monorepo's catalog. We use bun here for
+          # that reason; npm publish would publish literal `catalog:`
+          # strings and break installs.
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: bun publish --access public
+
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        if: steps.detect.outputs.should_publish == 'true'
+        env:
+          NAME: ${{ steps.detect.outputs.name }}
+          VERSION: ${{ steps.detect.outputs.version }}
+        run: |
+          notes_file="$(mktemp)"
+          awk -v ver="$VERSION" '
+            $0 ~ "^## \\[" ver "\\]" { capture=1; next }
+            capture && /^## / { exit }
+            capture { print }
+          ' CHANGELOG.md > "$notes_file" || true
+
+          if [ ! -s "$notes_file" ]; then
+            echo "Published to npm as \`${NAME}@${VERSION}\`. See CHANGELOG.md for details." > "$notes_file"
+          fi
+          echo "path=$notes_file" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        if: steps.detect.outputs.should_publish == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.detect.outputs.name }}@${{ steps.detect.outputs.version }}
+          name: ${{ steps.detect.outputs.name }}@${{ steps.detect.outputs.version }}
+          body_path: ${{ steps.notes.outputs.path }}
