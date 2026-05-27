@@ -218,11 +218,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: regenerate-output
+          # src/client is gitignored generated code (regenerated on every
+          # build via turbo `codegen`), so it never travels in the release PR.
           path: |
             ${{ env.SPEC_PATH_IN_KIT }}
             CHANGELOG.md
             packages/sdk/package.json
-            packages/sdk/src/client/**
           retention-days: 1
 
   # ────────────────────────────────────────────────────────────────────────
@@ -305,11 +306,13 @@ jobs:
           branch: chore/regen-sdk
           delete-branch: true
           labels: ${{ needs.classify.outputs.classification == 'breaking' && 'needs-review' || 'auto-merge' }}
+          # No src/client here: it's gitignored, so `git add` on it would
+          # fail with "pathspec did not match any files". The generated
+          # client is rebuilt from the spec at build/publish time.
           add-paths: |
             ${{ env.SPEC_PATH_IN_KIT }}
             CHANGELOG.md
             packages/sdk/package.json
-            packages/sdk/src/client/**
 
       - name: Enable auto-merge for non-breaking PR
         if: steps.cpr.outputs.pull-request-number && needs.classify.outputs.classification != 'breaking'
