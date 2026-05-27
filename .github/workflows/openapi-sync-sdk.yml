@@ -164,15 +164,14 @@ jobs:
 
       - name: Bump @turtleclub/sdk version
         env:
-          CLASSIFICATION: ${{ needs.classify.outputs.classification }}
+          NEW_VERSION: ${{ needs.classify.outputs.new_version }}
         run: |
-          case "$CLASSIFICATION" in
-            breaking) bump=major ;;
-            minor)    bump=minor ;;
-            patch)    bump=patch ;;
-          esac
+          # bun understands the workspace `catalog:` protocol; npm does not
+          # (it dies with EUNSUPPORTEDPROTOCOL). Set the exact version already
+          # computed by the classify job so package.json, the PR title, and the
+          # CHANGELOG can never drift apart.
           cd packages/sdk
-          npm version "$bump" --no-git-tag-version
+          bun pm version "$NEW_VERSION" --no-git-tag-version --allow-same-version
 
       - name: Prepend CHANGELOG entry
         env:
