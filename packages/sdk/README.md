@@ -42,9 +42,13 @@ const opps = await getOpportunities();
 const membership = await getMembership({ query: { address: "0x..." } });
 
 // 3. If not, create membership (EIP-4361 signature flow)
-const agreement = await createMembershipAgreement({ body: { address: "0x..." } });
-// → user signs the message
-const member = await createMembership({ body: { address: "0x...", signature: "0x..." } });
+const agreement = await createMembershipAgreement({
+  body: { address: "0x...", walletEcosystem: "evm", url: "https://app.turtle.xyz" },
+});
+// → user signs the returned message
+const member = await createMembership({
+  body: { address: "0x...", walletEcosystem: "evm", signature: "0x...", nonce: agreement.nonce },
+});
 
 // 4. Deposit
 const deposit = await createDeposit({
