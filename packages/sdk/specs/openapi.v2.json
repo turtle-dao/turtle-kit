@@ -1,4261 +1,1104 @@
 {
- "openapi": "3.1.0",
- "info": {
-  "title": "Turtle Earn API",
-  "version": "v1.0.0"
- },
- "paths": {
-  "/v1/actions/attribute/{actionId}": {
-   "post": {
-    "tags": [
-     "Actions"
-    ],
-    "summary": "Attribute Action Handler",
-    "description": "[DEPRECATED] Attribute a transaction hash to an action. Attribution is now handled automatically by the Lumon collector.",
-    "operationId": "AttributeAction",
-    "parameters": [
-     {
-      "name": "actionId",
-      "in": "path",
-      "description": "Action unique identifier",
-      "required": true,
-      "schema": {
-       "$ref": "#/components/schemas/UuidUUID",
-       "description": "Action unique identifier"
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Turtle Earn API — v2",
+    "version": "v2.0.0"
+  },
+  "paths": {
+    "/v2/chains/": {
+      "get": {
+        "tags": [
+          "Chains"
+        ],
+        "summary": "Get Supported Chains",
+        "description": "Returns all supported chains with pagination. Chains are filtered to active status only.",
+        "operationId": "GetChains",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2SharedChainResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
       }
-     }
-    ],
-    "requestBody": {
-     "content": {
-      "application/json": {
-       "schema": {
-        "$ref": "#/components/schemas/ActionsAttributeActionRequest"
-       }
-      }
-     }
     },
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/ActionsAttributeActionResponse"
+    "/v2/opportunities/{chainId}/{vaultAddress}/historical": {
+      "get": {
+        "tags": [
+          "Historical Data"
+        ],
+        "summary": "Get Vault Historical Data",
+        "description": "Get combined historical time-series (TVL, share price, base APY) for a vault, bucketed by interval over [from, to].",
+        "operationId": "GetOpportunityHistorical",
+        "parameters": [
+          {
+            "name": "intervalSeconds",
+            "in": "query",
+            "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+            "schema": {
+              "default": 86400,
+              "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "fromTimestamp",
+            "in": "query",
+            "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+            "schema": {
+              "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+              "type": "integer"
+            }
+          },
+          {
+            "name": "toTimestamp",
+            "in": "query",
+            "description": "Unix seconds, inclusive. Defaults to now when omitted",
+            "schema": {
+              "description": "Unix seconds, inclusive. Defaults to now when omitted",
+              "type": "integer"
+            }
+          },
+          {
+            "name": "chainId",
+            "in": "path",
+            "description": "EVM chain ID (e.g. 1 for Ethereum)",
+            "required": true,
+            "schema": {
+              "description": "EVM chain ID (e.g. 1 for Ethereum)",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "vaultAddress",
+            "in": "path",
+            "description": "0x-prefixed 40-hex vault contract address",
+            "required": true,
+            "schema": {
+              "description": "0x-prefixed 40-hex vault contract address",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/V2GetOpportunityHistoricalResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
         }
-       }
       }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "404": {
-      "description": "Not Found",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/actions/cancel-deposit/{opportunityId}": {
-   "post": {
-    "tags": [
-     "Actions"
-    ],
-    "summary": "Create Cancel Deposit Interaction Handler",
-    "description": "Cancel a pending async deposit.",
-    "operationId": "CreateCancelDepositInteraction",
-    "parameters": [
-     {
-      "name": "opportunityId",
-      "in": "path",
-      "description": "Opportunity unique identifier",
-      "required": true,
-      "schema": {
-       "$ref": "#/components/schemas/UuidUUID",
-       "description": "Opportunity unique identifier"
-      }
-     }
-    ],
-    "requestBody": {
-     "content": {
-      "application/json": {
-       "schema": {
-        "$ref": "#/components/schemas/ActionsCancelDepositRequest"
-       }
-      }
-     }
     },
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/ActionsInteractionResponse"
+    "/v2/opportunities/{chainId}/{vaultAddress}/historical/apr": {
+      "get": {
+        "tags": [
+          "Historical Data"
+        ],
+        "summary": "Get Vault Historical APR",
+        "description": "Adjacent-pair simple-rate (non-compound) APR per bucket over [from, to]. Reward APR is reserved for future rewards indexing and is always 0.",
+        "operationId": "GetOpportunityHistoricalAPR",
+        "parameters": [
+          {
+            "name": "intervalSeconds",
+            "in": "query",
+            "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+            "schema": {
+              "default": 86400,
+              "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "fromTimestamp",
+            "in": "query",
+            "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+            "schema": {
+              "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+              "type": "integer"
+            }
+          },
+          {
+            "name": "toTimestamp",
+            "in": "query",
+            "description": "Unix seconds, inclusive. Defaults to now when omitted",
+            "schema": {
+              "description": "Unix seconds, inclusive. Defaults to now when omitted",
+              "type": "integer"
+            }
+          },
+          {
+            "name": "chainId",
+            "in": "path",
+            "description": "EVM chain ID (e.g. 1 for Ethereum)",
+            "required": true,
+            "schema": {
+              "description": "EVM chain ID (e.g. 1 for Ethereum)",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "vaultAddress",
+            "in": "path",
+            "description": "0x-prefixed 40-hex vault contract address",
+            "required": true,
+            "schema": {
+              "description": "0x-prefixed 40-hex vault contract address",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/V2GetOpportunityHistoricalAPRResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
         }
-       }
       }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "404": {
-      "description": "Not Found",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/actions/claim-deposit/{opportunityId}": {
-   "post": {
-    "tags": [
-     "Actions"
-    ],
-    "summary": "Create Claim Deposit Interaction Handler",
-    "description": "Claim a pending async deposit. Only requires user wallet address.",
-    "operationId": "CreateClaimDepositInteraction",
-    "parameters": [
-     {
-      "name": "opportunityId",
-      "in": "path",
-      "description": "Opportunity unique identifier",
-      "required": true,
-      "schema": {
-       "$ref": "#/components/schemas/UuidUUID",
-       "description": "Opportunity unique identifier"
-      }
-     }
-    ],
-    "requestBody": {
-     "content": {
-      "application/json": {
-       "schema": {
-        "$ref": "#/components/schemas/ActionsClaimDepositRequest"
-       }
-      }
-     }
     },
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/ActionsInteractionResponse"
+    "/v2/opportunities/{chainId}/{vaultAddress}/historical/apy": {
+      "get": {
+        "tags": [
+          "Historical Data"
+        ],
+        "summary": "Get Vault Historical APY",
+        "description": "Adjacent-pair compound APY per bucket over [from, to]. Reward APY is reserved for future rewards indexing and is always 0.",
+        "operationId": "GetOpportunityHistoricalAPY",
+        "parameters": [
+          {
+            "name": "intervalSeconds",
+            "in": "query",
+            "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+            "schema": {
+              "default": 86400,
+              "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "fromTimestamp",
+            "in": "query",
+            "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+            "schema": {
+              "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+              "type": "integer"
+            }
+          },
+          {
+            "name": "toTimestamp",
+            "in": "query",
+            "description": "Unix seconds, inclusive. Defaults to now when omitted",
+            "schema": {
+              "description": "Unix seconds, inclusive. Defaults to now when omitted",
+              "type": "integer"
+            }
+          },
+          {
+            "name": "chainId",
+            "in": "path",
+            "description": "EVM chain ID (e.g. 1 for Ethereum)",
+            "required": true,
+            "schema": {
+              "description": "EVM chain ID (e.g. 1 for Ethereum)",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "vaultAddress",
+            "in": "path",
+            "description": "0x-prefixed 40-hex vault contract address",
+            "required": true,
+            "schema": {
+              "description": "0x-prefixed 40-hex vault contract address",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/V2GetOpportunityHistoricalAPYResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
         }
-       }
       }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "404": {
-      "description": "Not Found",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/actions/deposit/{opportunityId}": {
-   "post": {
-    "tags": [
-     "Actions"
-    ],
-    "summary": "Create Interaction Handler",
-    "description": "Record a deposit interaction",
-    "operationId": "CreateDepositInteraction",
-    "parameters": [
-     {
-      "name": "opportunityId",
-      "in": "path",
-      "description": "Opportunity unique identifier",
-      "required": true,
-      "schema": {
-       "$ref": "#/components/schemas/UuidUUID",
-       "description": "Opportunity unique identifier"
-      }
-     }
-    ],
-    "requestBody": {
-     "content": {
-      "application/json": {
-       "schema": {
-        "$ref": "#/components/schemas/ActionsInteractionRequest"
-       }
-      }
-     }
     },
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/ActionsInteractionResponse"
+    "/v2/opportunities/{chainId}/{vaultAddress}/historical/share-price": {
+      "get": {
+        "tags": [
+          "Historical Data"
+        ],
+        "summary": "Get Vault Historical Share Price",
+        "description": "Get historical share-price time-series for a vault, bucketed by interval over [from, to]. Native is denominated in the vault's underlying (base) asset; USD is null when the underlying price is unavailable for the bucket.",
+        "operationId": "GetOpportunityHistoricalSharePrice",
+        "parameters": [
+          {
+            "name": "intervalSeconds",
+            "in": "query",
+            "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+            "schema": {
+              "default": 86400,
+              "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "fromTimestamp",
+            "in": "query",
+            "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+            "schema": {
+              "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+              "type": "integer"
+            }
+          },
+          {
+            "name": "toTimestamp",
+            "in": "query",
+            "description": "Unix seconds, inclusive. Defaults to now when omitted",
+            "schema": {
+              "description": "Unix seconds, inclusive. Defaults to now when omitted",
+              "type": "integer"
+            }
+          },
+          {
+            "name": "chainId",
+            "in": "path",
+            "description": "EVM chain ID (e.g. 1 for Ethereum)",
+            "required": true,
+            "schema": {
+              "description": "EVM chain ID (e.g. 1 for Ethereum)",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "vaultAddress",
+            "in": "path",
+            "description": "0x-prefixed 40-hex vault contract address",
+            "required": true,
+            "schema": {
+              "description": "0x-prefixed 40-hex vault contract address",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/V2GetOpportunityHistoricalSharePriceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
         }
-       }
       }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "404": {
-      "description": "Not Found",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/actions/verify": {
-   "get": {
-    "tags": [
-     "Actions"
-    ],
-    "summary": "Verify Tracking Handler",
-    "description": "Verify tracking data in a transaction",
-    "operationId": "VerifyTracking",
-    "parameters": [
-     {
-      "name": "chainId",
-      "in": "query",
-      "description": "Chain ID where the transaction was executed",
-      "required": true,
-      "schema": {
-       "description": "Chain ID where the transaction was executed",
-       "type": "integer"
-      }
-     },
-     {
-      "name": "txHash",
-      "in": "query",
-      "description": "Transaction hash to verify",
-      "required": true,
-      "schema": {
-       "description": "Transaction hash to verify",
-       "type": "string"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/ActionsVerifyTrackingResponse"
-        }
-       }
-      }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "404": {
-      "description": "Not Found",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/actions/withdraw/{opportunityId}": {
-   "post": {
-    "tags": [
-     "Actions"
-    ],
-    "summary": "Create Withdraw Interaction Handler",
-    "description": "Record a withdraw interaction",
-    "operationId": "CreateWithdrawInteraction",
-    "parameters": [
-     {
-      "name": "opportunityId",
-      "in": "path",
-      "description": "Opportunity unique identifier",
-      "required": true,
-      "schema": {
-       "$ref": "#/components/schemas/UuidUUID",
-       "description": "Opportunity unique identifier"
-      }
-     }
-    ],
-    "requestBody": {
-     "content": {
-      "application/json": {
-       "schema": {
-        "$ref": "#/components/schemas/ActionsWithdrawRequest"
-       }
-      }
-     }
     },
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/ActionsInteractionResponse"
+    "/v2/opportunities/{chainId}/{vaultAddress}/historical/tvl": {
+      "get": {
+        "tags": [
+          "Historical Data"
+        ],
+        "summary": "Get Vault Historical TVL",
+        "description": "Get historical TVL time-series for a vault, bucketed by interval over [from, to]. Values are denominated in the vault's underlying (base) asset; USD is null when the underlying price is unavailable for the bucket.",
+        "operationId": "GetOpportunityHistoricalTVL",
+        "parameters": [
+          {
+            "name": "intervalSeconds",
+            "in": "query",
+            "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+            "schema": {
+              "default": 86400,
+              "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "fromTimestamp",
+            "in": "query",
+            "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+            "schema": {
+              "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+              "type": "integer"
+            }
+          },
+          {
+            "name": "toTimestamp",
+            "in": "query",
+            "description": "Unix seconds, inclusive. Defaults to now when omitted",
+            "schema": {
+              "description": "Unix seconds, inclusive. Defaults to now when omitted",
+              "type": "integer"
+            }
+          },
+          {
+            "name": "chainId",
+            "in": "path",
+            "description": "EVM chain ID (e.g. 1 for Ethereum)",
+            "required": true,
+            "schema": {
+              "description": "EVM chain ID (e.g. 1 for Ethereum)",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "vaultAddress",
+            "in": "path",
+            "description": "0x-prefixed 40-hex vault contract address",
+            "required": true,
+            "schema": {
+              "description": "0x-prefixed 40-hex vault contract address",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/V2GetOpportunityHistoricalTVLResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
         }
-       }
       }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "404": {
-      "description": "Not Found",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/deposit/{distributor_id}": {
-   "get": {
-    "tags": [
-     "Deposits"
-    ],
-    "summary": "Get Distributor Deposits Handler",
-    "description": "Get paginated verified deposit interactions for a specific distributor, ordered by date descending. Optionally filter by opportunity_id and/or product_id.",
-    "operationId": "GetDistributorDeposits",
-    "parameters": [
-     {
-      "name": "page",
-      "in": "query",
-      "schema": {
-       "type": "integer"
-      }
-     },
-     {
-      "name": "limit",
-      "in": "query",
-      "schema": {
-       "type": "integer"
-      }
-     },
-     {
-      "name": "opportunity_id",
-      "in": "query",
-      "description": "Optional opportunity UUID to filter deposits",
-      "schema": {
-       "description": "Optional opportunity UUID to filter deposits",
-       "type": "string"
-      }
-     },
-     {
-      "name": "product_id",
-      "in": "query",
-      "description": "Optional product UUID to filter deposits to opportunities belonging to that product",
-      "schema": {
-       "description": "Optional product UUID to filter deposits to opportunities belonging to that product",
-       "type": "string"
-      }
-     },
-     {
-      "name": "distributor_id",
-      "in": "path",
-      "description": "Distributor ID to filter deposits",
-      "required": true,
-      "schema": {
-       "description": "Distributor ID to filter deposits",
-       "type": "string"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/ActionsDistributorDepositsResponse"
-        }
-       }
-      }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "404": {
-      "description": "Not Found",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/membership/": {
-   "get": {
-    "tags": [
-     "Membership"
-    ],
-    "summary": "Check Membership",
-    "description": "Check if a wallet address is associated with a user",
-    "operationId": "GetMembership",
-    "parameters": [
-     {
-      "name": "address",
-      "in": "query",
-      "description": "Wallet address to check",
-      "schema": {
-       "description": "Wallet address to check",
-       "type": "string"
-      }
-     },
-     {
-      "name": "walletEcosystem",
-      "in": "query",
-      "description": "Wallet ecosystem",
-      "schema": {
-       "default": "evm",
-       "description": "Wallet ecosystem",
-       "enum": [
-        "evm",
-        "solana",
-        "ton"
-       ],
-       "type": "string"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/V1GetMembershipOutput"
-        }
-       }
-      }
-     }
-    }
-   },
-   "post": {
-    "tags": [
-     "Membership"
-    ],
-    "summary": "Create Membership",
-    "description": "Create a new user and associate wallet (signup only, no session)",
-    "operationId": "membership.create",
-    "requestBody": {
-     "content": {
-      "application/json": {
-       "schema": {
-        "$ref": "#/components/schemas/V1CreateMembershipInput"
-       }
-      }
-     }
     },
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/V1CreateMembershipOutput"
+    "/v2/protocols/": {
+      "get": {
+        "tags": [
+          "Protocols"
+        ],
+        "summary": "Get Supported Protocols",
+        "description": "Returns supported DeFi protocols with pagination. A protocol is an organization referenced as a lending protocol or vault infra provider in an earn product.",
+        "operationId": "GetProtocols",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2ProtocolResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
         }
-       }
       }
-     },
-     "409": {
-      "description": "Conflict",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/membership/agreement": {
-   "post": {
-    "tags": [
-     "Membership"
-    ],
-    "summary": "Create Membership Agreement",
-    "description": "Generate a message to be signed by a new wallet for signup",
-    "operationId": "CreateMembershipAgreement",
-    "requestBody": {
-     "content": {
-      "application/json": {
-       "schema": {
-        "$ref": "#/components/schemas/V1CreateMembershipAgreementInput"
-       }
-      }
-     }
     },
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/V1CreateMembershipAgreementOutput"
+    "/v2/tokens/": {
+      "get": {
+        "tags": [
+          "Tokens"
+        ],
+        "summary": "Get Supported Tokens",
+        "description": "Returns active supported tokens with pagination. Optional filters: chainId (numeric) and search (partial match on address, name or symbol).",
+        "operationId": "GetTokens",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "chainId",
+            "in": "query",
+            "description": "Filter by numeric chain ID",
+            "schema": {
+              "description": "Filter by numeric chain ID",
+              "type": "integer"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Case-insensitive partial match across address, name and symbol",
+            "schema": {
+              "description": "Case-insensitive partial match across address, name and symbol",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2SharedTokenResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
         }
-       }
       }
-     },
-     "409": {
-      "description": "Conflict",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/opportunities/": {
-   "get": {
-    "tags": [
-     "Opportunities"
-    ],
-    "summary": "Get Opportunities Handler",
-    "description": "Get opportunities with simplified token information",
-    "operationId": "GetOpportunities",
-    "parameters": [
-     {
-      "name": "chainIds",
-      "in": "query",
-      "description": "Comma-separated list of chain IDs to filter by",
-      "schema": {
-       "description": "Comma-separated list of chain IDs to filter by",
-       "type": "string"
-      }
-     },
-     {
-      "name": "depositToken",
-      "in": "query",
-      "description": "Deposit token in format 'address-chainId' (e.g., '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7-43114')",
-      "schema": {
-       "description": "Deposit token in format 'address-chainId' (e.g., '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7-43114')",
-       "type": "string"
-      }
-     },
-     {
-      "name": "tvlGreaterThan",
-      "in": "query",
-      "description": "Filter opportunities with TVL greater than this value",
-      "schema": {
-       "description": "Filter opportunities with TVL greater than this value",
-       "type": "number"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/V1GetOpportunitiesResponse"
-        }
-       }
-      }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/opportunities/distributors/{distributor_id}": {
-   "get": {
-    "tags": [
-     "Opportunities"
-    ],
-    "summary": "Get Opportunities By Distributor Handler",
-    "description": "Get opportunities for a specific distributor based on their earn details configuration",
-    "operationId": "GetOpportunitiesByDistributor",
-    "parameters": [
-     {
-      "name": "distributor_id",
-      "in": "path",
-      "description": "Distributor ID to filter opportunities",
-      "required": true,
-      "schema": {
-       "description": "Distributor ID to filter opportunities",
-       "type": "string"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/V1GetOpportunitiesResponse"
-        }
-       }
-      }
-     },
-     "404": {
-      "description": "Not Found",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/opportunities/{id}": {
-   "get": {
-    "tags": [
-     "Opportunities"
-    ],
-    "summary": "Get Opportunity By ID Handler",
-    "description": "Get a single opportunity by ID with simplified token information",
-    "operationId": "GetOpportunityByID",
-    "parameters": [
-     {
-      "name": "id",
-      "in": "path",
-      "description": "Opportunity unique identifier",
-      "required": true,
-      "schema": {
-       "$ref": "#/components/schemas/UuidUUID",
-       "description": "Opportunity unique identifier"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/V1GetOpportunityByIDResponse"
-        }
-       }
-      }
-     },
-     "404": {
-      "description": "Not Found",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/streams/": {
-   "get": {
-    "tags": [
-     "streams"
-    ],
-    "summary": "Get Streams Data",
-    "description": "Get streams for the organization associated with the API key, optionally filtered by stream ID and with optional snapshots.",
-    "operationId": "v1/streams.GetStreamsHandler",
-    "parameters": [
-     {
-      "name": "id",
-      "in": "query",
-      "schema": {
-       "$ref": "#/components/schemas/UuidUUID"
-      }
-     },
-     {
-      "name": "withSnapshots",
-      "in": "query",
-      "schema": {
-       "type": "boolean"
-      }
-     },
-     {
-      "name": "usersCount",
-      "in": "query",
-      "schema": {
-       "type": "boolean"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/StreamsGetStreamsOutput"
-        }
-       }
-      }
-     },
-     "401": {
-      "description": "Unauthorized",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   },
-   "post": {
-    "tags": [
-     "streams"
-    ],
-    "summary": "Create Stream with API Key Authentication",
-    "description": "Handle create stream and signature request",
-    "operationId": "v1/streams.CreateStreamHandler",
-    "requestBody": {
-     "content": {
-      "application/json": {
-       "schema": {
-        "$ref": "#/components/schemas/StreamsCreateStreamRequestParams"
-       }
-      }
-     }
     },
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/StreamsCreateStreamOutput"
+    "/v2/tokens/{chainId}/{address}": {
+      "get": {
+        "tags": [
+          "Tokens"
+        ],
+        "summary": "Get Token by Chain and Address",
+        "description": "Returns a single active token identified by its numeric chain ID and contract address.",
+        "operationId": "GetTokenByAddress",
+        "parameters": [
+          {
+            "name": "chainId",
+            "in": "path",
+            "description": "Numeric chain ID",
+            "required": true,
+            "schema": {
+              "description": "Numeric chain ID",
+              "type": "integer"
+            }
+          },
+          {
+            "name": "address",
+            "in": "path",
+            "description": "Token contract address (case-insensitive)",
+            "required": true,
+            "schema": {
+              "description": "Token contract address (case-insensitive)",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedTokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
         }
-       }
       }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "401": {
-      "description": "Unauthorized",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "403": {
-      "description": "Forbidden",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
     }
-   }
   },
-  "/v1/streams/points": {
-   "get": {
-    "tags": [
-     "streams"
-    ],
-    "summary": "Get Stream Points",
-    "description": "Get the points that belong to the organization associated with the API key.",
-    "operationId": "v1/streams.GetPointsHandler",
-    "parameters": [
-     {
-      "name": "id",
-      "in": "query",
-      "schema": {
-       "$ref": "#/components/schemas/UuidUUID"
+  "components": {
+    "schemas": {
+      "PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2ProtocolResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/V2ProtocolResponse"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationPaginationMetadata"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2SharedChainResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/SharedChainResponse"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationPaginationMetadata"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2SharedTokenResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/SharedTokenResponse"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationPaginationMetadata"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationPaginationMetadata": {
+        "properties": {
+          "limit": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "RestErrResponse": {
+        "properties": {
+          "code": {
+            "description": "Application-specific error code.",
+            "type": "integer"
+          },
+          "context": {
+            "additionalProperties": {},
+            "description": "Application context.",
+            "type": "object"
+          },
+          "error": {
+            "description": "Error message.",
+            "type": "string"
+          },
+          "status": {
+            "description": "Status text.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SharedChainResponse": {
+        "properties": {
+          "chainId": {
+            "description": "Numeric chain ID (e.g. 1 for Ethereum, 43114 for Avalanche)",
+            "type": "integer"
+          },
+          "explorerUrl": {
+            "description": "Block explorer base URL",
+            "type": "string"
+          },
+          "logoUrl": {
+            "description": "Chain logo image URL",
+            "type": "string"
+          },
+          "name": {
+            "description": "Chain full name",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SharedTokenResponse": {
+        "properties": {
+          "address": {
+            "description": "Token contract address",
+            "type": "string"
+          },
+          "chainId": {
+            "description": "Numeric chain ID the token belongs to",
+            "type": "integer"
+          },
+          "decimals": {
+            "description": "ERC20 decimals",
+            "type": "integer"
+          },
+          "logoUrl": {
+            "description": "Token logo image URL",
+            "type": "string"
+          },
+          "symbol": {
+            "description": "Token symbol (e.g. USDC, ETH)",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "V2APRBreakdown": {
+        "properties": {
+          "base": {
+            "description": "APR from share-price growth alone (simple, non-compound)",
+            "type": "number"
+          },
+          "reward": {
+            "description": "Reward APR; reserved for future rewards indexing, currently always 0",
+            "type": "number"
+          },
+          "total": {
+            "description": "base + reward",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "V2APYBreakdown": {
+        "properties": {
+          "base": {
+            "description": "APY from share-price growth alone (vaults.fyi compound formula)",
+            "type": "number"
+          },
+          "reward": {
+            "description": "Reward APY; reserved for future rewards indexing, currently always 0",
+            "type": "number"
+          },
+          "total": {
+            "description": "base + reward",
+            "type": "number"
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "V2GetOpportunityHistoricalAPRResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/V2HistoricalAPRPoint"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "V2GetOpportunityHistoricalAPYResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/V2HistoricalAPYPoint"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "V2GetOpportunityHistoricalResponse": {
+        "properties": {
+          "baseAsset": {
+            "$ref": "#/components/schemas/SharedTokenResponse",
+            "description": "null when the vault has not yet been indexed in vault_metrics or the underlying token is not registered in supported_tokens"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/V2HistoricalCombinedPoint"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "historyTruncated": {
+            "description": "true when backend hit the row cap and oldest APY values may be missing predecessors",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "V2GetOpportunityHistoricalSharePriceResponse": {
+        "properties": {
+          "baseAsset": {
+            "$ref": "#/components/schemas/SharedTokenResponse",
+            "description": "null when the vault has not yet been indexed in vault_metrics or the underlying token is not registered in supported_tokens"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/V2HistoricalSharePricePoint"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "V2GetOpportunityHistoricalTVLResponse": {
+        "properties": {
+          "baseAsset": {
+            "$ref": "#/components/schemas/SharedTokenResponse",
+            "description": "null when the vault has not yet been indexed in vault_metrics or the underlying token is not registered in supported_tokens"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/V2HistoricalTVLPoint"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "V2HistoricalAPRPoint": {
+        "properties": {
+          "apr": {
+            "$ref": "#/components/schemas/V2APRBreakdown",
+            "description": "Adjacent-pair simple-rate APR against the previous bucket"
+          },
+          "blockNumber": {
+            "description": "On-chain block number of the snapshot chosen as the bucket representative",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "timestamp": {
+            "description": "Bucket representative time (unix seconds)",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "V2HistoricalAPYPoint": {
+        "properties": {
+          "apy": {
+            "$ref": "#/components/schemas/V2APYBreakdown",
+            "description": "Adjacent-pair compound APY against the previous bucket"
+          },
+          "blockNumber": {
+            "description": "On-chain block number of the snapshot chosen as the bucket representative",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "timestamp": {
+            "description": "Bucket representative time (unix seconds)",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "V2HistoricalCombinedPoint": {
+        "properties": {
+          "apy": {
+            "$ref": "#/components/schemas/V2APYBreakdown",
+            "description": "Trailing-window APY at this bucket; null when no predecessor exists"
+          },
+          "blockNumber": {
+            "description": "On-chain block number of the snapshot chosen as the bucket representative",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "sharePrice": {
+            "$ref": "#/components/schemas/V2NativeUSDValue"
+          },
+          "timestamp": {
+            "description": "Bucket representative time (unix seconds)",
+            "type": "integer"
+          },
+          "tvl": {
+            "$ref": "#/components/schemas/V2NativeUSDValue"
+          }
+        },
+        "type": "object"
+      },
+      "V2HistoricalSharePricePoint": {
+        "properties": {
+          "blockNumber": {
+            "description": "On-chain block number of the snapshot chosen as the bucket representative",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "sharePrice": {
+            "$ref": "#/components/schemas/V2NativeUSDValue"
+          },
+          "timestamp": {
+            "description": "Bucket representative time (unix seconds)",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "V2HistoricalTVLPoint": {
+        "properties": {
+          "blockNumber": {
+            "description": "On-chain block number of the snapshot chosen as the bucket representative",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "timestamp": {
+            "description": "Bucket representative time (unix seconds)",
+            "type": "integer"
+          },
+          "tvl": {
+            "$ref": "#/components/schemas/V2NativeUSDValue"
+          }
+        },
+        "type": "object"
+      },
+      "V2NativeUSDValue": {
+        "properties": {
+          "native": {
+            "type": "number"
+          },
+          "usd": {
+            "description": "null when underlying USD price was not available for this bucket",
+            "type": [
+              "null",
+              "number"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "V2ProtocolResponse": {
+        "properties": {
+          "logoUrl": {
+            "description": "Protocol logo image URL",
+            "type": "string"
+          },
+          "name": {
+            "description": "Protocol name",
+            "type": "string"
+          },
+          "siteUrl": {
+            "description": "Protocol website URL",
+            "type": "string"
+          }
+        },
+        "type": "object"
       }
-     },
-     {
-      "name": "symbol",
-      "in": "query",
-      "schema": {
-       "type": "string"
-      }
-     },
-     {
-      "name": "name",
-      "in": "query",
-      "schema": {
-       "type": "string"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/StreamsGetPointsOutput"
-        }
-       }
-      }
-     },
-     "401": {
-      "description": "Unauthorized",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
     }
-   },
-   "post": {
-    "tags": [
-     "streams"
-    ],
-    "summary": "Create Stream Point",
-    "description": "Create a point for the organization associated with the API key.",
-    "operationId": "v1/streams.CreatePointHandler",
-    "requestBody": {
-     "content": {
-      "application/json": {
-       "schema": {
-        "$ref": "#/components/schemas/StreamsCreatePointInput"
-       }
-      }
-     }
-    },
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/StreamsCreatePointOutput"
-        }
-       }
-      }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "401": {
-      "description": "Unauthorized",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/streams/tokens": {
-   "get": {
-    "tags": [
-     "streams"
-    ],
-    "summary": "Get Stream Tokens",
-    "description": "Get all supported tokens for a chain that can be used for streams.",
-    "operationId": "v1/streams.GetTokensHandler",
-    "parameters": [
-     {
-      "name": "chainId",
-      "in": "query",
-      "description": "Decimal chain ID",
-      "required": true,
-      "schema": {
-       "description": "Decimal chain ID",
-       "minimum": 0,
-       "type": "integer"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/StreamsGetTokensOutput"
-        }
-       }
-      }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/streams/{id}/wallets": {
-   "get": {
-    "tags": [
-     "streams"
-    ],
-    "summary": "Get Stream Wallets",
-    "description": "Retrieve the wallets participating in a stream along with their latest snapshot data.\n\n\t\t**Pagination:**\n\t\t- Use 'page' (default: 1) and 'limit' (default: 20) query parameters.\n\t\t- Results are ordered by rewardsAccumulated descending.\n\n\t\t**Note:**\n\t\t- rewardsAccumulated and rewardsAccumulatedBase are represented in wei units.\n\t\t- The stream must belong to the organization associated with the API key.",
-    "operationId": "v1/streams.GetWalletsHandler",
-    "parameters": [
-     {
-      "name": "page",
-      "in": "query",
-      "schema": {
-       "type": "integer"
-      }
-     },
-     {
-      "name": "limit",
-      "in": "query",
-      "schema": {
-       "type": "integer"
-      }
-     },
-     {
-      "name": "id",
-      "in": "path",
-      "required": true,
-      "schema": {
-       "$ref": "#/components/schemas/UuidUUID"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/StreamsGetWalletsOutput"
-        }
-       }
-      }
-     },
-     "401": {
-      "description": "Unauthorized",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "404": {
-      "description": "Not Found",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/streams/{id}/wallets/{address}": {
-   "get": {
-    "tags": [
-     "streams"
-    ],
-    "summary": "Get Stream Wallet Data",
-    "description": "Retrieve all reward snapshots accumulated by a wallet for a specific stream.\n\n\t\t**Note:**\n\t\t- The following fields are represented in wei units:\n\t\t\t- wallet.snapshots[].rewardsAccumulated\n\t\t\t- wallet.stream.totalAmount\n\t\t\t- wallet.stream.lastSnapshot.amountDistributed\n\t\t- The stream must belong to the organization associated with the API key.",
-    "operationId": "v1/streams.GetWalletHandler",
-    "parameters": [
-     {
-      "name": "id",
-      "in": "path",
-      "required": true,
-      "schema": {
-       "$ref": "#/components/schemas/UuidUUID"
-      }
-     },
-     {
-      "name": "address",
-      "in": "path",
-      "required": true,
-      "schema": {
-       "type": "string"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/StreamsGetWalletOutput"
-        }
-       }
-      }
-     },
-     "401": {
-      "description": "Unauthorized",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "404": {
-      "description": "Not Found",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/swap/": {
-   "get": {
-    "tags": [
-     "Earn"
-    ],
-    "summary": "Get Swap Handler",
-    "description": "Build approve + swap transactions via the router for an arbitrary token pair",
-    "operationId": "GetEarnSwap",
-    "parameters": [
-     {
-      "name": "user",
-      "in": "query",
-      "description": "User's EOA address initiating the swap",
-      "required": true,
-      "schema": {
-       "description": "User's EOA address initiating the swap",
-       "type": "string"
-      }
-     },
-     {
-      "name": "chain",
-      "in": "query",
-      "description": "Chain ID for the swap",
-      "required": true,
-      "schema": {
-       "description": "Chain ID for the swap",
-       "minimum": 1,
-       "type": "integer"
-      }
-     },
-     {
-      "name": "distributor_id",
-      "in": "query",
-      "description": "Distributor ID",
-      "required": true,
-      "schema": {
-       "description": "Distributor ID",
-       "type": "string"
-      }
-     },
-     {
-      "name": "token_in",
-      "in": "query",
-      "description": "Input token address or 'native' alias",
-      "required": true,
-      "schema": {
-       "description": "Input token address or 'native' alias",
-       "type": "string"
-      }
-     },
-     {
-      "name": "token_out",
-      "in": "query",
-      "description": "Output token address or 'native' alias",
-      "required": true,
-      "schema": {
-       "description": "Output token address or 'native' alias",
-       "type": "string"
-      }
-     },
-     {
-      "name": "amount_in",
-      "in": "query",
-      "description": "Input amount in smallest unit (wei)",
-      "required": true,
-      "schema": {
-       "description": "Input amount in smallest unit (wei)",
-       "type": "string"
-      }
-     },
-     {
-      "name": "slippage_bps",
-      "in": "query",
-      "description": "Slippage tolerance in basis points (e.g., 50 = 0.5%)",
-      "required": true,
-      "schema": {
-       "description": "Slippage tolerance in basis points (e.g., 50 = 0.5%)",
-       "maximum": 5000,
-       "minimum": 1,
-       "type": "integer"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/V1GetSwapResponse"
-        }
-       }
-      }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/swap/details": {
-   "get": {
-    "tags": [
-     "Earn"
-    ],
-    "summary": "Get Swap Details Handler",
-    "description": "Static-ish swap picker data: supported chains plus popular tokens for the selected chain",
-    "operationId": "GetSwapDetails",
-    "parameters": [
-     {
-      "name": "chainId",
-      "in": "query",
-      "description": "Optional chain ID to scope the popular tokens list",
-      "schema": {
-       "description": "Optional chain ID to scope the popular tokens list",
-       "type": "integer"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/V1GetSwapDetailsResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/swap/tokens": {
-   "get": {
-    "tags": [
-     "Earn"
-    ],
-    "summary": "Get Swap Tokens Handler",
-    "description": "Search swap tokens for a chain. Partial match on symbol/name/address against the curated catalog, with an Enso fallback (by address or exact symbol) when the catalog has no result",
-    "operationId": "GetSwapTokens",
-    "parameters": [
-     {
-      "name": "chainId",
-      "in": "query",
-      "description": "Numeric chain ID to scope the search",
-      "required": true,
-      "schema": {
-       "description": "Numeric chain ID to scope the search",
-       "minimum": 1,
-       "type": "integer"
-      }
-     },
-     {
-      "name": "search",
-      "in": "query",
-      "description": "Optional search term: matches token symbol, name, or address (case-insensitive partial)",
-      "schema": {
-       "description": "Optional search term: matches token symbol, name, or address (case-insensitive partial)",
-       "type": "string"
-      }
-     },
-     {
-      "name": "page",
-      "in": "query",
-      "description": "1-based page number; defaults to 1",
-      "schema": {
-       "description": "1-based page number; defaults to 1",
-       "type": "integer"
-      }
-     },
-     {
-      "name": "limit",
-      "in": "query",
-      "description": "Page size; defaults to 20, max 300",
-      "schema": {
-       "description": "Page size; defaults to 20, max 300",
-       "type": "integer"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/V1GetSwapTokensResponse"
-        }
-       }
-      }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v1/wallets/activity/": {
-   "get": {
-    "tags": [
-     "activity"
-    ],
-    "summary": "Get Wallet Activity Handler",
-    "description": "Get paginated verified earn interactions for the given wallet addresses (comma-separated), ordered by date descending.",
-    "operationId": "GetWalletActivity",
-    "parameters": [
-     {
-      "name": "page",
-      "in": "query",
-      "schema": {
-       "type": "integer"
-      }
-     },
-     {
-      "name": "limit",
-      "in": "query",
-      "schema": {
-       "type": "integer"
-      }
-     },
-     {
-      "name": "addresses",
-      "in": "query",
-      "description": "Comma-separated list of EVM wallet addresses to fetch activity for (max 1000)",
-      "schema": {
-       "description": "Comma-separated list of EVM wallet addresses to fetch activity for (max 1000)",
-       "type": "string"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/ActionsWalletActivityResponse"
-        }
-       }
-      }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v2/chains/": {
-   "get": {
-    "tags": [
-     "Chains"
-    ],
-    "summary": "Get Supported Chains",
-    "description": "Returns all supported chains with pagination. Chains are filtered to active status only.",
-    "operationId": "handlers/v2.GetChainsHandler",
-    "parameters": [
-     {
-      "name": "page",
-      "in": "query",
-      "schema": {
-       "type": "integer"
-      }
-     },
-     {
-      "name": "limit",
-      "in": "query",
-      "schema": {
-       "type": "integer"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2SharedChainResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v2/opportunities/{chainId}/{vaultAddress}/historical": {
-   "get": {
-    "tags": [
-     "Historical Data"
-    ],
-    "summary": "Get Vault Historical Data",
-    "description": "Get combined historical time-series (TVL, share price, base APY) for a vault, bucketed by interval over [from, to].",
-    "operationId": "handlers/v2.GetOpportunityHistoricalHandler",
-    "parameters": [
-     {
-      "name": "intervalSeconds",
-      "in": "query",
-      "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
-      "schema": {
-       "default": 86400,
-       "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
-       "minimum": 1,
-       "type": "integer"
-      }
-     },
-     {
-      "name": "fromTimestamp",
-      "in": "query",
-      "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
-      "schema": {
-       "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
-       "type": "integer"
-      }
-     },
-     {
-      "name": "toTimestamp",
-      "in": "query",
-      "description": "Unix seconds, inclusive. Defaults to now when omitted",
-      "schema": {
-       "description": "Unix seconds, inclusive. Defaults to now when omitted",
-       "type": "integer"
-      }
-     },
-     {
-      "name": "chainId",
-      "in": "path",
-      "description": "EVM chain ID (e.g. 1 for Ethereum)",
-      "required": true,
-      "schema": {
-       "description": "EVM chain ID (e.g. 1 for Ethereum)",
-       "minimum": 1,
-       "type": "integer"
-      }
-     },
-     {
-      "name": "vaultAddress",
-      "in": "path",
-      "description": "0x-prefixed 40-hex vault contract address",
-      "required": true,
-      "schema": {
-       "description": "0x-prefixed 40-hex vault contract address",
-       "type": "string"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/V2GetOpportunityHistoricalResponse"
-        }
-       }
-      }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v2/opportunities/{chainId}/{vaultAddress}/historical/apr": {
-   "get": {
-    "tags": [
-     "Historical Data"
-    ],
-    "summary": "Get Vault Historical APR",
-    "description": "Adjacent-pair simple-rate (non-compound) APR per bucket over [from, to]. Reward APR is reserved for future rewards indexing and is always 0.",
-    "operationId": "handlers/v2.GetOpportunityHistoricalAPRHandler",
-    "parameters": [
-     {
-      "name": "intervalSeconds",
-      "in": "query",
-      "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
-      "schema": {
-       "default": 86400,
-       "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
-       "minimum": 1,
-       "type": "integer"
-      }
-     },
-     {
-      "name": "fromTimestamp",
-      "in": "query",
-      "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
-      "schema": {
-       "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
-       "type": "integer"
-      }
-     },
-     {
-      "name": "toTimestamp",
-      "in": "query",
-      "description": "Unix seconds, inclusive. Defaults to now when omitted",
-      "schema": {
-       "description": "Unix seconds, inclusive. Defaults to now when omitted",
-       "type": "integer"
-      }
-     },
-     {
-      "name": "chainId",
-      "in": "path",
-      "description": "EVM chain ID (e.g. 1 for Ethereum)",
-      "required": true,
-      "schema": {
-       "description": "EVM chain ID (e.g. 1 for Ethereum)",
-       "minimum": 1,
-       "type": "integer"
-      }
-     },
-     {
-      "name": "vaultAddress",
-      "in": "path",
-      "description": "0x-prefixed 40-hex vault contract address",
-      "required": true,
-      "schema": {
-       "description": "0x-prefixed 40-hex vault contract address",
-       "type": "string"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/V2GetOpportunityHistoricalAPRResponse"
-        }
-       }
-      }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v2/opportunities/{chainId}/{vaultAddress}/historical/apy": {
-   "get": {
-    "tags": [
-     "Historical Data"
-    ],
-    "summary": "Get Vault Historical APY",
-    "description": "Adjacent-pair compound APY per bucket over [from, to]. Reward APY is reserved for future rewards indexing and is always 0.",
-    "operationId": "handlers/v2.GetOpportunityHistoricalAPYHandler",
-    "parameters": [
-     {
-      "name": "intervalSeconds",
-      "in": "query",
-      "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
-      "schema": {
-       "default": 86400,
-       "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
-       "minimum": 1,
-       "type": "integer"
-      }
-     },
-     {
-      "name": "fromTimestamp",
-      "in": "query",
-      "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
-      "schema": {
-       "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
-       "type": "integer"
-      }
-     },
-     {
-      "name": "toTimestamp",
-      "in": "query",
-      "description": "Unix seconds, inclusive. Defaults to now when omitted",
-      "schema": {
-       "description": "Unix seconds, inclusive. Defaults to now when omitted",
-       "type": "integer"
-      }
-     },
-     {
-      "name": "chainId",
-      "in": "path",
-      "description": "EVM chain ID (e.g. 1 for Ethereum)",
-      "required": true,
-      "schema": {
-       "description": "EVM chain ID (e.g. 1 for Ethereum)",
-       "minimum": 1,
-       "type": "integer"
-      }
-     },
-     {
-      "name": "vaultAddress",
-      "in": "path",
-      "description": "0x-prefixed 40-hex vault contract address",
-      "required": true,
-      "schema": {
-       "description": "0x-prefixed 40-hex vault contract address",
-       "type": "string"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/V2GetOpportunityHistoricalAPYResponse"
-        }
-       }
-      }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v2/opportunities/{chainId}/{vaultAddress}/historical/share-price": {
-   "get": {
-    "tags": [
-     "Historical Data"
-    ],
-    "summary": "Get Vault Historical Share Price",
-    "description": "Get historical share-price time-series for a vault, bucketed by interval over [from, to]. Native is denominated in the vault's underlying (base) asset; USD is null when the underlying price is unavailable for the bucket.",
-    "operationId": "handlers/v2.GetOpportunityHistoricalSharePriceHandler",
-    "parameters": [
-     {
-      "name": "intervalSeconds",
-      "in": "query",
-      "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
-      "schema": {
-       "default": 86400,
-       "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
-       "minimum": 1,
-       "type": "integer"
-      }
-     },
-     {
-      "name": "fromTimestamp",
-      "in": "query",
-      "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
-      "schema": {
-       "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
-       "type": "integer"
-      }
-     },
-     {
-      "name": "toTimestamp",
-      "in": "query",
-      "description": "Unix seconds, inclusive. Defaults to now when omitted",
-      "schema": {
-       "description": "Unix seconds, inclusive. Defaults to now when omitted",
-       "type": "integer"
-      }
-     },
-     {
-      "name": "chainId",
-      "in": "path",
-      "description": "EVM chain ID (e.g. 1 for Ethereum)",
-      "required": true,
-      "schema": {
-       "description": "EVM chain ID (e.g. 1 for Ethereum)",
-       "minimum": 1,
-       "type": "integer"
-      }
-     },
-     {
-      "name": "vaultAddress",
-      "in": "path",
-      "description": "0x-prefixed 40-hex vault contract address",
-      "required": true,
-      "schema": {
-       "description": "0x-prefixed 40-hex vault contract address",
-       "type": "string"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/V2GetOpportunityHistoricalSharePriceResponse"
-        }
-       }
-      }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v2/opportunities/{chainId}/{vaultAddress}/historical/tvl": {
-   "get": {
-    "tags": [
-     "Historical Data"
-    ],
-    "summary": "Get Vault Historical TVL",
-    "description": "Get historical TVL time-series for a vault, bucketed by interval over [from, to]. Values are denominated in the vault's underlying (base) asset; USD is null when the underlying price is unavailable for the bucket.",
-    "operationId": "handlers/v2.GetOpportunityHistoricalTVLHandler",
-    "parameters": [
-     {
-      "name": "intervalSeconds",
-      "in": "query",
-      "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
-      "schema": {
-       "default": 86400,
-       "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
-       "minimum": 1,
-       "type": "integer"
-      }
-     },
-     {
-      "name": "fromTimestamp",
-      "in": "query",
-      "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
-      "schema": {
-       "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
-       "type": "integer"
-      }
-     },
-     {
-      "name": "toTimestamp",
-      "in": "query",
-      "description": "Unix seconds, inclusive. Defaults to now when omitted",
-      "schema": {
-       "description": "Unix seconds, inclusive. Defaults to now when omitted",
-       "type": "integer"
-      }
-     },
-     {
-      "name": "chainId",
-      "in": "path",
-      "description": "EVM chain ID (e.g. 1 for Ethereum)",
-      "required": true,
-      "schema": {
-       "description": "EVM chain ID (e.g. 1 for Ethereum)",
-       "minimum": 1,
-       "type": "integer"
-      }
-     },
-     {
-      "name": "vaultAddress",
-      "in": "path",
-      "description": "0x-prefixed 40-hex vault contract address",
-      "required": true,
-      "schema": {
-       "description": "0x-prefixed 40-hex vault contract address",
-       "type": "string"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/V2GetOpportunityHistoricalTVLResponse"
-        }
-       }
-      }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v2/protocols/": {
-   "get": {
-    "tags": [
-     "Protocols"
-    ],
-    "summary": "Get Supported Protocols",
-    "description": "Returns supported DeFi protocols with pagination. A protocol is an organization referenced as a lending protocol or vault infra provider in an earn product.",
-    "operationId": "handlers/v2.GetProtocolsHandler",
-    "parameters": [
-     {
-      "name": "page",
-      "in": "query",
-      "schema": {
-       "type": "integer"
-      }
-     },
-     {
-      "name": "limit",
-      "in": "query",
-      "schema": {
-       "type": "integer"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2ProtocolResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v2/tokens/": {
-   "get": {
-    "tags": [
-     "Tokens"
-    ],
-    "summary": "Get Supported Tokens",
-    "description": "Returns active supported tokens with pagination. Optional filters: chainId (numeric) and search (partial match on address, name or symbol).",
-    "operationId": "handlers/v2.GetTokensHandler",
-    "parameters": [
-     {
-      "name": "page",
-      "in": "query",
-      "schema": {
-       "type": "integer"
-      }
-     },
-     {
-      "name": "limit",
-      "in": "query",
-      "schema": {
-       "type": "integer"
-      }
-     },
-     {
-      "name": "chainId",
-      "in": "query",
-      "description": "Filter by numeric chain ID",
-      "schema": {
-       "description": "Filter by numeric chain ID",
-       "type": "integer"
-      }
-     },
-     {
-      "name": "search",
-      "in": "query",
-      "description": "Case-insensitive partial match across address, name and symbol",
-      "schema": {
-       "description": "Case-insensitive partial match across address, name and symbol",
-       "type": "string"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2SharedTokenResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
-  },
-  "/v2/tokens/{chainId}/{address}": {
-   "get": {
-    "tags": [
-     "Tokens"
-    ],
-    "summary": "Get Token by Chain and Address",
-    "description": "Returns a single active token identified by its numeric chain ID and contract address.",
-    "operationId": "handlers/v2.GetTokenByAddressHandler",
-    "parameters": [
-     {
-      "name": "chainId",
-      "in": "path",
-      "description": "Numeric chain ID",
-      "required": true,
-      "schema": {
-       "description": "Numeric chain ID",
-       "type": "integer"
-      }
-     },
-     {
-      "name": "address",
-      "in": "path",
-      "description": "Token contract address (case-insensitive)",
-      "required": true,
-      "schema": {
-       "description": "Token contract address (case-insensitive)",
-       "type": "string"
-      }
-     }
-    ],
-    "responses": {
-     "200": {
-      "description": "OK",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/SharedTokenResponse"
-        }
-       }
-      }
-     },
-     "400": {
-      "description": "Bad Request",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "404": {
-      "description": "Not Found",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     },
-     "500": {
-      "description": "Internal Server Error",
-      "content": {
-       "application/json": {
-        "schema": {
-         "$ref": "#/components/schemas/RestErrResponse"
-        }
-       }
-      }
-     }
-    }
-   }
   }
- },
- "components": {
-  "schemas": {
-   "ActionsAttributeActionRequest": {
-    "properties": {
-     "txHash": {
-      "description": "Transaction hash to attribute to the action",
-      "type": "string"
-     }
-    },
-    "required": [
-     "txHash"
-    ],
-    "type": "object"
-   },
-   "ActionsAttributeActionResponse": {
-    "properties": {
-     "deprecated": {
-      "description": "This endpoint is deprecated. Attribution is now automatic.",
-      "type": "boolean"
-     },
-     "message": {
-      "description": "Response message",
-      "type": "string"
-     },
-     "signatureValid": {
-      "description": "Whether the tracking signature was valid",
-      "type": "boolean"
-     },
-     "success": {
-      "description": "Whether the operation was successful",
-      "type": "boolean"
-     }
-    },
-    "type": "object"
-   },
-   "ActionsCancelDepositRequest": {
-    "properties": {
-     "distributorId": {
-      "description": "Distributor ID",
-      "type": "string"
-     },
-     "userAddress": {
-      "description": "User wallet address",
-      "type": "string"
-     }
-    },
-    "required": [
-     "userAddress",
-     "distributorId"
-    ],
-    "type": "object"
-   },
-   "ActionsClaimDepositRequest": {
-    "properties": {
-     "distributorId": {
-      "description": "Distributor ID",
-      "type": "string"
-     },
-     "userAddress": {
-      "description": "User wallet address",
-      "type": "string"
-     }
-    },
-    "required": [
-     "userAddress",
-     "distributorId"
-    ],
-    "type": "object"
-   },
-   "ActionsDistributorDepositsResponse": {
-    "properties": {
-     "deposits": {
-      "items": {
-       "$ref": "#/components/schemas/ActionsWalletActivityItem"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     },
-     "pagination": {
-      "$ref": "#/components/schemas/UtilsPaginationResponse"
-     }
-    },
-    "type": "object"
-   },
-   "ActionsInteractionRequest": {
-    "properties": {
-     "amount": {
-      "description": "Amount in smallest unit (wei)",
-      "type": "string"
-     },
-     "distributorId": {
-      "description": "Distributor ID",
-      "type": "string"
-     },
-     "mode": {
-      "default": "direct",
-      "description": "Mode: 'swap' to use router, 'direct' for direct deposit",
-      "type": "string"
-     },
-     "referralCode": {
-      "description": "Optional referral code",
-      "type": "string"
-     },
-     "slippageBps": {
-      "default": 50,
-      "description": "Slippage tolerance in basis points (e.g., 50 = 0.5%)",
-      "type": "integer"
-     },
-     "tokenIn": {
-      "description": "Input token address",
-      "type": "string"
-     },
-     "userAddress": {
-      "description": "User wallet address (validated by middleware)",
-      "type": "string"
-     }
-    },
-    "required": [
-     "userAddress",
-     "tokenIn",
-     "amount",
-     "distributorId"
-    ],
-    "type": "object"
-   },
-   "ActionsInteractionResponse": {
-    "properties": {
-     "actionId": {
-      "$ref": "#/components/schemas/UuidUUID",
-      "description": "Unique identifier for the saved interaction"
-     },
-     "transactions": {
-      "description": "Ordered list of transactions to execute",
-      "items": {
-       "$ref": "#/components/schemas/TypesTxResponseItem"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     }
-    },
-    "type": "object"
-   },
-   "ActionsVerifyTrackingResponse": {
-    "properties": {
-     "error": {
-      "description": "Error message if verification failed",
-      "type": "string"
-     },
-     "metadata": {
-      "$ref": "#/components/schemas/TrackingEarnTrackingMetadata",
-      "description": "The parsed tracking metadata"
-     },
-     "signatureValid": {
-      "description": "Whether the signature is from our attribution wallet",
-      "type": "boolean"
-     },
-     "tag": {
-      "description": "The tracking tag found in the transaction",
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "ActionsWalletActivityItem": {
-    "properties": {
-     "amountInUsd": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "amountToken": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "blockTimestamp": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "chainId": {
-      "type": "integer"
-     },
-     "id": {
-      "$ref": "#/components/schemas/UuidUUID"
-     },
-     "interaction": {
-      "type": "string"
-     },
-     "isSwap": {
-      "type": "boolean"
-     },
-     "opportunityId": {
-      "$ref": "#/components/schemas/UuidUUID"
-     },
-     "tokenIconUrl": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "tokenSymbol": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "txHash": {
-      "type": "string"
-     },
-     "walletAddress": {
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "ActionsWalletActivityResponse": {
-    "properties": {
-     "activity": {
-      "items": {
-       "$ref": "#/components/schemas/ActionsWalletActivityItem"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     },
-     "pagination": {
-      "$ref": "#/components/schemas/UtilsPaginationResponse"
-     }
-    },
-    "type": "object"
-   },
-   "ActionsWithdrawRequest": {
-    "properties": {
-     "amount": {
-      "description": "Shares to redeem in smallest unit",
-      "type": "string"
-     },
-     "distributorId": {
-      "description": "Distributor ID",
-      "type": "string"
-     },
-     "slippageBps": {
-      "description": "Optional: slippage tolerance in basis points (e.g., 50 = 0.5%). Only applied to opportunities that require it",
-      "type": "integer"
-     },
-     "tokenOut": {
-      "description": "Optional: token to receive after withdrawal (required for Midas, Mellow, Veda)",
-      "type": "string"
-     },
-     "userAddress": {
-      "description": "User wallet address (validated by middleware)",
-      "type": "string"
-     }
-    },
-    "required": [
-     "userAddress",
-     "amount",
-     "distributorId"
-    ],
-    "type": "object"
-   },
-   "PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2ProtocolResponse": {
-    "properties": {
-     "data": {
-      "items": {
-       "$ref": "#/components/schemas/V2ProtocolResponse"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     },
-     "pagination": {
-      "$ref": "#/components/schemas/PaginationPaginationMetadata"
-     }
-    },
-    "type": "object"
-   },
-   "PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2SharedChainResponse": {
-    "properties": {
-     "data": {
-      "items": {
-       "$ref": "#/components/schemas/SharedChainResponse"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     },
-     "pagination": {
-      "$ref": "#/components/schemas/PaginationPaginationMetadata"
-     }
-    },
-    "type": "object"
-   },
-   "PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2SharedTokenResponse": {
-    "properties": {
-     "data": {
-      "items": {
-       "$ref": "#/components/schemas/SharedTokenResponse"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     },
-     "pagination": {
-      "$ref": "#/components/schemas/PaginationPaginationMetadata"
-     }
-    },
-    "type": "object"
-   },
-   "PaginationPaginationMetadata": {
-    "properties": {
-     "limit": {
-      "type": "integer"
-     },
-     "page": {
-      "type": "integer"
-     },
-     "total": {
-      "type": "integer"
-     },
-     "totalPages": {
-      "type": "integer"
-     }
-    },
-    "type": "object"
-   },
-   "RestErrResponse": {
-    "properties": {
-     "code": {
-      "description": "Application-specific error code.",
-      "type": "integer"
-     },
-     "context": {
-      "additionalProperties": {},
-      "description": "Application context.",
-      "type": "object"
-     },
-     "error": {
-      "description": "Error message.",
-      "type": "string"
-     },
-     "status": {
-      "description": "Status text.",
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "SharedChainResponse": {
-    "properties": {
-     "chainId": {
-      "description": "Numeric chain ID (e.g. 1 for Ethereum, 43114 for Avalanche)",
-      "type": "integer"
-     },
-     "explorerUrl": {
-      "description": "Block explorer base URL",
-      "type": "string"
-     },
-     "logoUrl": {
-      "description": "Chain logo image URL",
-      "type": "string"
-     },
-     "name": {
-      "description": "Chain full name",
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "SharedTokenResponse": {
-    "properties": {
-     "address": {
-      "description": "Token contract address",
-      "type": "string"
-     },
-     "chainId": {
-      "description": "Numeric chain ID the token belongs to",
-      "type": "integer"
-     },
-     "decimals": {
-      "description": "ERC20 decimals",
-      "type": "integer"
-     },
-     "logoUrl": {
-      "description": "Token logo image URL",
-      "type": "string"
-     },
-     "symbol": {
-      "description": "Token symbol (e.g. USDC, ETH)",
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "StreamsAdapterConfig": {
-    "properties": {
-     "params": {},
-     "type": {
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "StreamsAdapterConfigType2": {
-    "properties": {
-     "params": {},
-     "type": {
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "StreamsAdapterConfigs": {
-    "items": {
-     "$ref": "#/components/schemas/StreamsAdapterConfig"
-    },
-    "type": [
-     "array",
-     "null"
-    ]
-   },
-   "StreamsAdapterConfigsType2": {
-    "items": {
-     "$ref": "#/components/schemas/StreamsAdapterConfigType2"
-    },
-    "type": [
-     "array",
-     "null"
-    ]
-   },
-   "StreamsCreatePointInput": {
-    "properties": {
-     "decimals": {
-      "minimum": 0,
-      "type": [
-       "null",
-       "integer"
-      ]
-     },
-     "logoUrl": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "name": {
-      "type": "string"
-     },
-     "symbol": {
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "StreamsCreatePointOutput": {
-    "properties": {
-     "point": {
-      "$ref": "#/components/schemas/StreamsPoint"
-     }
-    },
-    "type": "object"
-   },
-   "StreamsCreateStreamFuncParams": {
-    "properties": {
-     "deadline": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "params": {
-      "$ref": "#/components/schemas/StreamsIStreamFactoryCreateStreamParams"
-     },
-     "signature": {
-      "format": "base64",
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "StreamsCreateStreamOutput": {
-    "properties": {
-     "message": {
-      "type": "string"
-     },
-     "stream": {
-      "$ref": "#/components/schemas/StreamsStream"
-     },
-     "txParams": {
-      "$ref": "#/components/schemas/StreamsCreateStreamTxParams"
-     }
-    },
-    "type": "object"
-   },
-   "StreamsCreateStreamRequestParams": {
-    "properties": {
-     "adapters": {
-      "$ref": "#/components/schemas/StreamsAdapterConfigsType2"
-     },
-     "customArgs": {},
-     "endTimestamp": {
-      "format": "date-time",
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "pointId": {
-      "$ref": "#/components/schemas/UuidUUID"
-     },
-     "rewardTokenId": {
-      "$ref": "#/components/schemas/UuidUUID"
-     },
-     "startTimestamp": {
-      "format": "date-time",
-      "type": "string"
-     },
-     "totalAmount": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "type": {
-      "minimum": 0,
-      "type": "integer"
-     },
-     "walletAddress": {
-      "type": [
-       "string",
-       "null"
-      ]
-     }
-    },
-    "type": "object"
-   },
-   "StreamsCreateStreamTxParams": {
-    "properties": {
-     "chainId": {
-      "minimum": 0,
-      "type": "integer"
-     },
-     "params": {
-      "$ref": "#/components/schemas/StreamsCreateStreamFuncParams"
-     },
-     "sender": {
-      "type": [
-       "string",
-       "null"
-      ]
-     }
-    },
-    "type": "object"
-   },
-   "StreamsGetPointsOutput": {
-    "properties": {
-     "points": {
-      "items": {
-       "$ref": "#/components/schemas/StreamsPoint"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     }
-    },
-    "type": "object"
-   },
-   "StreamsGetStreamsOutput": {
-    "properties": {
-     "streams": {
-      "items": {
-       "$ref": "#/components/schemas/StreamsStream"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     }
-    },
-    "type": "object"
-   },
-   "StreamsGetTokensOutput": {
-    "properties": {
-     "tokens": {
-      "items": {
-       "$ref": "#/components/schemas/StreamsSupportedToken"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     }
-    },
-    "type": "object"
-   },
-   "StreamsGetWalletOutput": {
-    "properties": {
-     "wallet": {
-      "$ref": "#/components/schemas/StreamsWalletData"
-     }
-    },
-    "type": "object"
-   },
-   "StreamsGetWalletsOutput": {
-    "properties": {
-     "data": {
-      "items": {
-       "$ref": "#/components/schemas/StreamsWalletWithLastSnapshot"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     },
-     "pagination": {
-      "$ref": "#/components/schemas/UtilsPaginationResponse"
-     }
-    },
-    "type": "object"
-   },
-   "StreamsIStreamFactoryCreateStreamParams": {
-    "type": "object"
-   },
-   "StreamsPoint": {
-    "properties": {
-     "createdAt": {
-      "format": "date-time",
-      "type": "string"
-     },
-     "decimals": {
-      "minimum": 0,
-      "type": "integer"
-     },
-     "id": {
-      "$ref": "#/components/schemas/UuidUUID"
-     },
-     "logoUrl": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "name": {
-      "type": "string"
-     },
-     "orgId": {
-      "$ref": "#/components/schemas/UuidUUID"
-     },
-     "symbol": {
-      "type": "string"
-     },
-     "updatedAt": {
-      "format": "date-time",
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "StreamsStream": {
-    "properties": {
-     "adapters": {
-      "$ref": "#/components/schemas/StreamsAdapterConfigs"
-     },
-     "admin": {
-      "type": [
-       "string",
-       "null"
-      ]
-     },
-     "chainId": {
-      "minimum": 0,
-      "type": [
-       "null",
-       "integer"
-      ]
-     },
-     "claimPaused": {
-      "type": "boolean"
-     },
-     "committedSnapshot": {
-      "$ref": "#/components/schemas/StreamsStreamSnapshot"
-     },
-     "contractAddress": {
-      "type": [
-       "string",
-       "null"
-      ]
-     },
-     "createdAt": {
-      "format": "date-time",
-      "type": "string"
-     },
-     "creationConfirmedAt": {
-      "format": "date-time",
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "customArgs": {},
-     "endTimestamp": {
-      "format": "date-time",
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "hashCommitmentPaused": {
-      "type": "boolean"
-     },
-     "id": {
-      "$ref": "#/components/schemas/UuidUUID"
-     },
-     "lastSnapshot": {
-      "$ref": "#/components/schemas/StreamsStreamSnapshot"
-     },
-     "merkleTreeComputationPaused": {
-      "type": "boolean"
-     },
-     "orgId": {
-      "$ref": "#/components/schemas/UuidUUID"
-     },
-     "point": {
-      "$ref": "#/components/schemas/StreamsPoint"
-     },
-     "rewardToken": {
-      "$ref": "#/components/schemas/StreamsSupportedToken"
-     },
-     "snapshotComputationPaused": {
-      "type": "boolean"
-     },
-     "snapshots": {
-      "items": {
-       "$ref": "#/components/schemas/StreamsStreamSnapshot"
-      },
-      "type": "array"
-     },
-     "startTimestamp": {
-      "format": "date-time",
-      "type": "string"
-     },
-     "strategy": {
-      "type": "string"
-     },
-     "totalAmount": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "type": {
-      "minimum": 0,
-      "type": "integer"
-     },
-     "updatedAt": {
-      "format": "date-time",
-      "type": "string"
-     },
-     "userId": {
-      "$ref": "#/components/schemas/UuidUUID"
-     }
-    },
-    "type": "object"
-   },
-   "StreamsStreamSnapshot": {
-    "properties": {
-     "activeUserCount": {
-      "minimum": 0,
-      "type": [
-       "null",
-       "integer"
-      ]
-     },
-     "amountBase": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "amountDistributed": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "apr": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "baseApr": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "baseTvl": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "commitTxHash": {
-      "type": [
-       "string",
-       "null"
-      ]
-     },
-     "createdAt": {
-      "format": "date-time",
-      "type": "string"
-     },
-     "customArgs": {},
-     "customMetrics": {},
-     "netTvl": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "rewardTokenPrice": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "rootHash": {
-      "type": [
-       "string",
-       "null"
-      ]
-     },
-     "timestamp": {
-      "format": "date-time",
-      "type": "string"
-     },
-     "turtleNetTvl": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "turtleTvl": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "tvl": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "updatedAt": {
-      "format": "date-time",
-      "type": "string"
-     },
-     "userCount": {
-      "minimum": 0,
-      "type": [
-       "null",
-       "integer"
-      ]
-     }
-    },
-    "type": "object"
-   },
-   "StreamsSupportedToken": {
-    "properties": {
-     "address": {
-      "type": "string"
-     },
-     "chainId": {
-      "minimum": 0,
-      "type": "integer"
-     },
-     "decimals": {
-      "type": "integer"
-     },
-     "id": {
-      "$ref": "#/components/schemas/UuidUUID"
-     },
-     "isAllowedRewardToken": {
-      "type": "boolean"
-     },
-     "logoUrl": {
-      "type": "string"
-     },
-     "name": {
-      "type": "string"
-     },
-     "symbol": {
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "StreamsWalletData": {
-    "properties": {
-     "snapshots": {
-      "items": {
-       "$ref": "#/components/schemas/StreamsWalletSnapshot"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     },
-     "stream": {
-      "$ref": "#/components/schemas/StreamsStream"
-     },
-     "streamId": {
-      "$ref": "#/components/schemas/UuidUUID"
-     },
-     "userAddress": {
-      "type": [
-       "string",
-       "null"
-      ]
-     }
-    },
-    "type": "object"
-   },
-   "StreamsWalletSnapshot": {
-    "properties": {
-     "apr": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "baseApr": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "baseTvl": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "createdAt": {
-      "format": "date-time",
-      "type": "string"
-     },
-     "customMetrics": {},
-     "netTvl": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "rewardsAccumulated": {
-      "type": "string"
-     },
-     "rewardsAccumulatedBase": {
-      "type": "string"
-     },
-     "timestamp": {
-      "format": "date-time",
-      "type": "string"
-     },
-     "turtleNetTvl": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "turtleTvl": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "tvl": {
-      "type": [
-       "null",
-       "string"
-      ]
-     },
-     "updatedAt": {
-      "format": "date-time",
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "StreamsWalletWithLastSnapshot": {
-    "properties": {
-     "lastSnapshot": {
-      "$ref": "#/components/schemas/StreamsWalletSnapshot"
-     },
-     "userAddress": {
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "TrackingEarnTrackingMetadata": {
-    "properties": {
-     "action": {
-      "type": "string"
-     },
-     "actionId": {
-      "type": "string"
-     },
-     "amount": {
-      "type": "string"
-     },
-     "amountUsd": {
-      "type": "string"
-     },
-     "distributorId": {
-      "type": "string"
-     },
-     "opportunityId": {
-      "type": "string"
-     },
-     "referralCode": {
-      "type": "string"
-     },
-     "tokenIn": {
-      "type": "string"
-     },
-     "tokenInDecimals": {
-      "type": "integer"
-     }
-    },
-    "type": "object"
-   },
-   "TypesRouteStep": {
-    "properties": {
-     "action": {
-      "type": "string"
-     },
-     "from": {
-      "$ref": "#/components/schemas/TypesTokenDetails"
-     },
-     "to": {
-      "$ref": "#/components/schemas/TypesTokenDetails"
-     }
-    },
-    "type": "object"
-   },
-   "TypesSwapMetadata": {
-    "properties": {
-     "amountOut": {
-      "type": "string"
-     },
-     "gas": {
-      "type": "string"
-     },
-     "provider": {
-      "type": "string"
-     },
-     "providerImg": {
-      "type": "string"
-     },
-     "route": {
-      "items": {
-       "$ref": "#/components/schemas/TypesRouteStep"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     }
-    },
-    "type": "object"
-   },
-   "TypesTokenDetails": {
-    "properties": {
-     "address": {
-      "type": "string"
-     },
-     "decimals": {
-      "type": "integer"
-     },
-     "logoUrl": {
-      "type": "string"
-     },
-     "symbol": {
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "TypesTransaction": {
-    "properties": {
-     "chainId": {
-      "type": "integer"
-     },
-     "data": {
-      "type": "string"
-     },
-     "gasLimit": {
-      "type": "string"
-     },
-     "to": {
-      "type": "string"
-     },
-     "value": {
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "TypesTxResponseItem": {
-    "properties": {
-     "description": {
-      "type": "string"
-     },
-     "metadata": {
-      "$ref": "#/components/schemas/TypesSwapMetadata"
-     },
-     "transaction": {
-      "$ref": "#/components/schemas/TypesTransaction"
-     },
-     "type": {
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "UtilsPaginationResponse": {
-    "properties": {
-     "hasNext": {
-      "type": [
-       "null",
-       "boolean"
-      ]
-     },
-     "hasPrevious": {
-      "type": [
-       "null",
-       "boolean"
-      ]
-     },
-     "limit": {
-      "type": "integer"
-     },
-     "page": {
-      "type": "integer"
-     },
-     "total": {
-      "type": "integer"
-     },
-     "totalPages": {
-      "type": "integer"
-     }
-    },
-    "type": "object"
-   },
-   "UuidUUID": {
-    "examples": [
-     "248df4b7-aa70-47b8-a036-33ac447e668d"
-    ],
-    "format": "uuid",
-    "type": [
-     "null",
-     "string"
-    ]
-   },
-   "V1ChainResponse": {
-    "properties": {
-     "chainId": {
-      "description": "Chain ID for wallet connections",
-      "type": "string"
-     },
-     "ecosystem": {
-      "description": "Blockchain ecosystem (e.g. EVM, Solana)",
-      "type": "string"
-     },
-     "explorerUrl": {
-      "description": "Block explorer base URL",
-      "type": "string"
-     },
-     "id": {
-      "$ref": "#/components/schemas/UuidUUID",
-      "description": "Chain unique identifier"
-     },
-     "logoUrl": {
-      "description": "Chain logo image URL",
-      "type": "string"
-     },
-     "name": {
-      "description": "Chain full name",
-      "type": "string"
-     },
-     "slug": {
-      "description": "Chain URL-friendly identifier",
-      "type": "string"
-     },
-     "status": {
-      "description": "Chain operational status",
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "V1CreateMembershipAgreementInput": {
-    "properties": {
-     "address": {
-      "description": "Wallet address",
-      "type": "string"
-     },
-     "chainId": {
-      "default": "1",
-      "description": "Chain ID for EVM wallets",
-      "type": "string"
-     },
-     "url": {
-      "description": "URL for the agreement",
-      "type": "string"
-     },
-     "walletEcosystem": {
-      "description": "Wallet ecosystem",
-      "enum": [
-       "evm",
-       "solana",
-       "ton"
-      ],
-      "type": "string"
-     }
-    },
-    "required": [
-     "address",
-     "walletEcosystem",
-     "url"
-    ],
-    "type": "object"
-   },
-   "V1CreateMembershipAgreementOutput": {
-    "properties": {
-     "message": {
-      "description": "Message to be signed",
-      "type": "string"
-     },
-     "nonce": {
-      "description": "Nonce for the signature",
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "V1CreateMembershipInput": {
-    "properties": {
-     "address": {
-      "type": "string"
-     },
-     "distributor_id": {
-      "type": "string"
-     },
-     "nonce": {
-      "type": "string"
-     },
-     "signature": {
-      "type": "string"
-     },
-     "walletEcosystem": {
-      "type": "string"
-     }
-    },
-    "required": [
-     "address",
-     "walletEcosystem",
-     "signature",
-     "nonce"
-    ],
-    "type": "object"
-   },
-   "V1CreateMembershipOutput": {
-    "properties": {
-     "error": {
-      "description": "Error message if any",
-      "type": "string"
-     },
-     "isMember": {
-      "description": "Whether the wallet is associated with a user",
-      "type": "boolean"
-     }
-    },
-    "type": "object"
-   },
-   "V1CuratorResponse": {
-    "properties": {
-     "description": {
-      "description": "Curator description",
-      "type": "string"
-     },
-     "iconUrl": {
-      "description": "Curator icon image URL",
-      "type": "string"
-     },
-     "landingUrl": {
-      "description": "Curator website URL",
-      "type": "string"
-     },
-     "name": {
-      "description": "Curator name",
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "V1EarnOpportunityResponse": {
-    "properties": {
-     "baseTokens": {
-      "$ref": "#/components/schemas/V1TokenResponse",
-      "description": "Base token for the opportunity"
-     },
-     "curator": {
-      "$ref": "#/components/schemas/V1CuratorResponse",
-      "description": "Curator organization for the opportunity"
-     },
-     "depositTokens": {
-      "description": "Tokens accepted for deposit",
-      "items": {
-       "$ref": "#/components/schemas/V1TokenResponse"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     },
-     "description": {
-      "description": "Opportunity detailed description",
-      "type": "string"
-     },
-     "estimatedApr": {
-      "description": "Estimated Annual Percentage Rate",
-      "type": "number"
-     },
-     "featured": {
-      "description": "Whether opportunity is featured",
-      "type": "boolean"
-     },
-     "id": {
-      "$ref": "#/components/schemas/UuidUUID",
-      "description": "Opportunity unique identifier"
-     },
-     "incentives": {
-      "description": "Incentives for the opportunity",
-      "items": {
-       "$ref": "#/components/schemas/V1IncentiveResponse"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     },
-     "minDepositAmountUsd": {
-      "description": "Minimum deposit amount in USD",
-      "type": "number"
-     },
-     "name": {
-      "description": "Opportunity display name",
-      "type": "string"
-     },
-     "receiptToken": {
-      "$ref": "#/components/schemas/V1TokenResponse",
-      "description": "Token received as receipt for deposits"
-     },
-     "swapDirectEnabled": {
-      "description": "Whether direct deposit mode is enabled",
-      "type": "boolean"
-     },
-     "swapRouteEnabled": {
-      "description": "Whether swap/route deposit mode is enabled",
-      "type": "boolean"
-     },
-     "tvl": {
-      "description": "Total Value Locked in USD",
-      "type": "number"
-     },
-     "type": {
-      "description": "Opportunity type (e.g. lending, vault)",
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "V1GetMembershipOutput": {
-    "properties": {
-     "isMember": {
-      "description": "Whether the wallet is associated with a user",
-      "type": "boolean"
-     }
-    },
-    "type": "object"
-   },
-   "V1GetOpportunitiesResponse": {
-    "properties": {
-     "opportunities": {
-      "description": "List of available opportunities",
-      "items": {
-       "$ref": "#/components/schemas/V1EarnOpportunityResponse"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     },
-     "total": {
-      "description": "Total number of opportunities returned",
-      "type": "integer"
-     }
-    },
-    "type": "object"
-   },
-   "V1GetOpportunityByIDResponse": {
-    "properties": {
-     "opportunity": {
-      "$ref": "#/components/schemas/V1EarnOpportunityResponse",
-      "description": "Opportunity details"
-     }
-    },
-    "type": "object"
-   },
-   "V1GetSwapDetailsResponse": {
-    "properties": {
-     "chains": {
-      "description": "Chains supported by the swap router (intersection of router-supported chains and our chain catalog)",
-      "items": {
-       "$ref": "#/components/schemas/V1SwapChain"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     },
-     "popularTokens": {
-      "description": "Popular tokens for the requested chain. Empty when chainId is omitted",
-      "items": {
-       "$ref": "#/components/schemas/V1SwapToken"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     }
-    },
-    "type": "object"
-   },
-   "V1GetSwapResponse": {
-    "properties": {
-     "actionId": {
-      "$ref": "#/components/schemas/UuidUUID",
-      "description": "Unique identifier embedded in the swap tx tracking metadata"
-     },
-     "transactions": {
-      "description": "Ordered list of transactions to execute (approve + swap)",
-      "items": {
-       "$ref": "#/components/schemas/TypesTxResponseItem"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     }
-    },
-    "type": "object"
-   },
-   "V1GetSwapTokensResponse": {
-    "properties": {
-     "data": {
-      "description": "Tokens matching the query for the requested chain",
-      "items": {
-       "$ref": "#/components/schemas/V1SwapToken"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     },
-     "pagination": {
-      "$ref": "#/components/schemas/UtilsPaginationResponse",
-      "description": "Pagination metadata"
-     }
-    },
-    "type": "object"
-   },
-   "V1IncentiveResponse": {
-    "properties": {
-     "apr": {
-      "description": "Annual Percentage Rate",
-      "type": [
-       "null",
-       "number"
-      ]
-     },
-     "description": {
-      "description": "Incentive description",
-      "type": "string"
-     },
-     "estPriceUsd": {
-      "description": "Estimated price in USD",
-      "type": [
-       "null",
-       "number"
-      ]
-     },
-     "fdvEstimate": {
-      "description": "Fully Diluted Valuation estimate",
-      "type": [
-       "null",
-       "number"
-      ]
-     },
-     "iconUrl": {
-      "description": "Incentive icon URL",
-      "type": "string"
-     },
-     "id": {
-      "$ref": "#/components/schemas/UuidUUID",
-      "description": "Incentive unique identifier"
-     },
-     "indexed": {
-      "description": "Whether incentive is indexed",
-      "type": "boolean"
-     },
-     "maxApr": {
-      "description": "Maximum Annual Percentage Rate",
-      "type": [
-       "null",
-       "number"
-      ]
-     },
-     "minApr": {
-      "description": "Minimum Annual Percentage Rate",
-      "type": [
-       "null",
-       "number"
-      ]
-     },
-     "name": {
-      "description": "Incentive name",
-      "type": "string"
-     },
-     "rewardType": {
-      "description": "Type of reward (points, tokens, yield, vesting)",
-      "type": "string"
-     },
-     "rewardTypeName": {
-      "description": "Human-readable reward type name",
-      "type": "string"
-     },
-     "status": {
-      "description": "Incentive status (active, paused, ended)",
-      "type": "string"
-     },
-     "tokenSupplyAllocation": {
-      "description": "Token supply allocation percentage",
-      "type": [
-       "null",
-       "number"
-      ]
-     }
-    },
-    "type": "object"
-   },
-   "V1SwapChain": {
-    "properties": {
-     "chainId": {
-      "description": "Numeric chain ID",
-      "type": "string"
-     },
-     "ecosystem": {
-      "description": "Blockchain ecosystem (evm, solana)",
-      "type": "string"
-     },
-     "explorerUrl": {
-      "description": "Block explorer base URL",
-      "type": "string"
-     },
-     "logoUrl": {
-      "description": "Chain logo URL",
-      "type": "string"
-     },
-     "name": {
-      "description": "Chain name",
-      "type": "string"
-     },
-     "nativePriceUsd": {
-      "description": "USD price of the chain's native token, used for gas fee math",
-      "type": "number"
-     },
-     "slug": {
-      "description": "URL-friendly identifier",
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "V1SwapToken": {
-    "properties": {
-     "address": {
-      "description": "Token contract address",
-      "type": "string"
-     },
-     "chainId": {
-      "description": "Numeric chain ID this token belongs to",
-      "type": "string"
-     },
-     "decimals": {
-      "description": "Token decimals",
-      "type": "integer"
-     },
-     "isNative": {
-      "description": "Whether token is native to the chain",
-      "type": "boolean"
-     },
-     "logoUrl": {
-      "description": "Token logo URL",
-      "type": "string"
-     },
-     "name": {
-      "description": "Token full name",
-      "type": "string"
-     },
-     "priceUsd": {
-      "description": "USD price",
-      "type": "number"
-     },
-     "symbol": {
-      "description": "Token symbol",
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "V1TokenResponse": {
-    "properties": {
-     "address": {
-      "description": "Token contract address",
-      "type": "string"
-     },
-     "chain": {
-      "$ref": "#/components/schemas/V1ChainResponse",
-      "description": "Chain information where token exists"
-     },
-     "decimals": {
-      "description": "Token decimal places",
-      "type": "integer"
-     },
-     "id": {
-      "$ref": "#/components/schemas/UuidUUID",
-      "description": "Token unique identifier"
-     },
-     "isNative": {
-      "description": "Whether token is native to the chain",
-      "type": "boolean"
-     },
-     "logoUrl": {
-      "description": "Token logo image URL",
-      "type": "string"
-     },
-     "name": {
-      "description": "Token full name",
-      "type": "string"
-     },
-     "symbol": {
-      "description": "Token symbol (e.g. USDC, ETH)",
-      "type": "string"
-     }
-    },
-    "type": "object"
-   },
-   "V2APRBreakdown": {
-    "properties": {
-     "base": {
-      "description": "APR from share-price growth alone (simple, non-compound)",
-      "type": "number"
-     },
-     "reward": {
-      "description": "Reward APR; reserved for future rewards indexing, currently always 0",
-      "type": "number"
-     },
-     "total": {
-      "description": "base + reward",
-      "type": "number"
-     }
-    },
-    "type": "object"
-   },
-   "V2APYBreakdown": {
-    "properties": {
-     "base": {
-      "description": "APY from share-price growth alone (vaults.fyi compound formula)",
-      "type": "number"
-     },
-     "reward": {
-      "description": "Reward APY; reserved for future rewards indexing, currently always 0",
-      "type": "number"
-     },
-     "total": {
-      "description": "base + reward",
-      "type": "number"
-     }
-    },
-    "type": [
-     "object",
-     "null"
-    ]
-   },
-   "V2GetOpportunityHistoricalAPRResponse": {
-    "properties": {
-     "data": {
-      "items": {
-       "$ref": "#/components/schemas/V2HistoricalAPRPoint"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     }
-    },
-    "type": "object"
-   },
-   "V2GetOpportunityHistoricalAPYResponse": {
-    "properties": {
-     "data": {
-      "items": {
-       "$ref": "#/components/schemas/V2HistoricalAPYPoint"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     }
-    },
-    "type": "object"
-   },
-   "V2GetOpportunityHistoricalResponse": {
-    "properties": {
-     "baseAsset": {
-      "$ref": "#/components/schemas/SharedTokenResponse",
-      "description": "null when the vault has not yet been indexed in vault_metrics or the underlying token is not registered in supported_tokens"
-     },
-     "data": {
-      "items": {
-       "$ref": "#/components/schemas/V2HistoricalCombinedPoint"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     },
-     "historyTruncated": {
-      "description": "true when backend hit the row cap and oldest APY values may be missing predecessors",
-      "type": "boolean"
-     }
-    },
-    "type": "object"
-   },
-   "V2GetOpportunityHistoricalSharePriceResponse": {
-    "properties": {
-     "baseAsset": {
-      "$ref": "#/components/schemas/SharedTokenResponse",
-      "description": "null when the vault has not yet been indexed in vault_metrics or the underlying token is not registered in supported_tokens"
-     },
-     "data": {
-      "items": {
-       "$ref": "#/components/schemas/V2HistoricalSharePricePoint"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     }
-    },
-    "type": "object"
-   },
-   "V2GetOpportunityHistoricalTVLResponse": {
-    "properties": {
-     "baseAsset": {
-      "$ref": "#/components/schemas/SharedTokenResponse",
-      "description": "null when the vault has not yet been indexed in vault_metrics or the underlying token is not registered in supported_tokens"
-     },
-     "data": {
-      "items": {
-       "$ref": "#/components/schemas/V2HistoricalTVLPoint"
-      },
-      "type": [
-       "array",
-       "null"
-      ]
-     }
-    },
-    "type": "object"
-   },
-   "V2HistoricalAPRPoint": {
-    "properties": {
-     "apr": {
-      "$ref": "#/components/schemas/V2APRBreakdown",
-      "description": "Adjacent-pair simple-rate APR against the previous bucket"
-     },
-     "blockNumber": {
-      "description": "On-chain block number of the snapshot chosen as the bucket representative",
-      "minimum": 0,
-      "type": "integer"
-     },
-     "timestamp": {
-      "description": "Bucket representative time (unix seconds)",
-      "type": "integer"
-     }
-    },
-    "type": "object"
-   },
-   "V2HistoricalAPYPoint": {
-    "properties": {
-     "apy": {
-      "$ref": "#/components/schemas/V2APYBreakdown",
-      "description": "Adjacent-pair compound APY against the previous bucket"
-     },
-     "blockNumber": {
-      "description": "On-chain block number of the snapshot chosen as the bucket representative",
-      "minimum": 0,
-      "type": "integer"
-     },
-     "timestamp": {
-      "description": "Bucket representative time (unix seconds)",
-      "type": "integer"
-     }
-    },
-    "type": "object"
-   },
-   "V2HistoricalCombinedPoint": {
-    "properties": {
-     "apy": {
-      "$ref": "#/components/schemas/V2APYBreakdown",
-      "description": "Trailing-window APY at this bucket; null when no predecessor exists"
-     },
-     "blockNumber": {
-      "description": "On-chain block number of the snapshot chosen as the bucket representative",
-      "minimum": 0,
-      "type": "integer"
-     },
-     "sharePrice": {
-      "$ref": "#/components/schemas/V2NativeUSDValue"
-     },
-     "timestamp": {
-      "description": "Bucket representative time (unix seconds)",
-      "type": "integer"
-     },
-     "tvl": {
-      "$ref": "#/components/schemas/V2NativeUSDValue"
-     }
-    },
-    "type": "object"
-   },
-   "V2HistoricalSharePricePoint": {
-    "properties": {
-     "blockNumber": {
-      "description": "On-chain block number of the snapshot chosen as the bucket representative",
-      "minimum": 0,
-      "type": "integer"
-     },
-     "sharePrice": {
-      "$ref": "#/components/schemas/V2NativeUSDValue"
-     },
-     "timestamp": {
-      "description": "Bucket representative time (unix seconds)",
-      "type": "integer"
-     }
-    },
-    "type": "object"
-   },
-   "V2HistoricalTVLPoint": {
-    "properties": {
-     "blockNumber": {
-      "description": "On-chain block number of the snapshot chosen as the bucket representative",
-      "minimum": 0,
-      "type": "integer"
-     },
-     "timestamp": {
-      "description": "Bucket representative time (unix seconds)",
-      "type": "integer"
-     },
-     "tvl": {
-      "$ref": "#/components/schemas/V2NativeUSDValue"
-     }
-    },
-    "type": "object"
-   },
-   "V2NativeUSDValue": {
-    "properties": {
-     "native": {
-      "type": "number"
-     },
-     "usd": {
-      "description": "null when underlying USD price was not available for this bucket",
-      "type": [
-       "null",
-       "number"
-      ]
-     }
-    },
-    "type": "object"
-   },
-   "V2ProtocolResponse": {
-    "properties": {
-     "logoUrl": {
-      "description": "Protocol logo image URL",
-      "type": "string"
-     },
-     "name": {
-      "description": "Protocol name",
-      "type": "string"
-     },
-     "siteUrl": {
-      "description": "Protocol website URL",
-      "type": "string"
-     }
-    },
-    "type": "object"
-   }
-  }
- }
 }
