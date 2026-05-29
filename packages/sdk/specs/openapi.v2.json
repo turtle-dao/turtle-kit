@@ -63,7 +63,7 @@
         "operationId": "GetOpportunityHistorical",
         "parameters": [
           {
-            "name": "intervalSeconds",
+            "name": "step",
             "in": "query",
             "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
             "schema": {
@@ -74,16 +74,16 @@
             }
           },
           {
-            "name": "fromTimestamp",
+            "name": "startDate",
             "in": "query",
-            "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+            "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
             "schema": {
-              "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+              "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
               "type": "integer"
             }
           },
           {
-            "name": "toTimestamp",
+            "name": "endDate",
             "in": "query",
             "description": "Unix seconds, inclusive. Defaults to now when omitted",
             "schema": {
@@ -157,7 +157,7 @@
         "operationId": "GetOpportunityHistoricalAPR",
         "parameters": [
           {
-            "name": "intervalSeconds",
+            "name": "step",
             "in": "query",
             "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
             "schema": {
@@ -168,16 +168,16 @@
             }
           },
           {
-            "name": "fromTimestamp",
+            "name": "startDate",
             "in": "query",
-            "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+            "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
             "schema": {
-              "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+              "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
               "type": "integer"
             }
           },
           {
-            "name": "toTimestamp",
+            "name": "endDate",
             "in": "query",
             "description": "Unix seconds, inclusive. Defaults to now when omitted",
             "schema": {
@@ -251,7 +251,7 @@
         "operationId": "GetOpportunityHistoricalAPY",
         "parameters": [
           {
-            "name": "intervalSeconds",
+            "name": "step",
             "in": "query",
             "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
             "schema": {
@@ -262,16 +262,16 @@
             }
           },
           {
-            "name": "fromTimestamp",
+            "name": "startDate",
             "in": "query",
-            "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+            "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
             "schema": {
-              "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+              "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
               "type": "integer"
             }
           },
           {
-            "name": "toTimestamp",
+            "name": "endDate",
             "in": "query",
             "description": "Unix seconds, inclusive. Defaults to now when omitted",
             "schema": {
@@ -345,7 +345,7 @@
         "operationId": "GetOpportunityHistoricalSharePrice",
         "parameters": [
           {
-            "name": "intervalSeconds",
+            "name": "step",
             "in": "query",
             "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
             "schema": {
@@ -356,16 +356,16 @@
             }
           },
           {
-            "name": "fromTimestamp",
+            "name": "startDate",
             "in": "query",
-            "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+            "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
             "schema": {
-              "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+              "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
               "type": "integer"
             }
           },
           {
-            "name": "toTimestamp",
+            "name": "endDate",
             "in": "query",
             "description": "Unix seconds, inclusive. Defaults to now when omitted",
             "schema": {
@@ -439,7 +439,7 @@
         "operationId": "GetOpportunityHistoricalTVL",
         "parameters": [
           {
-            "name": "intervalSeconds",
+            "name": "step",
             "in": "query",
             "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
             "schema": {
@@ -450,16 +450,16 @@
             }
           },
           {
-            "name": "fromTimestamp",
+            "name": "startDate",
             "in": "query",
-            "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+            "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
             "schema": {
-              "description": "Unix seconds, inclusive. Defaults to now - 30d when omitted",
+              "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
               "type": "integer"
             }
           },
           {
-            "name": "toTimestamp",
+            "name": "endDate",
             "in": "query",
             "description": "Unix seconds, inclusive. Defaults to now when omitted",
             "schema": {
@@ -919,7 +919,7 @@
         "properties": {
           "baseAsset": {
             "$ref": "#/components/schemas/SharedTokenResponse",
-            "description": "null when the vault has not yet been indexed in vault_metrics or the underlying token is not registered in supported_tokens"
+            "description": "null when the vault has no snapshots yet or the underlying token is not registered in supported_tokens"
           },
           "data": {
             "items": {
@@ -941,7 +941,7 @@
         "properties": {
           "baseAsset": {
             "$ref": "#/components/schemas/SharedTokenResponse",
-            "description": "null when the vault has not yet been indexed in vault_metrics or the underlying token is not registered in supported_tokens"
+            "description": "null when the vault has no price_observations snapshots yet or the underlying token is not registered in supported_tokens"
           },
           "data": {
             "items": {
@@ -959,7 +959,7 @@
         "properties": {
           "baseAsset": {
             "$ref": "#/components/schemas/SharedTokenResponse",
-            "description": "null when the vault has not yet been indexed in vault_metrics or the underlying token is not registered in supported_tokens"
+            "description": "null when the vault has no snapshots yet or the underlying token is not registered in supported_tokens"
           },
           "data": {
             "items": {
