@@ -53,6 +53,243 @@
         }
       }
     },
+    "/v2/opportunities/": {
+      "get": {
+        "tags": [
+          "Opportunities"
+        ],
+        "summary": "List Opportunities",
+        "description": "Returns active opportunities with pagination, filtering and sorting. Deposit/withdrawal availability is reported per opportunity in meta. Use /opportunities/filter-options to discover valid filter and sort values.",
+        "operationId": "ListOpportunities",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Case-insensitive match on name, description or token address",
+            "schema": {
+              "description": "Case-insensitive match on name, description or token address",
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainIds",
+            "in": "query",
+            "description": "Comma-separated numeric chain IDs (deposit tokens), e.g. '1,43114'",
+            "schema": {
+              "description": "Comma-separated numeric chain IDs (deposit tokens), e.g. '1,43114'",
+              "type": "string"
+            }
+          },
+          {
+            "name": "depositToken",
+            "in": "query",
+            "description": "Deposit token in 'address-chainId' format, e.g. '0xb31f...-43114'",
+            "schema": {
+              "description": "Deposit token in 'address-chainId' format, e.g. '0xb31f...-43114'",
+              "type": "string"
+            }
+          },
+          {
+            "name": "depositTokenSymbols",
+            "in": "query",
+            "description": "Comma-separated deposit token symbols (case-insensitive, OR logic)",
+            "schema": {
+              "description": "Comma-separated deposit token symbols (case-insensitive, OR logic)",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tags",
+            "in": "query",
+            "description": "Comma-separated tag codes",
+            "schema": {
+              "description": "Comma-separated tag codes",
+              "type": "string"
+            }
+          },
+          {
+            "name": "curatorId",
+            "in": "query",
+            "description": "Comma-separated curator organization ids",
+            "schema": {
+              "description": "Comma-separated curator organization ids",
+              "type": "string"
+            }
+          },
+          {
+            "name": "providerId",
+            "in": "query",
+            "description": "Comma-separated provider organization ids",
+            "schema": {
+              "description": "Comma-separated provider organization ids",
+              "type": "string"
+            }
+          },
+          {
+            "name": "partnerId",
+            "in": "query",
+            "description": "Comma-separated partner organization ids",
+            "schema": {
+              "description": "Comma-separated partner organization ids",
+              "type": "string"
+            }
+          },
+          {
+            "name": "lendingProtocolId",
+            "in": "query",
+            "description": "Comma-separated lending protocol organization ids",
+            "schema": {
+              "description": "Comma-separated lending protocol organization ids",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tvlMin",
+            "in": "query",
+            "description": "Minimum TVL in USD",
+            "schema": {
+              "description": "Minimum TVL in USD",
+              "type": "number"
+            }
+          },
+          {
+            "name": "tvlMax",
+            "in": "query",
+            "description": "Maximum TVL in USD",
+            "schema": {
+              "description": "Maximum TVL in USD",
+              "type": "number"
+            }
+          },
+          {
+            "name": "minApr",
+            "in": "query",
+            "description": "Minimum estimated APR",
+            "schema": {
+              "description": "Minimum estimated APR",
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxApr",
+            "in": "query",
+            "description": "Maximum estimated APR",
+            "schema": {
+              "description": "Maximum estimated APR",
+              "type": "number"
+            }
+          },
+          {
+            "name": "featured",
+            "in": "query",
+            "description": "Filter by featured flag",
+            "schema": {
+              "description": "Filter by featured flag",
+              "type": [
+                "null",
+                "boolean"
+              ]
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "One of: tvl, name, type, apr, curator, provider (defaults to tvl)",
+            "schema": {
+              "description": "One of: tvl, name, type, apr, curator, provider (defaults to tvl)",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "description": "asc or desc (defaults to desc)",
+            "schema": {
+              "description": "asc or desc (defaults to desc)",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2OpportunitiesOpportunityResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/opportunities/filter-options": {
+      "get": {
+        "tags": [
+          "Opportunities"
+        ],
+        "summary": "Get Opportunity Filter Options",
+        "description": "Returns the distinct filter dimensions (chains, providers, curators, partners, tags, lending protocols, deposit token symbols) and the valid sort options for the opportunities list.",
+        "operationId": "GetOpportunityFilterOptions",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpportunitiesGetOpportunitiesFilterOptionsOutput"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/opportunities/{chainId}/{vaultAddress}/historical": {
       "get": {
         "tags": [
@@ -119,7 +356,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/V2GetOpportunityHistoricalResponse"
+                  "$ref": "#/components/schemas/OpportunitiesGetOpportunityHistoricalResponse"
                 }
               }
             }
@@ -213,7 +450,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/V2GetOpportunityHistoricalAPRResponse"
+                  "$ref": "#/components/schemas/OpportunitiesGetOpportunityHistoricalAPRResponse"
                 }
               }
             }
@@ -307,7 +544,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/V2GetOpportunityHistoricalAPYResponse"
+                  "$ref": "#/components/schemas/OpportunitiesGetOpportunityHistoricalAPYResponse"
                 }
               }
             }
@@ -401,7 +638,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/V2GetOpportunityHistoricalSharePriceResponse"
+                  "$ref": "#/components/schemas/OpportunitiesGetOpportunityHistoricalSharePriceResponse"
                 }
               }
             }
@@ -495,13 +732,67 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/V2GetOpportunityHistoricalTVLResponse"
+                  "$ref": "#/components/schemas/OpportunitiesGetOpportunityHistoricalTVLResponse"
                 }
               }
             }
           },
           "400": {
             "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/opportunities/{id}": {
+      "get": {
+        "tags": [
+          "Opportunities"
+        ],
+        "summary": "Get Opportunity by ID",
+        "description": "Returns a single active opportunity by its id. Deposit/withdrawal availability is reported in meta.",
+        "operationId": "GetOpportunity",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Opportunity unique identifier",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/UuidUUID",
+              "description": "Opportunity unique identifier"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpportunitiesOpportunityResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
             "content": {
               "application/json": {
                 "schema": {
@@ -714,6 +1005,634 @@
   },
   "components": {
     "schemas": {
+      "OpportunitiesAPRBreakdown": {
+        "properties": {
+          "base": {
+            "description": "APR from share-price growth alone (simple, non-compound)",
+            "type": "number"
+          },
+          "reward": {
+            "description": "Reward APR; reserved for future rewards indexing, currently always 0",
+            "type": "number"
+          },
+          "total": {
+            "description": "base + reward",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesAPYBreakdown": {
+        "properties": {
+          "base": {
+            "description": "APY from share-price growth alone (vaults.fyi compound formula)",
+            "type": "number"
+          },
+          "reward": {
+            "description": "Reward APY; reserved for future rewards indexing, currently always 0",
+            "type": "number"
+          },
+          "total": {
+            "description": "base + reward",
+            "type": "number"
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "OpportunitiesCuratorResponse": {
+        "properties": {
+          "description": {
+            "description": "Curator description",
+            "type": "string"
+          },
+          "iconUrl": {
+            "description": "Curator icon image URL",
+            "type": "string"
+          },
+          "id": {
+            "$ref": "#/components/schemas/UuidUUID",
+            "description": "Curator organization id"
+          },
+          "landingUrl": {
+            "description": "Curator website URL",
+            "type": "string"
+          },
+          "name": {
+            "description": "Curator name",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesDepositTokenSymbolOption": {
+        "properties": {
+          "logoUrl": {
+            "description": "Representative token logo URL",
+            "type": "string"
+          },
+          "symbol": {
+            "description": "Deposit token symbol",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesGetOpportunitiesFilterOptionsOutput": {
+        "properties": {
+          "chains": {
+            "description": "Chains with at least one opportunity",
+            "items": {
+              "$ref": "#/components/schemas/SharedChainResponse"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "curators": {
+            "description": "Curators",
+            "items": {
+              "$ref": "#/components/schemas/OpportunitiesOrganizationOption"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "depositTokenSymbols": {
+            "description": "Available deposit token symbols",
+            "items": {
+              "$ref": "#/components/schemas/OpportunitiesDepositTokenSymbolOption"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "lendingProtocols": {
+            "description": "Lending protocols",
+            "items": {
+              "$ref": "#/components/schemas/OpportunitiesOrganizationOption"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "partners": {
+            "description": "Partner organizations",
+            "items": {
+              "$ref": "#/components/schemas/OpportunitiesOrganizationOption"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "providers": {
+            "description": "Infra providers and lending protocols",
+            "items": {
+              "$ref": "#/components/schemas/OpportunitiesOrganizationOption"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "sortOptions": {
+            "description": "Valid sortBy values",
+            "items": {
+              "$ref": "#/components/schemas/OpportunitiesSortOption"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "tags": {
+            "description": "Opportunity tags",
+            "items": {
+              "$ref": "#/components/schemas/OpportunitiesTagOption"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesGetOpportunityHistoricalAPRResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/OpportunitiesHistoricalAPRPoint"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesGetOpportunityHistoricalAPYResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/OpportunitiesHistoricalAPYPoint"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesGetOpportunityHistoricalResponse": {
+        "properties": {
+          "baseAsset": {
+            "$ref": "#/components/schemas/SharedTokenResponse",
+            "description": "null when the vault has no snapshots yet or the underlying token is not registered in supported_tokens"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/OpportunitiesHistoricalCombinedPoint"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "historyTruncated": {
+            "description": "true when backend hit the row cap and oldest APY values may be missing predecessors",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesGetOpportunityHistoricalSharePriceResponse": {
+        "properties": {
+          "baseAsset": {
+            "$ref": "#/components/schemas/SharedTokenResponse",
+            "description": "null when the vault has no price_observations snapshots yet or the underlying token is not registered in supported_tokens"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/OpportunitiesHistoricalSharePricePoint"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesGetOpportunityHistoricalTVLResponse": {
+        "properties": {
+          "baseAsset": {
+            "$ref": "#/components/schemas/SharedTokenResponse",
+            "description": "null when the vault has no snapshots yet or the underlying token is not registered in supported_tokens"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/OpportunitiesHistoricalTVLPoint"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesHistoricalAPRPoint": {
+        "properties": {
+          "apr": {
+            "$ref": "#/components/schemas/OpportunitiesAPRBreakdown",
+            "description": "Adjacent-pair simple-rate APR against the previous bucket"
+          },
+          "blockNumber": {
+            "description": "On-chain block number of the snapshot chosen as the bucket representative",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "timestamp": {
+            "description": "Bucket representative time (unix seconds)",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesHistoricalAPYPoint": {
+        "properties": {
+          "apy": {
+            "$ref": "#/components/schemas/OpportunitiesAPYBreakdown",
+            "description": "Adjacent-pair compound APY against the previous bucket"
+          },
+          "blockNumber": {
+            "description": "On-chain block number of the snapshot chosen as the bucket representative",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "timestamp": {
+            "description": "Bucket representative time (unix seconds)",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesHistoricalCombinedPoint": {
+        "properties": {
+          "apy": {
+            "$ref": "#/components/schemas/OpportunitiesAPYBreakdown",
+            "description": "Trailing-window APY at this bucket; null when no predecessor exists"
+          },
+          "blockNumber": {
+            "description": "On-chain block number of the snapshot chosen as the bucket representative",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "sharePrice": {
+            "$ref": "#/components/schemas/OpportunitiesNativeUSDValue"
+          },
+          "timestamp": {
+            "description": "Bucket representative time (unix seconds)",
+            "type": "integer"
+          },
+          "tvl": {
+            "$ref": "#/components/schemas/OpportunitiesNativeUSDValue"
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesHistoricalSharePricePoint": {
+        "properties": {
+          "blockNumber": {
+            "description": "On-chain block number of the snapshot chosen as the bucket representative",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "sharePrice": {
+            "$ref": "#/components/schemas/OpportunitiesNativeUSDValue"
+          },
+          "timestamp": {
+            "description": "Bucket representative time (unix seconds)",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesHistoricalTVLPoint": {
+        "properties": {
+          "blockNumber": {
+            "description": "On-chain block number of the snapshot chosen as the bucket representative",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "timestamp": {
+            "description": "Bucket representative time (unix seconds)",
+            "type": "integer"
+          },
+          "tvl": {
+            "$ref": "#/components/schemas/OpportunitiesNativeUSDValue"
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesIncentiveResponse": {
+        "properties": {
+          "apr": {
+            "description": "Annual Percentage Rate",
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "description": {
+            "description": "Incentive description",
+            "type": "string"
+          },
+          "estPriceUsd": {
+            "description": "Estimated price in USD",
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "fdvEstimate": {
+            "description": "Fully Diluted Valuation estimate",
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "iconUrl": {
+            "description": "Incentive icon URL",
+            "type": "string"
+          },
+          "id": {
+            "$ref": "#/components/schemas/UuidUUID",
+            "description": "Incentive unique identifier"
+          },
+          "indexed": {
+            "description": "Whether incentive is indexed",
+            "type": "boolean"
+          },
+          "maxApr": {
+            "description": "Maximum Annual Percentage Rate",
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "minApr": {
+            "description": "Minimum Annual Percentage Rate",
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "name": {
+            "description": "Incentive name",
+            "type": "string"
+          },
+          "rewardType": {
+            "description": "Type of reward (points, tokens, yield, vesting)",
+            "type": "string"
+          },
+          "rewardTypeName": {
+            "description": "Human-readable reward type name",
+            "type": "string"
+          },
+          "tokenSupplyAllocation": {
+            "description": "Token supply allocation percentage",
+            "type": [
+              "null",
+              "number"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesNativeUSDValue": {
+        "properties": {
+          "native": {
+            "type": "number"
+          },
+          "usd": {
+            "description": "null when underlying USD price was not available for this bucket",
+            "type": [
+              "null",
+              "number"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesOpportunityMeta": {
+        "properties": {
+          "asyncDeposit": {
+            "description": "Whether deposits settle asynchronously",
+            "type": "boolean"
+          },
+          "asyncWithdraw": {
+            "description": "Whether withdrawals settle asynchronously",
+            "type": "boolean"
+          },
+          "depositDisabledReason": {
+            "description": "Reason deposits are disabled, if any",
+            "type": "string"
+          },
+          "depositEnabled": {
+            "description": "Whether deposits are currently enabled",
+            "type": "boolean"
+          },
+          "directInteractionEnabled": {
+            "description": "Whether direct interaction with the opportunity is available",
+            "type": "boolean"
+          },
+          "isSecondaryMarket": {
+            "description": "Whether the opportunity can only be entered via a secondary market",
+            "type": "boolean"
+          },
+          "routedSwapEnabled": {
+            "description": "Whether entering via a routed swap (through a routing provider) is supported",
+            "type": "boolean"
+          },
+          "withdrawEnabled": {
+            "description": "Whether withdrawals are currently enabled",
+            "type": "boolean"
+          },
+          "withdrawalDisabledReason": {
+            "description": "Reason withdrawals are disabled, if any",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesOpportunityResponse": {
+        "properties": {
+          "baseToken": {
+            "$ref": "#/components/schemas/SharedTokenResponse",
+            "description": "Base token for the opportunity"
+          },
+          "curator": {
+            "$ref": "#/components/schemas/OpportunitiesCuratorResponse",
+            "description": "Curator organization for the opportunity"
+          },
+          "depositTokens": {
+            "description": "Tokens accepted for deposit",
+            "items": {
+              "$ref": "#/components/schemas/SharedTokenResponse"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "description": {
+            "description": "Opportunity detailed description",
+            "type": "string"
+          },
+          "estimatedApr": {
+            "description": "Estimated APR (sum of active incentive yields)",
+            "type": "number"
+          },
+          "featured": {
+            "description": "Whether opportunity is featured",
+            "type": "boolean"
+          },
+          "id": {
+            "$ref": "#/components/schemas/UuidUUID",
+            "description": "Opportunity unique identifier"
+          },
+          "incentives": {
+            "description": "Active incentives for the opportunity",
+            "items": {
+              "$ref": "#/components/schemas/OpportunitiesIncentiveResponse"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "meta": {
+            "$ref": "#/components/schemas/OpportunitiesOpportunityMeta",
+            "description": "Interaction and availability flags"
+          },
+          "minDepositAmountUsd": {
+            "description": "Minimum deposit amount in USD",
+            "type": "number"
+          },
+          "name": {
+            "description": "Opportunity display name",
+            "type": "string"
+          },
+          "receiptToken": {
+            "$ref": "#/components/schemas/SharedTokenResponse",
+            "description": "Token received as receipt for deposits"
+          },
+          "slug": {
+            "description": "URL-friendly identifier",
+            "type": "string"
+          },
+          "tvl": {
+            "description": "Total Value Locked in USD",
+            "type": "number"
+          },
+          "type": {
+            "description": "Opportunity type (e.g. lending, vault)",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesOrganizationOption": {
+        "properties": {
+          "iconUrl": {
+            "description": "Organization icon URL",
+            "type": "string"
+          },
+          "id": {
+            "$ref": "#/components/schemas/UuidUUID",
+            "description": "Organization id (pass back as a filter value)"
+          },
+          "landingUrl": {
+            "description": "Organization website URL",
+            "type": "string"
+          },
+          "name": {
+            "description": "Organization name",
+            "type": "string"
+          },
+          "organizationType": {
+            "description": "Organization type",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesSortOption": {
+        "properties": {
+          "label": {
+            "description": "Human-readable label",
+            "type": "string"
+          },
+          "value": {
+            "description": "Value to pass as sortBy",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesTagOption": {
+        "properties": {
+          "code": {
+            "description": "Tag code (pass back as the tags filter value)",
+            "type": "string"
+          },
+          "color": {
+            "description": "Tag color",
+            "type": "string"
+          },
+          "description": {
+            "description": "Tag description",
+            "type": "string"
+          },
+          "id": {
+            "$ref": "#/components/schemas/UuidUUID",
+            "description": "Tag id"
+          },
+          "name": {
+            "description": "Tag display name",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2OpportunitiesOpportunityResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/OpportunitiesOpportunityResponse"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationPaginationMetadata"
+          }
+        },
+        "type": "object"
+      },
       "PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2ProtocolResponse": {
         "properties": {
           "data": {
@@ -850,237 +1769,12 @@
         },
         "type": "object"
       },
-      "V2APRBreakdown": {
-        "properties": {
-          "base": {
-            "description": "APR from share-price growth alone (simple, non-compound)",
-            "type": "number"
-          },
-          "reward": {
-            "description": "Reward APR; reserved for future rewards indexing, currently always 0",
-            "type": "number"
-          },
-          "total": {
-            "description": "base + reward",
-            "type": "number"
-          }
-        },
-        "type": "object"
-      },
-      "V2APYBreakdown": {
-        "properties": {
-          "base": {
-            "description": "APY from share-price growth alone (vaults.fyi compound formula)",
-            "type": "number"
-          },
-          "reward": {
-            "description": "Reward APY; reserved for future rewards indexing, currently always 0",
-            "type": "number"
-          },
-          "total": {
-            "description": "base + reward",
-            "type": "number"
-          }
-        },
-        "type": [
-          "object",
-          "null"
-        ]
-      },
-      "V2GetOpportunityHistoricalAPRResponse": {
-        "properties": {
-          "data": {
-            "items": {
-              "$ref": "#/components/schemas/V2HistoricalAPRPoint"
-            },
-            "type": [
-              "array",
-              "null"
-            ]
-          }
-        },
-        "type": "object"
-      },
-      "V2GetOpportunityHistoricalAPYResponse": {
-        "properties": {
-          "data": {
-            "items": {
-              "$ref": "#/components/schemas/V2HistoricalAPYPoint"
-            },
-            "type": [
-              "array",
-              "null"
-            ]
-          }
-        },
-        "type": "object"
-      },
-      "V2GetOpportunityHistoricalResponse": {
-        "properties": {
-          "baseAsset": {
-            "$ref": "#/components/schemas/SharedTokenResponse",
-            "description": "null when the vault has no snapshots yet or the underlying token is not registered in supported_tokens"
-          },
-          "data": {
-            "items": {
-              "$ref": "#/components/schemas/V2HistoricalCombinedPoint"
-            },
-            "type": [
-              "array",
-              "null"
-            ]
-          },
-          "historyTruncated": {
-            "description": "true when backend hit the row cap and oldest APY values may be missing predecessors",
-            "type": "boolean"
-          }
-        },
-        "type": "object"
-      },
-      "V2GetOpportunityHistoricalSharePriceResponse": {
-        "properties": {
-          "baseAsset": {
-            "$ref": "#/components/schemas/SharedTokenResponse",
-            "description": "null when the vault has no price_observations snapshots yet or the underlying token is not registered in supported_tokens"
-          },
-          "data": {
-            "items": {
-              "$ref": "#/components/schemas/V2HistoricalSharePricePoint"
-            },
-            "type": [
-              "array",
-              "null"
-            ]
-          }
-        },
-        "type": "object"
-      },
-      "V2GetOpportunityHistoricalTVLResponse": {
-        "properties": {
-          "baseAsset": {
-            "$ref": "#/components/schemas/SharedTokenResponse",
-            "description": "null when the vault has no snapshots yet or the underlying token is not registered in supported_tokens"
-          },
-          "data": {
-            "items": {
-              "$ref": "#/components/schemas/V2HistoricalTVLPoint"
-            },
-            "type": [
-              "array",
-              "null"
-            ]
-          }
-        },
-        "type": "object"
-      },
-      "V2HistoricalAPRPoint": {
-        "properties": {
-          "apr": {
-            "$ref": "#/components/schemas/V2APRBreakdown",
-            "description": "Adjacent-pair simple-rate APR against the previous bucket"
-          },
-          "blockNumber": {
-            "description": "On-chain block number of the snapshot chosen as the bucket representative",
-            "minimum": 0,
-            "type": "integer"
-          },
-          "timestamp": {
-            "description": "Bucket representative time (unix seconds)",
-            "type": "integer"
-          }
-        },
-        "type": "object"
-      },
-      "V2HistoricalAPYPoint": {
-        "properties": {
-          "apy": {
-            "$ref": "#/components/schemas/V2APYBreakdown",
-            "description": "Adjacent-pair compound APY against the previous bucket"
-          },
-          "blockNumber": {
-            "description": "On-chain block number of the snapshot chosen as the bucket representative",
-            "minimum": 0,
-            "type": "integer"
-          },
-          "timestamp": {
-            "description": "Bucket representative time (unix seconds)",
-            "type": "integer"
-          }
-        },
-        "type": "object"
-      },
-      "V2HistoricalCombinedPoint": {
-        "properties": {
-          "apy": {
-            "$ref": "#/components/schemas/V2APYBreakdown",
-            "description": "Trailing-window APY at this bucket; null when no predecessor exists"
-          },
-          "blockNumber": {
-            "description": "On-chain block number of the snapshot chosen as the bucket representative",
-            "minimum": 0,
-            "type": "integer"
-          },
-          "sharePrice": {
-            "$ref": "#/components/schemas/V2NativeUSDValue"
-          },
-          "timestamp": {
-            "description": "Bucket representative time (unix seconds)",
-            "type": "integer"
-          },
-          "tvl": {
-            "$ref": "#/components/schemas/V2NativeUSDValue"
-          }
-        },
-        "type": "object"
-      },
-      "V2HistoricalSharePricePoint": {
-        "properties": {
-          "blockNumber": {
-            "description": "On-chain block number of the snapshot chosen as the bucket representative",
-            "minimum": 0,
-            "type": "integer"
-          },
-          "sharePrice": {
-            "$ref": "#/components/schemas/V2NativeUSDValue"
-          },
-          "timestamp": {
-            "description": "Bucket representative time (unix seconds)",
-            "type": "integer"
-          }
-        },
-        "type": "object"
-      },
-      "V2HistoricalTVLPoint": {
-        "properties": {
-          "blockNumber": {
-            "description": "On-chain block number of the snapshot chosen as the bucket representative",
-            "minimum": 0,
-            "type": "integer"
-          },
-          "timestamp": {
-            "description": "Bucket representative time (unix seconds)",
-            "type": "integer"
-          },
-          "tvl": {
-            "$ref": "#/components/schemas/V2NativeUSDValue"
-          }
-        },
-        "type": "object"
-      },
-      "V2NativeUSDValue": {
-        "properties": {
-          "native": {
-            "type": "number"
-          },
-          "usd": {
-            "description": "null when underlying USD price was not available for this bucket",
-            "type": [
-              "null",
-              "number"
-            ]
-          }
-        },
-        "type": "object"
+      "UuidUUID": {
+        "examples": [
+          "248df4b7-aa70-47b8-a036-33ac447e668d"
+        ],
+        "format": "uuid",
+        "type": "string"
       },
       "V2ProtocolResponse": {
         "properties": {
