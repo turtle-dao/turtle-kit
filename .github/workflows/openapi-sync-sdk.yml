@@ -300,6 +300,10 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          # Commit through the GitHub API so GitHub signs it with its own key
+          # and the commit shows as "Verified" — no GPG keys, no third-party
+          # action. Signs as github-actions[bot] via the default GITHUB_TOKEN.
+          sign-commits: true
           commit-message: "chore(sdk): release v${{ needs.classify.outputs.new_version }} (${{ needs.classify.outputs.classification }})"
           title: "chore(sdk): release v${{ needs.classify.outputs.new_version }} [${{ needs.classify.outputs.classification }}]"
           body: ${{ steps.body.outputs.body }}
@@ -313,6 +317,15 @@ jobs:
             ${{ env.SPEC_PATH_IN_KIT }}
             CHANGELOG.md
             packages/sdk/package.json
+
+      - name: Confirm commit signature
+        if: steps.cpr.outputs.pull-request-number
+        run: |
+          if [ "${{ steps.cpr.outputs.pull-request-commits-verified }}" = "true" ]; then
+            echo "::notice::PR #${{ steps.cpr.outputs.pull-request-number }} commit is Verified by GitHub ✅"
+          else
+            echo "::warning::PR #${{ steps.cpr.outputs.pull-request-number }} commit is NOT verified — check token type (PATs can't sign)"
+          fi
 
       - name: Enable auto-merge for non-breaking PR
         if: steps.cpr.outputs.pull-request-number && needs.classify.outputs.classification != 'breaking'
