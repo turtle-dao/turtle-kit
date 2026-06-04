@@ -22,8 +22,8 @@ on:
     branches: [main]
 
 permissions:
-  contents: write       # to create the release tag
-  id-token: write       # OIDC token for npm trusted publishing (+ auto provenance)
+  contents: write # to create the release tag
+  id-token: write # OIDC token for npm trusted publishing (+ auto provenance)
 
 jobs:
   publish:
@@ -85,9 +85,9 @@ jobs:
       # semver ranges in the tarball.
       #
       # We publish the resulting tarball with `npm publish` (not `bun publish`)
-      # because trusted publishing over OIDC is not yet supported by bun
-      # (oven-sh/bun#24855). npm >= 11.5.1 detects the id-token permission,
-      # authenticates via OIDC — no NPM_TOKEN — and auto-generates provenance.
+      # because trusted publishing over OIDC is not yet supported by bun.
+      # `--provenance` is explicit so the publish FAILS loudly if provenance
+      # can't be generated, rather than silently shipping an unattested package.
       - name: Pack tarball (resolves catalog refs)
         if: steps.detect.outputs.should_publish == 'true'
         working-directory: packages/sdk
@@ -96,7 +96,7 @@ jobs:
       - name: Publish to npm (trusted publishing via OIDC)
         if: steps.detect.outputs.should_publish == 'true'
         working-directory: packages/sdk
-        run: npm publish ./*.tgz --access public
+        run: npm publish ./*.tgz --access public --provenance
 
       - name: Extract release notes from CHANGELOG
         id: notes
