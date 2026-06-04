@@ -86,8 +86,9 @@ jobs:
       #
       # We publish the resulting tarball with `npm publish` (not `bun publish`)
       # because trusted publishing over OIDC is not yet supported by bun.
-      # `--provenance` is explicit so the publish FAILS loudly if provenance
-      # can't be generated, rather than silently shipping an unattested package.
+      # Provenance is required via `publishConfig.provenance: true` in
+      # packages/sdk/package.json — the publish FAILS loudly if it can't be
+      # generated, rather than silently shipping an unattested package.
       - name: Pack tarball (resolves catalog refs)
         if: steps.detect.outputs.should_publish == 'true'
         working-directory: packages/sdk
@@ -96,7 +97,7 @@ jobs:
       - name: Publish to npm (trusted publishing via OIDC)
         if: steps.detect.outputs.should_publish == 'true'
         working-directory: packages/sdk
-        run: npm publish ./*.tgz --access public --provenance
+        run: npm publish ./*.tgz --access public
 
       - name: Extract release notes from CHANGELOG
         id: notes
