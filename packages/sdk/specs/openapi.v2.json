@@ -5,6 +5,372 @@
     "version": "v2.0.0"
   },
   "paths": {
+    "/v2/actions/cancel-deposit/{opportunityId}": {
+      "post": {
+        "tags": [
+          "Actions"
+        ],
+        "summary": "Create Cancel Deposit Interaction Handler",
+        "description": "Cancel a pending async deposit.",
+        "operationId": "CreateCancelDepositInteraction",
+        "parameters": [
+          {
+            "name": "opportunityId",
+            "in": "path",
+            "description": "Opportunity unique identifier",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/UuidUUID",
+              "description": "Opportunity unique identifier"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionsCancelDepositRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionsInteractionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/actions/claim-deposit/{opportunityId}": {
+      "post": {
+        "tags": [
+          "Actions"
+        ],
+        "summary": "Create Claim Deposit Interaction Handler",
+        "description": "Claim a pending async deposit. Only requires user wallet address.",
+        "operationId": "CreateClaimDepositInteraction",
+        "parameters": [
+          {
+            "name": "opportunityId",
+            "in": "path",
+            "description": "Opportunity unique identifier",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/UuidUUID",
+              "description": "Opportunity unique identifier"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionsClaimDepositRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionsInteractionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/actions/deposit/{opportunityId}": {
+      "post": {
+        "tags": [
+          "Actions"
+        ],
+        "summary": "Create Interaction Handler",
+        "description": "Record a deposit interaction",
+        "operationId": "CreateDepositInteraction",
+        "parameters": [
+          {
+            "name": "opportunityId",
+            "in": "path",
+            "description": "Opportunity unique identifier",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/UuidUUID",
+              "description": "Opportunity unique identifier"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionsInteractionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionsInteractionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/actions/verify": {
+      "get": {
+        "tags": [
+          "Actions"
+        ],
+        "summary": "Verify Tracking Handler",
+        "description": "Verify tracking data in a transaction",
+        "operationId": "VerifyTracking",
+        "parameters": [
+          {
+            "name": "chainId",
+            "in": "query",
+            "description": "Chain ID where the transaction was executed",
+            "required": true,
+            "schema": {
+              "description": "Chain ID where the transaction was executed",
+              "type": "integer"
+            }
+          },
+          {
+            "name": "txHash",
+            "in": "query",
+            "description": "Transaction hash to verify",
+            "required": true,
+            "schema": {
+              "description": "Transaction hash to verify",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionsVerifyTrackingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/actions/withdraw/{opportunityId}": {
+      "post": {
+        "tags": [
+          "Actions"
+        ],
+        "summary": "Create Withdraw Interaction Handler",
+        "description": "Record a withdraw interaction",
+        "operationId": "CreateWithdrawInteraction",
+        "parameters": [
+          {
+            "name": "opportunityId",
+            "in": "path",
+            "description": "Opportunity unique identifier",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/UuidUUID",
+              "description": "Opportunity unique identifier"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionsWithdrawRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionsInteractionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/chains/": {
       "get": {
         "tags": [
@@ -36,6 +402,453 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2SharedChainResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/deposit/{distributorId}": {
+      "get": {
+        "tags": [
+          "Deposits"
+        ],
+        "summary": "Get Distributor Deposits V 2 Handler",
+        "description": "Get paginated verified deposit interactions for a specific distributor, ordered by date descending. Optionally filter by opportunityId and/or productId.",
+        "operationId": "GetDistributorDepositsV2",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "opportunityId",
+            "in": "query",
+            "description": "Optional opportunity UUID to filter deposits",
+            "schema": {
+              "description": "Optional opportunity UUID to filter deposits",
+              "type": "string"
+            }
+          },
+          {
+            "name": "productId",
+            "in": "query",
+            "description": "Optional product UUID to filter deposits to opportunities belonging to that product",
+            "schema": {
+              "description": "Optional product UUID to filter deposits to opportunities belonging to that product",
+              "type": "string"
+            }
+          },
+          {
+            "name": "distributorId",
+            "in": "path",
+            "description": "Distributor ID to filter deposits",
+            "required": true,
+            "schema": {
+              "description": "Distributor ID to filter deposits",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionsDistributorDepositsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/membership/": {
+      "get": {
+        "tags": [
+          "Membership"
+        ],
+        "summary": "Check Membership",
+        "description": "Check if a wallet address is associated with a user",
+        "operationId": "GetMembership",
+        "parameters": [
+          {
+            "name": "address",
+            "in": "query",
+            "description": "Wallet address to check",
+            "schema": {
+              "description": "Wallet address to check",
+              "type": "string"
+            }
+          },
+          {
+            "name": "walletEcosystem",
+            "in": "query",
+            "description": "Wallet ecosystem",
+            "schema": {
+              "default": "evm",
+              "description": "Wallet ecosystem",
+              "enum": [
+                "evm",
+                "solana",
+                "ton"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/V1GetMembershipOutput"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Membership"
+        ],
+        "summary": "Create Membership",
+        "description": "Create a new user and associate wallet (signup only, no session)",
+        "operationId": "CreateMembershipV2",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/V1CreateMembershipV2Input"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/V1CreateMembershipOutput"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/membership/agreement": {
+      "post": {
+        "tags": [
+          "Membership"
+        ],
+        "summary": "Create Membership Agreement",
+        "description": "Generate a message to be signed by a new wallet for signup",
+        "operationId": "CreateMembershipAgreementV2",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/V1CreateMembershipAgreementV2Input"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/V1CreateMembershipAgreementOutput"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/metrics/distributor/{distributorId}": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Get Distributor TVL",
+        "description": "TVL time-series attributed to a distributor (builder code), with optional top wallets.",
+        "operationId": "getDistributorMetrics",
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "Start of range (RFC 3339)",
+            "required": true,
+            "schema": {
+              "description": "Start of range (RFC 3339)",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "End of range (RFC 3339)",
+            "required": true,
+            "schema": {
+              "description": "End of range (RFC 3339)",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "step",
+            "in": "query",
+            "description": "Bucket size in seconds (default 900)",
+            "schema": {
+              "description": "Bucket size in seconds (default 900)",
+              "minimum": 0,
+              "type": [
+                "null",
+                "integer"
+              ]
+            }
+          },
+          {
+            "name": "opportunityIds",
+            "in": "query",
+            "description": "Optional opportunity UUID filter",
+            "schema": {
+              "$ref": "#/components/schemas/UuidUUIDs",
+              "description": "Optional opportunity UUID filter"
+            }
+          },
+          {
+            "name": "productIds",
+            "in": "query",
+            "description": "Optional product UUID filter",
+            "schema": {
+              "$ref": "#/components/schemas/UuidUUIDs",
+              "description": "Optional product UUID filter"
+            }
+          },
+          {
+            "name": "includeTopWallets",
+            "in": "query",
+            "description": "Include the top 50 wallets by attributed TVL",
+            "schema": {
+              "description": "Include the top 50 wallets by attributed TVL",
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "distributorId",
+            "in": "path",
+            "description": "Distributor ID (builder code)",
+            "required": true,
+            "schema": {
+              "description": "Distributor ID (builder code)",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricsGetDistributorMetricsOutput"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/metrics/distributor/{distributorId}/lps": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Get Distributor LP Counts",
+        "description": "Active and cumulative LP counts attributed to a distributor over time.",
+        "operationId": "getDistributorLPs",
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "Start of range (RFC 3339)",
+            "required": true,
+            "schema": {
+              "description": "Start of range (RFC 3339)",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "End of range (RFC 3339)",
+            "required": true,
+            "schema": {
+              "description": "End of range (RFC 3339)",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "step",
+            "in": "query",
+            "description": "Bucket size in seconds (default 900)",
+            "schema": {
+              "description": "Bucket size in seconds (default 900)",
+              "minimum": 0,
+              "type": [
+                "null",
+                "integer"
+              ]
+            }
+          },
+          {
+            "name": "opportunityIds",
+            "in": "query",
+            "description": "Optional opportunity UUID filter",
+            "schema": {
+              "$ref": "#/components/schemas/UuidUUIDs",
+              "description": "Optional opportunity UUID filter"
+            }
+          },
+          {
+            "name": "productIds",
+            "in": "query",
+            "description": "Optional product UUID filter",
+            "schema": {
+              "$ref": "#/components/schemas/UuidUUIDs",
+              "description": "Optional product UUID filter"
+            }
+          },
+          {
+            "name": "distributorId",
+            "in": "path",
+            "description": "Distributor ID (builder code)",
+            "required": true,
+            "schema": {
+              "description": "Distributor ID (builder code)",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricsGetDistributorLPsOutput"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
                 }
               }
             }
@@ -313,19 +1126,23 @@
           {
             "name": "startDate",
             "in": "query",
-            "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
+            "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+            "required": true,
             "schema": {
-              "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
-              "type": "integer"
+              "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+              "format": "date-time",
+              "type": "string"
             }
           },
           {
             "name": "endDate",
             "in": "query",
-            "description": "Unix seconds, inclusive. Defaults to now when omitted",
+            "description": "Inclusive upper bound (RFC3339/ISO-8601)",
+            "required": true,
             "schema": {
-              "description": "Unix seconds, inclusive. Defaults to now when omitted",
-              "type": "integer"
+              "description": "Inclusive upper bound (RFC3339/ISO-8601)",
+              "format": "date-time",
+              "type": "string"
             }
           },
           {
@@ -407,19 +1224,23 @@
           {
             "name": "startDate",
             "in": "query",
-            "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
+            "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+            "required": true,
             "schema": {
-              "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
-              "type": "integer"
+              "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+              "format": "date-time",
+              "type": "string"
             }
           },
           {
             "name": "endDate",
             "in": "query",
-            "description": "Unix seconds, inclusive. Defaults to now when omitted",
+            "description": "Inclusive upper bound (RFC3339/ISO-8601)",
+            "required": true,
             "schema": {
-              "description": "Unix seconds, inclusive. Defaults to now when omitted",
-              "type": "integer"
+              "description": "Inclusive upper bound (RFC3339/ISO-8601)",
+              "format": "date-time",
+              "type": "string"
             }
           },
           {
@@ -501,19 +1322,23 @@
           {
             "name": "startDate",
             "in": "query",
-            "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
+            "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+            "required": true,
             "schema": {
-              "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
-              "type": "integer"
+              "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+              "format": "date-time",
+              "type": "string"
             }
           },
           {
             "name": "endDate",
             "in": "query",
-            "description": "Unix seconds, inclusive. Defaults to now when omitted",
+            "description": "Inclusive upper bound (RFC3339/ISO-8601)",
+            "required": true,
             "schema": {
-              "description": "Unix seconds, inclusive. Defaults to now when omitted",
-              "type": "integer"
+              "description": "Inclusive upper bound (RFC3339/ISO-8601)",
+              "format": "date-time",
+              "type": "string"
             }
           },
           {
@@ -595,19 +1420,23 @@
           {
             "name": "startDate",
             "in": "query",
-            "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
+            "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+            "required": true,
             "schema": {
-              "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
-              "type": "integer"
+              "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+              "format": "date-time",
+              "type": "string"
             }
           },
           {
             "name": "endDate",
             "in": "query",
-            "description": "Unix seconds, inclusive. Defaults to now when omitted",
+            "description": "Inclusive upper bound (RFC3339/ISO-8601)",
+            "required": true,
             "schema": {
-              "description": "Unix seconds, inclusive. Defaults to now when omitted",
-              "type": "integer"
+              "description": "Inclusive upper bound (RFC3339/ISO-8601)",
+              "format": "date-time",
+              "type": "string"
             }
           },
           {
@@ -689,19 +1518,23 @@
           {
             "name": "startDate",
             "in": "query",
-            "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
+            "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+            "required": true,
             "schema": {
-              "description": "Unix seconds, inclusive. Defaults to endDate - 30d when omitted",
-              "type": "integer"
+              "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+              "format": "date-time",
+              "type": "string"
             }
           },
           {
             "name": "endDate",
             "in": "query",
-            "description": "Unix seconds, inclusive. Defaults to now when omitted",
+            "description": "Inclusive upper bound (RFC3339/ISO-8601)",
+            "required": true,
             "schema": {
-              "description": "Unix seconds, inclusive. Defaults to now when omitted",
-              "type": "integer"
+              "description": "Inclusive upper bound (RFC3339/ISO-8601)",
+              "format": "date-time",
+              "type": "string"
             }
           },
           {
@@ -862,6 +1695,747 @@
         }
       }
     },
+    "/v2/streams/": {
+      "get": {
+        "tags": [
+          "Streams"
+        ],
+        "summary": "Get Streams Data",
+        "description": "Get streams, optionally filtered by stream ID or organization ID.",
+        "operationId": "GetStreams",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/UuidUUID"
+            }
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/UuidUUID"
+            }
+          },
+          {
+            "name": "withSnapshots",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "usersCount",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreamsGetStreamsOutput"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Streams"
+        ],
+        "summary": "Create Stream with API Key Authentication",
+        "description": "Handle create stream and signature request",
+        "operationId": "CreateStream",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StreamsCreateStreamRequestParams"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreamsCreateStreamOutput"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/streams/merkle_proofs": {
+      "get": {
+        "tags": [
+          "streams"
+        ],
+        "summary": "Get Merkle Proofs for Wallet",
+        "description": "Retrieve Merkle proofs for a wallet address across multiple streams.\n\t\n\tThe endpoint returns proofs for the latest snapshot with a committed root hash for each stream.\n\tThe proofs can be used to claim rewards on-chain.\n\t\n\t**Caching Strategy:**\n\t1. Check local in-memory LRU cache (LRU eviction ensures memory stays bounded)\n\t2. If not in cache, check Redis\n\t3. If not in Redis, rebuild from database\n\t4. Validate root hash matches the database value",
+        "operationId": "turtle/streams.GetMerkleProofsHandler",
+        "parameters": [
+          {
+            "name": "wallet",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "streamIds",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "items": {
+                "$ref": "#/components/schemas/UuidUUID"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreamsGetMerkleProofsOutput"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/streams/points": {
+      "get": {
+        "tags": [
+          "Streams"
+        ],
+        "summary": "Get Stream Points",
+        "description": "Get points, optionally filtered by organization ID.",
+        "operationId": "GetStreamPoints",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/UuidUUID"
+            }
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/UuidUUID"
+            }
+          },
+          {
+            "name": "symbol",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreamsGetPointsOutput"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Streams"
+        ],
+        "summary": "Create Stream Point",
+        "description": "Create a point for the organization associated with the API key.",
+        "operationId": "CreateStreamPoint",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StreamsCreatePointInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreamsCreatePointOutput"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/streams/tokens": {
+      "get": {
+        "tags": [
+          "Streams"
+        ],
+        "summary": "Get Stream Tokens",
+        "description": "Get all supported tokens for a chain that can be used for streams.",
+        "operationId": "GetStreamTokens",
+        "parameters": [
+          {
+            "name": "chainId",
+            "in": "query",
+            "description": "Decimal chain ID",
+            "required": true,
+            "schema": {
+              "description": "Decimal chain ID",
+              "minimum": 0,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreamsGetTokensOutput"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/streams/{id}/wallets": {
+      "get": {
+        "tags": [
+          "Streams"
+        ],
+        "summary": "Get Stream Wallets",
+        "description": "Retrieve the wallets participating in a stream along with their latest snapshot data. Paginate with 'page' and 'limit' query params (default: page=1, limit=20). Results are ordered by rewardsAccumulated descending. rewardsAccumulated and rewardsAccumulatedBase are in wei units.",
+        "operationId": "GetStreamWallets",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/UuidUUID"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreamsGetWalletsOutput"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/streams/{id}/wallets/{address}": {
+      "get": {
+        "tags": [
+          "Streams"
+        ],
+        "summary": "Get Stream Wallet Data",
+        "description": "Retrieve all reward snapshots accumulated by a wallet for a specific stream. The following fields are in wei units: wallet.snapshots[].rewardsAccumulated, wallet.stream.totalAmount, wallet.stream.lastSnapshot.amountDistributed.",
+        "operationId": "GetStreamWallet",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/UuidUUID"
+            }
+          },
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreamsGetWalletOutput"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/swap/": {
+      "get": {
+        "tags": [
+          "Swaps"
+        ],
+        "summary": "Get Swap V 2 Handler",
+        "description": "Build approve + swap transactions via the router for an arbitrary token pair",
+        "operationId": "GetEarnSwapV2",
+        "parameters": [
+          {
+            "name": "user",
+            "in": "query",
+            "description": "User's EOA address initiating the swap",
+            "required": true,
+            "schema": {
+              "description": "User's EOA address initiating the swap",
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "in": "query",
+            "description": "Chain ID for the swap",
+            "required": true,
+            "schema": {
+              "description": "Chain ID for the swap",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "distributorId",
+            "in": "query",
+            "description": "Distributor ID",
+            "required": true,
+            "schema": {
+              "description": "Distributor ID",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tokenIn",
+            "in": "query",
+            "description": "Input token address or 'native' alias",
+            "required": true,
+            "schema": {
+              "description": "Input token address or 'native' alias",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tokenOut",
+            "in": "query",
+            "description": "Output token address or 'native' alias",
+            "required": true,
+            "schema": {
+              "description": "Output token address or 'native' alias",
+              "type": "string"
+            }
+          },
+          {
+            "name": "amountIn",
+            "in": "query",
+            "description": "Input amount in smallest unit (wei)",
+            "required": true,
+            "schema": {
+              "description": "Input amount in smallest unit (wei)",
+              "type": "string"
+            }
+          },
+          {
+            "name": "slippageBps",
+            "in": "query",
+            "description": "Slippage tolerance in basis points (e.g., 50 = 0.5%)",
+            "required": true,
+            "schema": {
+              "description": "Slippage tolerance in basis points (e.g., 50 = 0.5%)",
+              "maximum": 5000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/V1GetSwapResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/swap/details": {
+      "get": {
+        "tags": [
+          "Swaps"
+        ],
+        "summary": "Get Swap Details Handler",
+        "description": "Static-ish swap picker data: supported chains plus popular tokens for the selected chain",
+        "operationId": "GetSwapDetails",
+        "parameters": [
+          {
+            "name": "chainId",
+            "in": "query",
+            "description": "Optional chain ID to scope the popular tokens list",
+            "schema": {
+              "description": "Optional chain ID to scope the popular tokens list",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/V1GetSwapDetailsResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/swap/tokens": {
+      "get": {
+        "tags": [
+          "Swaps"
+        ],
+        "summary": "Get Swap Tokens Handler",
+        "description": "Search swap tokens for a chain. Partial match on symbol/name/address against the curated catalog, with an Enso fallback (by address or exact symbol) when the catalog has no result",
+        "operationId": "GetSwapTokens",
+        "parameters": [
+          {
+            "name": "chainId",
+            "in": "query",
+            "description": "Numeric chain ID to scope the search",
+            "required": true,
+            "schema": {
+              "description": "Numeric chain ID to scope the search",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Optional search term: matches token symbol, name, or address (case-insensitive partial)",
+            "schema": {
+              "description": "Optional search term: matches token symbol, name, or address (case-insensitive partial)",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "1-based page number; defaults to 1",
+            "schema": {
+              "description": "1-based page number; defaults to 1",
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size; defaults to 20, max 300",
+            "schema": {
+              "description": "Page size; defaults to 20, max 300",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/V1GetSwapTokensResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/tokens/": {
       "get": {
         "tags": [
@@ -1001,10 +2575,463 @@
           }
         }
       }
+    },
+    "/v2/wallet/{address}/portfolio": {
+      "get": {
+        "summary": "Get Wallet Portfolio",
+        "description": "Get all DeFi positions for a wallet address across all supported protocols",
+        "operationId": "protocols/wallet.GetWalletPortfolioHandler",
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtocolsWalletPortfolioResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/wallets/activity/": {
+      "get": {
+        "tags": [
+          "Wallets"
+        ],
+        "summary": "Get Wallet Activity Handler",
+        "description": "Get paginated verified earn interactions for the given wallet addresses (comma-separated), ordered by date descending.",
+        "operationId": "GetWalletActivity",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "addresses",
+            "in": "query",
+            "description": "Comma-separated list of EVM wallet addresses to fetch activity for (max 1000)",
+            "schema": {
+              "description": "Comma-separated list of EVM wallet addresses to fetch activity for (max 1000)",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionsWalletActivityResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "ActionsCancelDepositRequest": {
+        "properties": {
+          "distributorId": {
+            "description": "Distributor ID",
+            "type": "string"
+          },
+          "userAddress": {
+            "description": "User wallet address",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userAddress",
+          "distributorId"
+        ],
+        "type": "object"
+      },
+      "ActionsClaimDepositRequest": {
+        "properties": {
+          "distributorId": {
+            "description": "Distributor ID",
+            "type": "string"
+          },
+          "userAddress": {
+            "description": "User wallet address",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userAddress",
+          "distributorId"
+        ],
+        "type": "object"
+      },
+      "ActionsDistributorDepositsResponse": {
+        "properties": {
+          "deposits": {
+            "items": {
+              "$ref": "#/components/schemas/ActionsWalletActivityItem"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/UtilsPaginationResponse"
+          }
+        },
+        "type": "object"
+      },
+      "ActionsInteractionRequest": {
+        "properties": {
+          "amount": {
+            "description": "Amount in smallest unit (wei)",
+            "type": "string"
+          },
+          "distributorId": {
+            "description": "Distributor ID",
+            "type": "string"
+          },
+          "mode": {
+            "default": "direct",
+            "description": "Mode: 'swap' to use router, 'direct' for direct deposit",
+            "type": "string"
+          },
+          "referralCode": {
+            "description": "Optional referral code",
+            "type": "string"
+          },
+          "slippageBps": {
+            "default": 50,
+            "description": "Slippage tolerance in basis points (e.g., 50 = 0.5%)",
+            "type": "integer"
+          },
+          "tokenIn": {
+            "description": "Input token address",
+            "type": "string"
+          },
+          "userAddress": {
+            "description": "User wallet address (validated by middleware)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userAddress",
+          "tokenIn",
+          "amount",
+          "distributorId"
+        ],
+        "type": "object"
+      },
+      "ActionsInteractionResponse": {
+        "properties": {
+          "actionId": {
+            "$ref": "#/components/schemas/UuidUUID",
+            "description": "Unique identifier for the saved interaction"
+          },
+          "transactions": {
+            "description": "Ordered list of transactions to execute",
+            "items": {
+              "$ref": "#/components/schemas/TypesTxResponseItem"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ActionsVerifyTrackingResponse": {
+        "properties": {
+          "error": {
+            "description": "Error message if verification failed",
+            "type": "string"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/TrackingEarnTrackingMetadata",
+            "description": "The parsed tracking metadata"
+          },
+          "signatureValid": {
+            "description": "Whether the signature is from our attribution wallet",
+            "type": "boolean"
+          },
+          "tag": {
+            "description": "The tracking tag found in the transaction",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ActionsWalletActivityItem": {
+        "properties": {
+          "amountInUsd": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "amountToken": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "blockTimestamp": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "chainId": {
+            "type": "integer"
+          },
+          "id": {
+            "$ref": "#/components/schemas/UuidUUID"
+          },
+          "interaction": {
+            "type": "string"
+          },
+          "isSwap": {
+            "type": "boolean"
+          },
+          "opportunityId": {
+            "$ref": "#/components/schemas/UuidUUID"
+          },
+          "tokenIconUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "tokenSymbol": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "txHash": {
+            "type": "string"
+          },
+          "walletAddress": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ActionsWalletActivityResponse": {
+        "properties": {
+          "activity": {
+            "items": {
+              "$ref": "#/components/schemas/ActionsWalletActivityItem"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/UtilsPaginationResponse"
+          }
+        },
+        "type": "object"
+      },
+      "ActionsWithdrawRequest": {
+        "properties": {
+          "amount": {
+            "description": "Shares to redeem in smallest unit",
+            "type": "string"
+          },
+          "distributorId": {
+            "description": "Distributor ID",
+            "type": "string"
+          },
+          "slippageBps": {
+            "description": "Optional: slippage tolerance in basis points (e.g., 50 = 0.5%). Only applied to opportunities that require it",
+            "type": "integer"
+          },
+          "tokenOut": {
+            "description": "Optional: token to receive after withdrawal (required for Midas, Mellow, Veda)",
+            "type": "string"
+          },
+          "userAddress": {
+            "description": "User wallet address (validated by middleware)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userAddress",
+          "amount",
+          "distributorId"
+        ],
+        "type": "object"
+      },
+      "MetricsGetDistributorLPsOutput": {
+        "properties": {
+          "timeseries": {
+            "items": {
+              "$ref": "#/components/schemas/MetricsLPsPoint"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "MetricsGetDistributorMetricsOutput": {
+        "properties": {
+          "asOf": {
+            "items": {
+              "$ref": "#/components/schemas/MetricsOpportunityAsOf"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "timeseries": {
+            "items": {
+              "$ref": "#/components/schemas/MetricsTimeseriesPoint"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "topWallets": {
+            "items": {
+              "$ref": "#/components/schemas/MetricsTopWallet"
+            },
+            "type": [
+              "null",
+              "array"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "MetricsLPsPoint": {
+        "properties": {
+          "activeLps": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "participatedLps": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MetricsOpportunityAsOf": {
+        "properties": {
+          "asOf": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "opportunityId": {
+            "$ref": "#/components/schemas/UuidUUID"
+          }
+        },
+        "type": "object"
+      },
+      "MetricsTimeseriesPoint": {
+        "properties": {
+          "timestamp": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "tvl": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MetricsTopWallet": {
+        "properties": {
+          "asOf": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "totalTvl": {
+            "type": "string"
+          },
+          "walletAddress": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "OpportunitiesAPRBreakdown": {
         "properties": {
           "base": {
@@ -1263,8 +3290,9 @@
             "type": "integer"
           },
           "timestamp": {
-            "description": "Bucket representative time (unix seconds)",
-            "type": "integer"
+            "description": "Bucket representative time",
+            "format": "date-time",
+            "type": "string"
           }
         },
         "type": "object"
@@ -1281,8 +3309,9 @@
             "type": "integer"
           },
           "timestamp": {
-            "description": "Bucket representative time (unix seconds)",
-            "type": "integer"
+            "description": "Bucket representative time",
+            "format": "date-time",
+            "type": "string"
           }
         },
         "type": "object"
@@ -1302,8 +3331,9 @@
             "$ref": "#/components/schemas/OpportunitiesNativeUSDValue"
           },
           "timestamp": {
-            "description": "Bucket representative time (unix seconds)",
-            "type": "integer"
+            "description": "Bucket representative time",
+            "format": "date-time",
+            "type": "string"
           },
           "tvl": {
             "$ref": "#/components/schemas/OpportunitiesNativeUSDValue"
@@ -1322,8 +3352,9 @@
             "$ref": "#/components/schemas/OpportunitiesNativeUSDValue"
           },
           "timestamp": {
-            "description": "Bucket representative time (unix seconds)",
-            "type": "integer"
+            "description": "Bucket representative time",
+            "format": "date-time",
+            "type": "string"
           }
         },
         "type": "object"
@@ -1336,8 +3367,9 @@
             "type": "integer"
           },
           "timestamp": {
-            "description": "Bucket representative time (unix seconds)",
-            "type": "integer"
+            "description": "Bucket representative time",
+            "format": "date-time",
+            "type": "string"
           },
           "tvl": {
             "$ref": "#/components/schemas/OpportunitiesNativeUSDValue"
@@ -1701,6 +3733,155 @@
         },
         "type": "object"
       },
+      "ProtocolsPortfolioDetail": {
+        "properties": {
+          "borrow_token_list": {
+            "items": {
+              "$ref": "#/components/schemas/ProtocolsPortfolioToken"
+            },
+            "type": "array"
+          },
+          "description": {
+            "type": "string"
+          },
+          "reward_token_list": {
+            "items": {
+              "$ref": "#/components/schemas/ProtocolsPortfolioToken"
+            },
+            "type": "array"
+          },
+          "supply_token_list": {
+            "items": {
+              "$ref": "#/components/schemas/ProtocolsPortfolioToken"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ProtocolsPortfolioItem": {
+        "properties": {
+          "detail": {
+            "$ref": "#/components/schemas/ProtocolsPortfolioDetail"
+          },
+          "name": {
+            "type": "string"
+          },
+          "pool": {
+            "$ref": "#/components/schemas/ProtocolsPortfolioPool"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/ProtocolsPortfolioStats"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProtocolsPortfolioPool": {
+        "properties": {
+          "chain": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProtocolsPortfolioStats": {
+        "properties": {
+          "asset_usd_value": {
+            "type": "string"
+          },
+          "debt_usd_value": {
+            "type": "string"
+          },
+          "net_usd_value": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProtocolsPortfolioToken": {
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "chain": {
+            "type": "string"
+          },
+          "decimals": {
+            "type": "integer"
+          },
+          "logo_url": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProtocolsProtocolPositions": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "logo_url": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "portfolio_item_list": {
+            "items": {
+              "$ref": "#/components/schemas/ProtocolsPortfolioItem"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "site_url": {
+            "type": "string"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/ProtocolsPortfolioStats"
+          }
+        },
+        "type": "object"
+      },
+      "ProtocolsWalletPortfolioResponse": {
+        "properties": {
+          "protocols": {
+            "items": {
+              "$ref": "#/components/schemas/ProtocolsProtocolPositions"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "total_stats": {
+            "$ref": "#/components/schemas/ProtocolsPortfolioStats"
+          }
+        },
+        "type": "object"
+      },
       "RestErrResponse": {
         "properties": {
           "code": {
@@ -1769,12 +3950,1072 @@
         },
         "type": "object"
       },
+      "StreamsAdapterConfig": {
+        "properties": {
+          "params": {},
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "StreamsAdapterConfigType2": {
+        "properties": {
+          "params": {},
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "StreamsAdapterConfigs": {
+        "items": {
+          "$ref": "#/components/schemas/StreamsAdapterConfig"
+        },
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "StreamsAdapterConfigsType2": {
+        "items": {
+          "$ref": "#/components/schemas/StreamsAdapterConfigType2"
+        },
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "StreamsCreatePointInput": {
+        "properties": {
+          "decimals": {
+            "minimum": 0,
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "logoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "StreamsCreatePointOutput": {
+        "properties": {
+          "point": {
+            "$ref": "#/components/schemas/StreamsPoint"
+          }
+        },
+        "type": "object"
+      },
+      "StreamsCreateStreamFuncParams": {
+        "properties": {
+          "deadline": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "params": {
+            "$ref": "#/components/schemas/StreamsIStreamFactoryCreateStreamParams"
+          },
+          "signature": {
+            "format": "base64",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "StreamsCreateStreamOutput": {
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "stream": {
+            "$ref": "#/components/schemas/StreamsStream"
+          },
+          "txParams": {
+            "$ref": "#/components/schemas/StreamsCreateStreamTxParams"
+          }
+        },
+        "type": "object"
+      },
+      "StreamsCreateStreamRequestParams": {
+        "properties": {
+          "adapters": {
+            "$ref": "#/components/schemas/StreamsAdapterConfigsType2"
+          },
+          "customArgs": {},
+          "endTimestamp": {
+            "format": "date-time",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "pointId": {
+            "$ref": "#/components/schemas/UuidUUID"
+          },
+          "rewardTokenId": {
+            "$ref": "#/components/schemas/UuidUUID"
+          },
+          "startTimestamp": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "totalAmount": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "type": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "walletAddress": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "StreamsCreateStreamTxParams": {
+        "properties": {
+          "chainId": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "params": {
+            "$ref": "#/components/schemas/StreamsCreateStreamFuncParams"
+          },
+          "sender": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "StreamsGetMerkleProofsOutput": {
+        "properties": {
+          "proofs": {
+            "items": {
+              "$ref": "#/components/schemas/StreamsStreamMerkleProof"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "StreamsGetPointsOutput": {
+        "properties": {
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/StreamsPoint"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "StreamsGetStreamsOutput": {
+        "properties": {
+          "streams": {
+            "items": {
+              "$ref": "#/components/schemas/StreamsStream"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "StreamsGetTokensOutput": {
+        "properties": {
+          "tokens": {
+            "items": {
+              "$ref": "#/components/schemas/StreamsSupportedToken"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "StreamsGetWalletOutput": {
+        "properties": {
+          "wallet": {
+            "$ref": "#/components/schemas/StreamsWalletData"
+          }
+        },
+        "type": "object"
+      },
+      "StreamsGetWalletsOutput": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/StreamsWalletWithLastSnapshot"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/UtilsPaginationResponse"
+          }
+        },
+        "type": "object"
+      },
+      "StreamsIStreamFactoryCreateStreamParams": {
+        "type": "object"
+      },
+      "StreamsPoint": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "decimals": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "id": {
+            "$ref": "#/components/schemas/UuidUUID"
+          },
+          "logoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "orgId": {
+            "$ref": "#/components/schemas/UuidUUID"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "StreamsStream": {
+        "properties": {
+          "adapters": {
+            "$ref": "#/components/schemas/StreamsAdapterConfigs"
+          },
+          "admin": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "chainId": {
+            "minimum": 0,
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "claimPaused": {
+            "type": "boolean"
+          },
+          "committedSnapshot": {
+            "$ref": "#/components/schemas/StreamsStreamSnapshot"
+          },
+          "contractAddress": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "creationConfirmedAt": {
+            "format": "date-time",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "customArgs": {},
+          "endTimestamp": {
+            "format": "date-time",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "hashCommitmentPaused": {
+            "type": "boolean"
+          },
+          "id": {
+            "$ref": "#/components/schemas/UuidUUID"
+          },
+          "lastSnapshot": {
+            "$ref": "#/components/schemas/StreamsStreamSnapshot"
+          },
+          "merkleTreeComputationPaused": {
+            "type": "boolean"
+          },
+          "orgId": {
+            "$ref": "#/components/schemas/UuidUUID"
+          },
+          "point": {
+            "$ref": "#/components/schemas/StreamsPoint"
+          },
+          "rewardToken": {
+            "$ref": "#/components/schemas/StreamsSupportedToken"
+          },
+          "snapshotComputationPaused": {
+            "type": "boolean"
+          },
+          "snapshots": {
+            "items": {
+              "$ref": "#/components/schemas/StreamsStreamSnapshot"
+            },
+            "type": "array"
+          },
+          "startTimestamp": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "strategy": {
+            "type": "string"
+          },
+          "totalAmount": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "type": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "userId": {
+            "$ref": "#/components/schemas/UuidUUID"
+          }
+        },
+        "type": "object"
+      },
+      "StreamsStreamMerkleProof": {
+        "properties": {
+          "amount": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "chainId": {
+            "minimum": 0,
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "contractAddress": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "proof": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rootHash": {
+            "type": "string"
+          },
+          "streamId": {
+            "$ref": "#/components/schemas/UuidUUID"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "StreamsStreamSnapshot": {
+        "properties": {
+          "activeUserCount": {
+            "minimum": 0,
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "amountBase": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "amountDistributed": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "apr": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "baseApr": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "baseTvl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "commitTxHash": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "customArgs": {},
+          "customMetrics": {},
+          "netTvl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "rewardTokenPrice": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "rootHash": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "timestamp": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "turtleNetTvl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "turtleTvl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "tvl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "userCount": {
+            "minimum": 0,
+            "type": [
+              "null",
+              "integer"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "StreamsSupportedToken": {
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "chainId": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "decimals": {
+            "type": "integer"
+          },
+          "id": {
+            "$ref": "#/components/schemas/UuidUUID"
+          },
+          "isAllowedRewardToken": {
+            "type": "boolean"
+          },
+          "logoUrl": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "StreamsWalletData": {
+        "properties": {
+          "snapshots": {
+            "items": {
+              "$ref": "#/components/schemas/StreamsWalletSnapshot"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "stream": {
+            "$ref": "#/components/schemas/StreamsStream"
+          },
+          "streamId": {
+            "$ref": "#/components/schemas/UuidUUID"
+          },
+          "userAddress": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "StreamsWalletSnapshot": {
+        "properties": {
+          "apr": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "baseApr": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "baseTvl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "customMetrics": {},
+          "netTvl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "rewardsAccumulated": {
+            "type": "string"
+          },
+          "rewardsAccumulatedBase": {
+            "type": "string"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "turtleNetTvl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "turtleTvl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "tvl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "StreamsWalletWithLastSnapshot": {
+        "properties": {
+          "lastSnapshot": {
+            "$ref": "#/components/schemas/StreamsWalletSnapshot"
+          },
+          "userAddress": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TrackingEarnTrackingMetadata": {
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "actionId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "amountUsd": {
+            "type": "string"
+          },
+          "distributorId": {
+            "type": "string"
+          },
+          "opportunityId": {
+            "type": "string"
+          },
+          "referralCode": {
+            "type": "string"
+          },
+          "tokenIn": {
+            "type": "string"
+          },
+          "tokenInDecimals": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "TypesRouteStep": {
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "from": {
+            "$ref": "#/components/schemas/TypesTokenDetails"
+          },
+          "to": {
+            "$ref": "#/components/schemas/TypesTokenDetails"
+          }
+        },
+        "type": "object"
+      },
+      "TypesSwapMetadata": {
+        "properties": {
+          "amountOut": {
+            "type": "string"
+          },
+          "gas": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "providerImg": {
+            "type": "string"
+          },
+          "route": {
+            "items": {
+              "$ref": "#/components/schemas/TypesRouteStep"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "TypesTokenDetails": {
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "decimals": {
+            "type": "integer"
+          },
+          "logoUrl": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TypesTransaction": {
+        "properties": {
+          "chainId": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "string"
+          },
+          "gasLimit": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TypesTxResponseItem": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/TypesSwapMetadata"
+          },
+          "transaction": {
+            "$ref": "#/components/schemas/TypesTransaction"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UtilsPaginationResponse": {
+        "properties": {
+          "hasNext": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "hasPrevious": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "UuidUUID": {
         "examples": [
           "248df4b7-aa70-47b8-a036-33ac447e668d"
         ],
         "format": "uuid",
-        "type": "string"
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "UuidUUIDs": {
+        "items": {
+          "$ref": "#/components/schemas/UuidUUID"
+        },
+        "type": [
+          "array",
+          "null"
+        ]
+      },
+      "V1CreateMembershipAgreementOutput": {
+        "properties": {
+          "message": {
+            "description": "Message to be signed",
+            "type": "string"
+          },
+          "nonce": {
+            "description": "Nonce for the signature",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "V1CreateMembershipAgreementV2Input": {
+        "properties": {
+          "address": {
+            "description": "Wallet address",
+            "type": "string"
+          },
+          "chainId": {
+            "default": 1,
+            "description": "Chain ID for EVM wallets",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "url": {
+            "description": "URL for the agreement",
+            "type": "string"
+          },
+          "walletEcosystem": {
+            "description": "Wallet ecosystem",
+            "enum": [
+              "evm",
+              "solana",
+              "ton"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "address",
+          "walletEcosystem",
+          "url"
+        ],
+        "type": "object"
+      },
+      "V1CreateMembershipOutput": {
+        "properties": {
+          "error": {
+            "description": "Error message if any",
+            "type": "string"
+          },
+          "isMember": {
+            "description": "Whether the wallet is associated with a user",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "V1CreateMembershipV2Input": {
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "distributorId": {
+            "type": "string"
+          },
+          "nonce": {
+            "type": "string"
+          },
+          "signature": {
+            "type": "string"
+          },
+          "walletEcosystem": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "address",
+          "walletEcosystem",
+          "signature",
+          "nonce"
+        ],
+        "type": "object"
+      },
+      "V1GetMembershipOutput": {
+        "properties": {
+          "isMember": {
+            "description": "Whether the wallet is associated with a user",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "V1GetSwapDetailsResponse": {
+        "properties": {
+          "chains": {
+            "description": "Chains supported by the swap router (intersection of router-supported chains and our chain catalog)",
+            "items": {
+              "$ref": "#/components/schemas/V1SwapChain"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "popularTokens": {
+            "description": "Popular tokens for the requested chain. Empty when chainId is omitted",
+            "items": {
+              "$ref": "#/components/schemas/V1SwapToken"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "V1GetSwapResponse": {
+        "properties": {
+          "actionId": {
+            "$ref": "#/components/schemas/UuidUUID",
+            "description": "Unique identifier embedded in the swap tx tracking metadata"
+          },
+          "transactions": {
+            "description": "Ordered list of transactions to execute (approve + swap)",
+            "items": {
+              "$ref": "#/components/schemas/TypesTxResponseItem"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "V1GetSwapTokensResponse": {
+        "properties": {
+          "data": {
+            "description": "Tokens matching the query for the requested chain",
+            "items": {
+              "$ref": "#/components/schemas/V1SwapToken"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/UtilsPaginationResponse",
+            "description": "Pagination metadata"
+          }
+        },
+        "type": "object"
+      },
+      "V1SwapChain": {
+        "properties": {
+          "chainId": {
+            "description": "Numeric chain ID",
+            "type": "string"
+          },
+          "ecosystem": {
+            "description": "Blockchain ecosystem (evm, solana)",
+            "type": "string"
+          },
+          "explorerUrl": {
+            "description": "Block explorer base URL",
+            "type": "string"
+          },
+          "logoUrl": {
+            "description": "Chain logo URL",
+            "type": "string"
+          },
+          "name": {
+            "description": "Chain name",
+            "type": "string"
+          },
+          "nativePriceUsd": {
+            "description": "USD price of the chain's native token, used for gas fee math",
+            "type": "number"
+          },
+          "slug": {
+            "description": "URL-friendly identifier",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "V1SwapToken": {
+        "properties": {
+          "address": {
+            "description": "Token contract address",
+            "type": "string"
+          },
+          "chainId": {
+            "description": "Numeric chain ID this token belongs to",
+            "type": "string"
+          },
+          "decimals": {
+            "description": "Token decimals",
+            "type": "integer"
+          },
+          "isNative": {
+            "description": "Whether token is native to the chain",
+            "type": "boolean"
+          },
+          "logoUrl": {
+            "description": "Token logo URL",
+            "type": "string"
+          },
+          "name": {
+            "description": "Token full name",
+            "type": "string"
+          },
+          "priceUsd": {
+            "description": "USD price",
+            "type": "number"
+          },
+          "symbol": {
+            "description": "Token symbol",
+            "type": "string"
+          }
+        },
+        "type": "object"
       },
       "V2ProtocolResponse": {
         "properties": {
