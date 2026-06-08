@@ -1207,7 +1207,7 @@
           "Historical Data"
         ],
         "summary": "Get Vault Historical APR",
-        "description": "Adjacent-pair simple-rate (non-compound) APR per bucket over [from, to]. Reward APR is reserved for future rewards indexing and is always 0.",
+        "description": "Trailing-window simple-rate APR per bucket over [from, to]: each point annualises share-price growth over a server-derived window scaled to the range. Reward APR is reserved for future rewards indexing and is always 0.",
         "operationId": "GetOpportunityHistoricalAPR",
         "parameters": [
           {
@@ -1305,7 +1305,7 @@
           "Historical Data"
         ],
         "summary": "Get Vault Historical APY",
-        "description": "Adjacent-pair compound APY per bucket over [from, to]. Reward APY is reserved for future rewards indexing and is always 0.",
+        "description": "Trailing-window compound APY per bucket over [from, to]: each point annualises share-price growth over a server-derived window scaled to the range. Reward APY is reserved for future rewards indexing and is always 0.",
         "operationId": "GetOpportunityHistoricalAPY",
         "parameters": [
           {
@@ -3282,7 +3282,7 @@
         "properties": {
           "apr": {
             "$ref": "#/components/schemas/OpportunitiesAPRBreakdown",
-            "description": "Adjacent-pair simple-rate APR against the previous bucket"
+            "description": "Trailing-window simple-rate APR (annualised share-price growth over a server-derived window)"
           },
           "blockNumber": {
             "description": "On-chain block number of the snapshot chosen as the bucket representative",
@@ -3301,7 +3301,7 @@
         "properties": {
           "apy": {
             "$ref": "#/components/schemas/OpportunitiesAPYBreakdown",
-            "description": "Adjacent-pair compound APY against the previous bucket"
+            "description": "Trailing-window compound APY (annualised share-price growth over a server-derived window)"
           },
           "blockNumber": {
             "description": "On-chain block number of the snapshot chosen as the bucket representative",
