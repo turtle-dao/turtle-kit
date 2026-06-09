@@ -4429,12 +4429,6 @@
           },
           "customArgs": {},
           "customMetrics": {},
-          "netTvl": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
           "rewardTokenPrice": {
             "type": [
               "null",
@@ -4450,18 +4444,6 @@
           "timestamp": {
             "format": "date-time",
             "type": "string"
-          },
-          "turtleNetTvl": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "turtleTvl": {
-            "type": [
-              "null",
-              "string"
-            ]
           },
           "tvl": {
             "type": [
@@ -4564,12 +4546,6 @@
             "type": "string"
           },
           "customMetrics": {},
-          "netTvl": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
           "rewardsAccumulated": {
             "type": "string"
           },
@@ -4579,18 +4555,6 @@
           "timestamp": {
             "format": "date-time",
             "type": "string"
-          },
-          "turtleNetTvl": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "turtleTvl": {
-            "type": [
-              "null",
-              "string"
-            ]
           },
           "tvl": {
             "type": [
