@@ -1115,10 +1115,21 @@
           {
             "name": "step",
             "in": "query",
-            "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+            "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
             "schema": {
               "default": 86400,
-              "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+              "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "apyInterval",
+            "in": "query",
+            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
+            "schema": {
+              "default": 604800,
+              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
               "minimum": 1,
               "type": "integer"
             }
@@ -1207,16 +1218,27 @@
           "Historical Data"
         ],
         "summary": "Get Vault Historical APR",
-        "description": "Trailing-window simple-rate APR per bucket over [from, to]: each point annualises share-price growth over a server-derived window scaled to the range. Reward APR is reserved for future rewards indexing and is always 0.",
+        "description": "Simple-rate (non-compound) APR per point over [from, to]. Each point annualises share-price growth over the trailing apyInterval window (seconds); points are spaced by step (granularity), independent of apyInterval. Reward APR is reserved for future rewards indexing and is always 0.",
         "operationId": "GetOpportunityHistoricalAPR",
         "parameters": [
           {
             "name": "step",
             "in": "query",
-            "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+            "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
             "schema": {
               "default": 86400,
-              "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+              "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "apyInterval",
+            "in": "query",
+            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
+            "schema": {
+              "default": 604800,
+              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
               "minimum": 1,
               "type": "integer"
             }
@@ -1305,16 +1327,27 @@
           "Historical Data"
         ],
         "summary": "Get Vault Historical APY",
-        "description": "Trailing-window compound APY per bucket over [from, to]: each point annualises share-price growth over a server-derived window scaled to the range. Reward APY is reserved for future rewards indexing and is always 0.",
+        "description": "Compound APY per point over [from, to]. Each point annualises share-price growth over the trailing apyInterval window (seconds); points are spaced by step (granularity), independent of apyInterval. Reward APY is reserved for future rewards indexing and is always 0.",
         "operationId": "GetOpportunityHistoricalAPY",
         "parameters": [
           {
             "name": "step",
             "in": "query",
-            "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+            "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
             "schema": {
               "default": 86400,
-              "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+              "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "apyInterval",
+            "in": "query",
+            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
+            "schema": {
+              "default": 604800,
+              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
               "minimum": 1,
               "type": "integer"
             }
@@ -1409,10 +1442,21 @@
           {
             "name": "step",
             "in": "query",
-            "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+            "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
             "schema": {
               "default": 86400,
-              "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+              "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "apyInterval",
+            "in": "query",
+            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
+            "schema": {
+              "default": 604800,
+              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
               "minimum": 1,
               "type": "integer"
             }
@@ -1507,10 +1551,21 @@
           {
             "name": "step",
             "in": "query",
-            "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+            "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
             "schema": {
               "default": 86400,
-              "description": "Bucket width in seconds. Defaults to 86400 (1 day)",
+              "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "apyInterval",
+            "in": "query",
+            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
+            "schema": {
+              "default": 604800,
+              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
               "minimum": 1,
               "type": "integer"
             }
@@ -3052,7 +3107,7 @@
       "OpportunitiesAPYBreakdown": {
         "properties": {
           "base": {
-            "description": "APY from share-price growth alone (vaults.fyi compound formula)",
+            "description": "APY from share-price growth alone (compound formula)",
             "type": "number"
           },
           "reward": {
@@ -3282,7 +3337,7 @@
         "properties": {
           "apr": {
             "$ref": "#/components/schemas/OpportunitiesAPRBreakdown",
-            "description": "Trailing-window simple-rate APR (annualised share-price growth over a server-derived window)"
+            "description": "Trailing-window simple-rate APR (annualised share-price growth over the apyInterval window)"
           },
           "blockNumber": {
             "description": "On-chain block number of the snapshot chosen as the bucket representative",
@@ -3301,7 +3356,7 @@
         "properties": {
           "apy": {
             "$ref": "#/components/schemas/OpportunitiesAPYBreakdown",
-            "description": "Trailing-window compound APY (annualised share-price growth over a server-derived window)"
+            "description": "Trailing-window compound APY (annualised share-price growth over the apyInterval window)"
           },
           "blockNumber": {
             "description": "On-chain block number of the snapshot chosen as the bucket representative",
@@ -3770,6 +3825,9 @@
           "name": {
             "type": "string"
           },
+          "opportunity_id": {
+            "$ref": "#/components/schemas/UuidUUID"
+          },
           "pool": {
             "$ref": "#/components/schemas/ProtocolsPortfolioPool"
           },
@@ -3826,6 +3884,9 @@
           },
           "name": {
             "type": "string"
+          },
+          "opportunity_id": {
+            "$ref": "#/components/schemas/UuidUUID"
           },
           "price": {
             "type": "string"
