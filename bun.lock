@@ -11,8 +11,8 @@
       },
     },
     "packages/sdk": {
-      "name": "@turtleclub/sdk",
-      "version": "0.0.0",
+      "name": "@turtlexyz/sdk",
+      "version": "1.5.0",
       "dependencies": {
         "@hey-api/client-fetch": "^0.13.1",
         "zod": "catalog:",
@@ -195,7 +195,7 @@
 
     "@turbo/windows-arm64": ["@turbo/windows-arm64@2.9.6", "", { "os": "win32", "cpu": "arm64" }, "sha512-1XUUyWW0W6FTSqGEhU8RHVqb2wP1SPkr7hIvBlMEwH9jr+sJQK5kqeosLJ/QaUv4ecSAd1ZhIrLoW7qslAzT4A=="],
 
-    "@turtleclub/sdk": ["@turtleclub/sdk@workspace:packages/sdk"],
+    "@turtlexyz/sdk": ["@turtlexyz/sdk@workspace:packages/sdk"],
 
     "@types/estree": ["@types/estree@1.0.8", "", {}, "sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w=="],
 

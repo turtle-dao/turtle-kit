@@ -164,15 +164,14 @@ jobs:
 
       - name: Bump @turtleclub/sdk version
         env:
-          CLASSIFICATION: ${{ needs.classify.outputs.classification }}
+          NEW_VERSION: ${{ needs.classify.outputs.new_version }}
         run: |
-          case "$CLASSIFICATION" in
-            breaking) bump=major ;;
-            minor)    bump=minor ;;
-            patch)    bump=patch ;;
-          esac
+          # bun understands the workspace `catalog:` protocol; npm does not
+          # (it dies with EUNSUPPORTEDPROTOCOL). Set the exact version already
+          # computed by the classify job so package.json, the PR title, and the
+          # CHANGELOG can never drift apart.
           cd packages/sdk
-          npm version "$bump" --no-git-tag-version
+          bun pm version "$NEW_VERSION" --no-git-tag-version --allow-same-version
 
       - name: Prepend CHANGELOG entry
         env:
@@ -219,11 +218,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: regenerate-output
+          # src/client is gitignored generated code (regenerated on every
+          # build via turbo `codegen`), so it never travels in the release PR.
           path: |
             ${{ env.SPEC_PATH_IN_KIT }}
             CHANGELOG.md
             packages/sdk/package.json
-            packages/sdk/src/client/**
           retention-days: 1
 
   # ────────────────────────────────────────────────────────────────────────
@@ -300,17 +300,32 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          # Commit through the GitHub API so GitHub signs it with its own key
+          # and the commit shows as "Verified" — no GPG keys, no third-party
+          # action. Signs as github-actions[bot] via the default GITHUB_TOKEN.
+          sign-commits: true
           commit-message: "chore(sdk): release v${{ needs.classify.outputs.new_version }} (${{ needs.classify.outputs.classification }})"
           title: "chore(sdk): release v${{ needs.classify.outputs.new_version }} [${{ needs.classify.outputs.classification }}]"
           body: ${{ steps.body.outputs.body }}
           branch: chore/regen-sdk
           delete-branch: true
           labels: ${{ needs.classify.outputs.classification == 'breaking' && 'needs-review' || 'auto-merge' }}
+          # No src/client here: it's gitignored, so `git add` on it would
+          # fail with "pathspec did not match any files". The generated
+          # client is rebuilt from the spec at build/publish time.
           add-paths: |
             ${{ env.SPEC_PATH_IN_KIT }}
             CHANGELOG.md
             packages/sdk/package.json
-            packages/sdk/src/client/**
+
+      - name: Confirm commit signature
+        if: steps.cpr.outputs.pull-request-number
+        run: |
+          if [ "${{ steps.cpr.outputs.pull-request-commits-verified }}" = "true" ]; then
+            echo "::notice::PR #${{ steps.cpr.outputs.pull-request-number }} commit is Verified by GitHub ✅"
+          else
+            echo "::warning::PR #${{ steps.cpr.outputs.pull-request-number }} commit is NOT verified — check token type (PATs can't sign)"
+          fi
 
       - name: Enable auto-merge for non-breaking PR
         if: steps.cpr.outputs.pull-request-number && needs.classify.outputs.classification != 'breaking'

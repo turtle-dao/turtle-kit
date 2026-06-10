@@ -22,8 +22,8 @@ on:
     branches: [main]
 
 permissions:
-  contents: write       # to create the release tag
-  id-token: write       # for npm provenance
+  contents: write # to create the release tag
+  id-token: write # OIDC token for npm trusted publishing (+ auto provenance)
 
 jobs:
   publish:
@@ -45,6 +45,10 @@ jobs:
         with:
           node-version: 22
           registry-url: "https://registry.npmjs.org"
+
+      - name: Ensure npm supports OIDC trusted publishing
+        # node 22 ships npm 10.x; OIDC trusted publishing needs npm >= 11.5.1.
+        run: npm install -g npm@latest
 
       - name: Detect publishable version
         id: detect
@@ -75,17 +79,25 @@ jobs:
         if: steps.detect.outputs.should_publish == 'true'
         run: bun run build
 
-      - name: Publish to npm
+      # Two-step publish: bun packs, npm publishes.
+      #
+      # `bun pm pack` rewrites `catalog:` references in package.json to actual
+      # semver ranges in the tarball.
+      #
+      # We publish the resulting tarball with `npm publish` (not `bun publish`)
+      # because trusted publishing over OIDC is not yet supported by bun.
+      # Provenance is required via `publishConfig.provenance: true` in
+      # packages/sdk/package.json — the publish FAILS loudly if it can't be
+      # generated, rather than silently shipping an unattested package.
+      - name: Pack tarball (resolves catalog refs)
         if: steps.detect.outputs.should_publish == 'true'
         working-directory: packages/sdk
-        env:
-          # `bun publish` rewrites `catalog:` references in package.json
-          # to actual semver ranges in the tarball — npm consumers don't
-          # need access to the monorepo's catalog. We use bun here for
-          # that reason; npm publish would publish literal `catalog:`
-          # strings and break installs.
-          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: bun publish --access public
+        run: bun pm pack --destination ./
+
+      - name: Publish to npm (trusted publishing via OIDC)
+        if: steps.detect.outputs.should_publish == 'true'
+        working-directory: packages/sdk
+        run: npm publish ./*.tgz --access public
 
       - name: Extract release notes from CHANGELOG
         id: notes
