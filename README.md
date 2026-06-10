@@ -5,14 +5,14 @@ Official developer kit for Turtle — SDK, MCP server, and Claude Code skills.
 ## SDK
 
 ```bash
-npm install @turtle-xyz/sdk
+bun add @turtlexyz/sdk
 ```
 
 ```ts
-import { getOpportunities, createDeposit } from "@turtle-xyz/sdk";
+import { listOpportunities, createDepositInteraction } from "@turtlexyz/sdk";
 
 // Set TURTLE_API_KEY in your environment.
-const opps = await getOpportunities();
+const { data: opps } = await listOpportunities();
 ```
 
 See [`packages/sdk/README.md`](./packages/sdk/README.md) for full documentation.
