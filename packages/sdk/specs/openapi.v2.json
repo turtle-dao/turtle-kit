@@ -528,6 +528,7 @@
             "name": "address",
             "in": "query",
             "description": "Wallet address to check",
+            "required": true,
             "schema": {
               "description": "Wallet address to check",
               "type": "string"
@@ -556,6 +557,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/V1GetMembershipOutput"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
                 }
               }
             }
@@ -589,8 +610,18 @@
               }
             }
           },
-          "409": {
-            "description": "Conflict",
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
             "content": {
               "application/json": {
                 "schema": {
@@ -630,8 +661,28 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
           "409": {
             "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
             "content": {
               "application/json": {
                 "schema": {
@@ -646,7 +697,7 @@
     "/v2/metrics/distributor/{distributorId}": {
       "get": {
         "tags": [
-          "analytics"
+          "Analytics"
         ],
         "summary": "Get Distributor TVL",
         "description": "TVL time-series attributed to a distributor (builder code), with optional top wallets.",
@@ -762,7 +813,7 @@
     "/v2/metrics/distributor/{distributorId}/lps": {
       "get": {
         "tags": [
-          "analytics"
+          "Analytics"
         ],
         "summary": "Get Distributor LP Counts",
         "description": "Active and cumulative LP counts attributed to a distributor over time.",
@@ -1884,7 +1935,7 @@
     "/v2/streams/merkle_proofs": {
       "get": {
         "tags": [
-          "streams"
+          "Streams"
         ],
         "summary": "Get Merkle Proofs for Wallet",
         "description": "Retrieve Merkle proofs for a wallet address across multiple streams.\n\t\n\tThe endpoint returns proofs for the latest snapshot with a committed root hash for each stream.\n\tThe proofs can be used to claim rewards on-chain.\n\t\n\t**Caching Strategy:**\n\t1. Check local in-memory LRU cache (LRU eviction ensures memory stays bounded)\n\t2. If not in cache, check Redis\n\t3. If not in Redis, rebuild from database\n\t4. Validate root hash matches the database value",
@@ -2633,6 +2684,9 @@
     },
     "/v2/wallet/{address}/portfolio": {
       "get": {
+        "tags": [
+          "Wallets"
+        ],
         "summary": "Get Wallet Portfolio",
         "description": "Get all DeFi positions for a wallet address across all supported protocols",
         "operationId": "protocols/wallet.GetWalletPortfolioHandler",
