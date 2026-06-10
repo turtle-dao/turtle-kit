@@ -1,6 +1,6 @@
 # turtle-kit
 
-Official developer kit for Turtle.
+Official developer kit for Turtle — SDK, MCP server, and Claude Code skills.
 
 ## SDK
 
@@ -9,13 +9,13 @@ bun add @turtlexyz/sdk
 ```
 
 ```ts
-import { getChains } from "@turtlexyz/sdk";
+import { listOpportunities, createDepositInteraction } from "@turtlexyz/sdk";
 
-// Reads TURTLE_API_KEY and TURTLE_BASE_URL from process.env.
-const chains = await getChains();
+// Set TURTLE_API_KEY in your environment.
+const { data: opps } = await listOpportunities();
 ```
 
-See [`packages/sdk/README.md`](./packages/sdk/README.md) for more.
+See [`packages/sdk/README.md`](./packages/sdk/README.md) for full documentation.
 
 ## License
 
