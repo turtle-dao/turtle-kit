@@ -1,0 +1,42 @@
+{
+  "name": "@turtlexyz/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "SDK-derived MCP server for the Turtle Earn API",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "turtle-mcp": "./dist/index.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "mcp:update": "bun run scripts/update-tools.ts",
+    "build": "bun run mcp:update && bun run --cwd ../sdk build && tsup",
+    "type-check": "bun run mcp:update && tsc --noEmit",
+    "dev": "bun run mcp:update && bun run --cwd ../sdk build && mcp-inspector bun run src/index.ts",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist src/generated"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "@turtlexyz/sdk": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/inspector": "^0.22.0",
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:"
+  }
+}

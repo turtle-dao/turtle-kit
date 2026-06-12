@@ -1,0 +1,3 @@
+# Use SDK-shaped MCP tools
+
+The SDK-derived MCP package exposes API-backed tools using the same input shape as the SDK operation options, such as `path`, `query`, and `body`, and returns the operation result's `data`. SDK error results are preserved rather than translated into a new MCP-specific error model. The MCP update fails when an SDK Operation cannot provide the SDK-backed schema needed for its MCP tool rather than generating a permissive fallback. We chose this over flattened MCP inputs and custom error formatting so the generated tools remain traceable to SDK calls, avoid bespoke parameter mapping, and change in lockstep with the SDK contract even though the tool inputs are less conversational.
