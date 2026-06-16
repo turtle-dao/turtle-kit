@@ -1,4 +1,3 @@
-import { spawnSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -8,10 +7,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(__dirname, "..");
 
 const expectedTools = [
-  "list_opportunities",
-  "create_deposit_interaction",
-  "create_stream",
-  "create_stream_point",
   "scaffold_earn_integration",
   "generate_streams_config",
   "check_attribution",
@@ -28,17 +23,6 @@ const expectedResources = [
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) {
     throw new Error(message);
-  }
-}
-
-function runMcpUpdate(): void {
-  const result = spawnSync("bun", ["run", "mcp:update"], {
-    cwd: packageRoot,
-    stdio: "inherit",
-  });
-
-  if (result.status !== 0) {
-    throw new Error("mcp:update failed before smoke eval.");
   }
 }
 
@@ -83,8 +67,6 @@ function readTextResource(result: unknown): string {
   return getString(first.text, "MCP resource text");
 }
 
-runMcpUpdate();
-
 const transport = new StdioClientTransport({
   command: "bun",
   args: ["run", "src/index.ts"],
@@ -105,6 +87,14 @@ try {
   for (const tool of expectedTools) {
     assert(toolNames.has(tool), `Missing expected tool: ${tool}`);
   }
+  assert(
+    !toolNames.has("create_stream"),
+    "Raw SDK write tool should not be registered by default.",
+  );
+  assert(
+    !toolNames.has("create_deposit_interaction"),
+    "Raw SDK deposit tool should not be registered by default.",
+  );
 
   const resources = await client.listResources();
   const resourceUris = new Set(resources.resources.map((resource) => resource.uri));
@@ -161,48 +151,8 @@ try {
     "generate_streams_config result",
   );
   assert(
-    JSON.stringify(streamsConfig).includes("confirm_create_stream"),
-    "Streams config must show write guardrail.",
-  );
-
-  const streamPreview = getRecord(
-    parseJsonToolResult(
-      await client.callTool({
-        name: "create_stream",
-        arguments: {
-          body: {
-            startTimestamp: "2026-07-01T00:00:00.000Z",
-          },
-        },
-      }),
-    ),
-    "create_stream preview result",
-  );
-  assert(streamPreview.testMode === true, "create_stream must preview by default.");
-  assert(
-    streamPreview.requiredConfirmation === undefined &&
-      JSON.stringify(streamPreview).includes("confirm_create_stream"),
-    "create_stream preview must explain production confirmation.",
-  );
-
-  const pointPreview = getRecord(
-    parseJsonToolResult(
-      await client.callTool({
-        name: "create_stream_point",
-        arguments: {
-          body: {
-            name: "Smoke Eval Points",
-            symbol: "SMOKE",
-          },
-        },
-      }),
-    ),
-    "create_stream_point preview result",
-  );
-  assert(pointPreview.testMode === true, "create_stream_point must preview by default.");
-  assert(
-    JSON.stringify(pointPreview).includes("confirm_create_stream_point"),
-    "create_stream_point preview must explain production confirmation.",
+    JSON.stringify(streamsConfig).includes("generate-only"),
+    "Streams config must show generate-only guardrail.",
   );
 
   console.log(

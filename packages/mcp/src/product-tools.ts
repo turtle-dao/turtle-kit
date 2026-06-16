@@ -223,12 +223,9 @@ function renderCreateStreamCode(
   const payload = JSON.stringify(body, null, 2);
   const executeComment = includeExecuteExample
     ? `
-// To execute through the MCP create_stream tool instead of this SDK call:
-// {
-//   "body": streamConfig,
-//   "testMode": false,
-//   "confirmProductionWrite": "confirm_create_stream"
-// }`
+// Review token IDs, timestamps, amounts, and org permissions before executing.
+// The default Turtle MCP server generates this code/config but does not execute
+// raw Streams writes for you.`
     : "";
 
   return `import { createStream } from "@turtlexyz/sdk";
@@ -313,12 +310,12 @@ export function registerProductTools(server: McpServer): void {
 
       return formatJsonResult({
         summary:
-          "Streams campaign config. Review token IDs, amounts, timestamps, and org permissions before calling create_stream.",
+          "Streams campaign config. Review token IDs, amounts, timestamps, and org permissions before SDK execution.",
         streamKind: input.streamKind,
         streamType: input.streamType,
         body,
         guardrail:
-          "The generated create_stream MCP tool previews by default. Production execution requires testMode=false and confirmProductionWrite='confirm_create_stream'.",
+          "Default MCP behavior is generate-only for Streams campaign creation. Review this config, then execute from your app/server with the SDK after human approval.",
         code: renderCreateStreamCode(body, input.includeExecuteExample),
         docs: ["https://docs.turtle.xyz/sdk/streams/create-stream"],
       });
