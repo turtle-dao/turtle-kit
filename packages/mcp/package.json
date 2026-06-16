@@ -18,6 +18,7 @@
   },
   "files": [
     "dist",
+    "resources",
     "README.md"
   ],
   "scripts": {

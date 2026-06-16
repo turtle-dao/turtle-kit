@@ -1,11 +1,57 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { type McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+
+type CatalogResource = {
+  name: string;
+  uri: string;
+  title: string;
+  description: string;
+  file: string;
+};
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(__dirname, "..");
 const repoRoot = resolve(packageRoot, "../..");
+const resourcesRoot = resolve(packageRoot, "resources");
+
+const docsResources: CatalogResource[] = [
+  {
+    name: "turtle-sdk-overview",
+    uri: "turtle://docs/sdk-overview",
+    title: "Turtle SDK Overview",
+    description: "Integration-oriented overview of Turtle SDK prerequisites and product surfaces.",
+    file: "docs/sdk-overview.md",
+  },
+];
+
+const recipeResources: CatalogResource[] = [
+  {
+    name: "turtle-earn-integration-recipe",
+    uri: "turtle://recipes/earn-integration",
+    title: "Turtle Earn Integration Recipe",
+    description: "Membership to deposit to attribution workflow for distributor integrations.",
+    file: "recipes/earn-integration.md",
+  },
+  {
+    name: "turtle-streams-campaign-recipe",
+    uri: "turtle://recipes/streams-campaign",
+    title: "Turtle Streams Campaign Recipe",
+    description: "Review-first workflow for creating Turtle Streams campaign config.",
+    file: "recipes/streams-campaign.md",
+  },
+];
+
+const skillResources: CatalogResource[] = [
+  {
+    name: "turtle-integration-assistant-skill",
+    uri: "turtle://skills/integration-assistant",
+    title: "Turtle Integration Assistant Skill",
+    description: "Agent workflow guidance for using Turtle MCP as an integration assistant.",
+    file: "skills/integration-assistant.md",
+  },
+];
 
 function textResource(uri: URL, text: string, mimeType = "text/markdown") {
   return {
@@ -19,127 +65,81 @@ function textResource(uri: URL, text: string, mimeType = "text/markdown") {
   };
 }
 
-const sdkOverview = `# Turtle SDK Overview
+function resourceList(resources: CatalogResource[]) {
+  return {
+    resources: resources.map(({ name, uri, title, description }) => ({
+      name,
+      uri,
+      title,
+      description,
+      mimeType: "text/markdown",
+    })),
+  };
+}
 
-Use Turtle as a build-time integration surface for distributors.
+function findResource(resources: CatalogResource[], uri: URL): CatalogResource {
+  const resource = resources.find((entry) => entry.uri === uri.href);
 
-Developer prerequisites:
-- Turtle organization approved in the Client Portal.
-- API key. Publishable keys cover reads; secret keys are server-side only and required for writes.
-- Distributor ID from the Distribution section. Earn deposit calls must include it for attribution.
+  if (!resource) {
+    throw new Error(`Unknown Turtle MCP resource: ${uri.href}`);
+  }
 
-Primary product flows:
-- Earn: discover opportunities, generate ready-to-sign deposit/withdrawal transactions, verify attribution.
-- Streams: create and inspect points/token reward campaigns.
-- Portfolio and activity: inspect wallet positions, wallet activity, distributor deposits, and distributor metrics.
+  return resource;
+}
 
-Canonical docs:
-- https://docs.turtle.xyz/sdk/overview
-- https://docs.turtle.xyz/sdk/earn/quickstart
-- https://docs.turtle.xyz/sdk/streams/overview
-`;
+function readCatalogResource(uri: URL, resource: CatalogResource) {
+  const text = readFileSync(resolve(resourcesRoot, resource.file), "utf8");
+  return textResource(uri, text);
+}
 
-const earnRecipe = `# Recipe: Turtle Earn Integration
-
-Goal: help a distributor developer ship an attributed deposit flow.
-
-Preferred workflow:
-1. Read available opportunities with SDK listOpportunities or getOpportunity in the app/server.
-2. Check wallet membership with SDK getMembership.
-3. If needed, use SDK createMembershipAgreementV2, ask the wallet to sign the returned message, then submit createMembershipV2.
-4. Build the deposit server-side with SDK createDepositInteraction. Always include distributorId in body.
-5. Return the ordered transactions array to the app. The user's wallet signs and broadcasts every transaction in order.
-6. After the deposit transaction confirms, call SDK verifyTracking with chainId and txHash from the distributor app/server.
-
-Gotchas:
-- Amounts are raw integer strings in the token's smallest unit, not human decimals.
-- Direct deposits use the opportunity's native deposit token; swap deposits require mode="swap" and slippageBps.
-- Async/complex vaults can require claim or cancel follow-up tools.
-- The MCP never signs or broadcasts user transactions.
-`;
-
-const streamsRecipe = `# Recipe: Streams Campaign Setup
-
-Goal: help a distributor or campaign manager produce a correct Streams config.
-
-Preferred workflow:
-1. Use SDK getStreamTokens for rewardTokenId and targetTokenId discovery on the target chain.
-2. For point streams, use SDK getStreamPoints for discovery and generate the point creation payload as code/config.
-3. Generate a reviewable request body and TypeScript snippet in the distributor app/server.
-4. Review timestamps, stream type, token IDs, totalAmount, customArgs, and adapter config.
-5. Execute Streams creation from the distributor app/server with the SDK after human approval. The default MCP server does not execute raw Streams writes.
-
-Gotchas:
-- Token streams return txParams; a wallet still must finalize the StreamFactory transaction on-chain.
-- Point streams can create immediately.
-- startTimestamp and endTimestamp should be UTC and aligned to the API's expected boundaries.
-`;
-
-const skillGuide = `# Turtle Integration Assistant Skill Guide
-
-The MCP is meant to be a skill vehicle, not only a raw SDK endpoint dump.
-
-When asked to integrate Turtle Earn:
-- Start with turtle://recipes/earn-integration.
-- Prefer scaffold_earn_integration for project-specific code.
-- Use generated SDK code for live data inside the distributor app/server.
-- Keep distributorId server-side and include it in every deposit-generation body.
-
-When asked to set up Streams:
-- Start with turtle://recipes/streams-campaign.
-- Generate reviewable SDK code/config before any production write.
-- Do not execute raw Streams writes through the default MCP server.
-
-Docs:
-- https://docs.turtle.xyz/sdk/overview
-- https://docs.turtle.xyz/sdk/earn/quickstart
-- https://docs.turtle.xyz/sdk/streams/create-stream
-`;
+function registerCatalogTemplate(
+  server: McpServer,
+  name: string,
+  template: string,
+  resources: CatalogResource[],
+  variableName: string,
+): void {
+  server.registerResource(
+    name,
+    new ResourceTemplate(template, {
+      list: () => resourceList(resources),
+      complete: {
+        [variableName]: (value) =>
+          resources
+            .map((resource) => resource.uri.split("/").at(-1))
+            .filter((slug): slug is string => Boolean(slug?.startsWith(value))),
+      },
+    }),
+    {
+      title: name,
+      description: `Turtle MCP ${name} resources.`,
+      mimeType: "text/markdown",
+    },
+    (uri) => readCatalogResource(uri, findResource(resources, uri)),
+  );
+}
 
 export function registerProductResources(server: McpServer): void {
-  server.registerResource(
-    "turtle-sdk-overview",
-    "turtle://docs/sdk-overview",
-    {
-      title: "Turtle SDK Overview",
-      description:
-        "Integration-oriented overview of Turtle SDK prerequisites and product surfaces.",
-      mimeType: "text/markdown",
-    },
-    (uri) => textResource(uri, sdkOverview),
+  registerCatalogTemplate(
+    server,
+    "turtle-docs",
+    "turtle://docs/{docName}",
+    docsResources,
+    "docName",
   );
-
-  server.registerResource(
-    "turtle-earn-integration-recipe",
-    "turtle://recipes/earn-integration",
-    {
-      title: "Turtle Earn Integration Recipe",
-      description: "Membership to deposit to attribution workflow for distributor integrations.",
-      mimeType: "text/markdown",
-    },
-    (uri) => textResource(uri, earnRecipe),
+  registerCatalogTemplate(
+    server,
+    "turtle-recipes",
+    "turtle://recipes/{recipeName}",
+    recipeResources,
+    "recipeName",
   );
-
-  server.registerResource(
-    "turtle-streams-campaign-recipe",
-    "turtle://recipes/streams-campaign",
-    {
-      title: "Turtle Streams Campaign Recipe",
-      description: "Review-first workflow for creating Turtle Streams campaign config.",
-      mimeType: "text/markdown",
-    },
-    (uri) => textResource(uri, streamsRecipe),
-  );
-
-  server.registerResource(
-    "turtle-integration-assistant-skill",
-    "turtle://skills/integration-assistant",
-    {
-      title: "Turtle Integration Assistant Skill",
-      description: "Agent workflow guidance for using Turtle MCP as an integration assistant.",
-      mimeType: "text/markdown",
-    },
-    (uri) => textResource(uri, skillGuide),
+  registerCatalogTemplate(
+    server,
+    "turtle-skills",
+    "turtle://skills/{skillName}",
+    skillResources,
+    "skillName",
   );
 
   server.registerResource(

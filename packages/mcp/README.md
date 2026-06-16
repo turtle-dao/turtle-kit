@@ -32,9 +32,13 @@ bun run type-check
 bun run build
 ```
 
-`eval:smoke` starts the MCP over stdio and verifies the integration-assistant tool/resources without calling raw SDK write tools.
-
 The product-layer tools and resources live in `src/product-tools.ts` and `src/product-resources.ts`; they are handwritten and versioned.
+Markdown resource content lives under `resources/` and is exposed through MCP resource templates:
+
+- `turtle://docs/{docName}`
+- `turtle://recipes/{recipeName}`
+- `turtle://skills/{skillName}`
+- `turtle://openapi/spec`
 
 ## Configuration
 
