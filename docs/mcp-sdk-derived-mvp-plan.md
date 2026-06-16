@@ -1,6 +1,6 @@
 # SDK-derived MCP MVP Plan
 
-This plan captures the agreed MVP for adding `packages/mcp` to Turtle Kit. The MCP package exposes MCP tools for SDK Operations only, generated at development/build time from the SDK-generated operation and schema surfaces.
+This plan captures the foundation for adding `packages/mcp` to Turtle Kit. The MCP package exposes MCP tools for SDK Operations, generated at development/build time from the SDK-generated operation and schema surfaces, and now layers product-oriented integration tools/resources on top.
 
 ## Decisions
 
@@ -8,10 +8,12 @@ This plan captures the agreed MVP for adding `packages/mcp` to Turtle Kit. The M
 - The MCP Tool Surface cannot exceed the SDK Surface.
 - Every SDK Operation is exposed initially.
 - SDK helpers, clients, namespaces, and type exports are not MCP tools.
-- Wallet connection, transaction signing, MCP Apps UI, and other non-SDK capabilities are omitted.
+- Wallet connection, transaction signing, MCP Apps UI, and runtime fund movement are omitted.
+- Product-layer scaffolding tools may sit alongside SDK-derived API tools when they generate code/config or orchestrate SDK calls without exceeding the SDK-backed API surface.
 - Tool names are derived from SDK export names using MCP-friendly casing, for example `createDepositInteraction` becomes `create_deposit_interaction`.
 - MCP tool inputs preserve the SDK-shaped operation options, such as `path`, `query`, and `body`.
-- MCP tool outputs return the SDK result's `data`; SDK error results are preserved for now.
+- SDK-derived MCP tool outputs return the SDK result's `data`; SDK error results are preserved for now.
+- `create_stream` and `create_stream_point` are exposed but guarded with preview-by-default `testMode` and explicit `confirmProductionWrite` for production writes.
 - `mcp:update` is generation-time, not runtime introspection.
 - `mcp:update` runs the SDK codegen first.
 - Generated MCP files are ignored, like `packages/sdk/src/client/`.
@@ -25,10 +27,13 @@ This plan captures the agreed MVP for adding `packages/mcp` to Turtle Kit. The M
 - `packages/mcp/tsconfig.json`: package TypeScript config.
 - `packages/mcp/src/index.ts`: manual stdio server bootstrap.
 - `packages/mcp/src/format-result.ts`: manual JSON text formatter with an 800 KB response cap.
+- `packages/mcp/src/product-tools.ts`: handwritten integration-assistant tools.
+- `packages/mcp/src/product-resources.ts`: curated docs, recipes, skill guide, and OpenAPI resource registrations.
 - `packages/mcp/src/generated/tools.ts`: generated tool registrations and SDK wrappers.
 - `packages/mcp/src/generated/manifest.ts`: generated manifest of SDK export names, tool names, and schema parts.
 - `packages/mcp/scripts/update-tools.ts`: generator script.
 - `packages/mcp/README.md`: local usage, env configuration, Inspector usage, and MCP client config examples.
+- `skills/turtle-integration-assistant/SKILL.md`: repo-local skill for agent workflows.
 
 ## SDK Changes
 
@@ -59,9 +64,19 @@ z.object({
 
 - Fail `mcp:update` if a required schema cannot be resolved from the SDK Schema Surface.
 - Generate wrappers that call the SDK operation with the MCP input as SDK options.
+- Add preview/confirmation fields to the consequential Streams write tools.
 - Return `result.data` when present.
 - Preserve SDK error results without custom MCP-specific translation.
 - Serialize returned payloads as JSON text.
+
+## Product Layer
+
+The MCP is an integration assistant, not only an SDK endpoint dump. The handwritten layer adds:
+
+- `scaffold_earn_integration`: emits membership/deposit/verify scaffold code with a required distributor ID.
+- `generate_streams_config`: emits reviewable Streams campaign config and creation code.
+- `check_attribution`: verifies one transaction and reads recent distributor deposits.
+- Resources for SDK overview, Earn integration recipe, Streams campaign recipe, skill guidance, and the local OpenAPI spec.
 
 ## Package Scripts
 

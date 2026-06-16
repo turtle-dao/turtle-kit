@@ -19,6 +19,11 @@ type Operation = {
   schemas: Partial<Record<RequestPart, OperationSchema>>;
 };
 
+const consequentialWriteConfirmations: Record<string, string> = {
+  createStream: "confirm_create_stream",
+  createStreamPoint: "confirm_create_stream_point",
+};
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(__dirname, "..");
 const repoRoot = resolve(packageRoot, "../..");
@@ -203,7 +208,59 @@ function renderSchemaShape(operation: Operation): string {
     return [`  ${part}: ${expression},`];
   });
 
+  const confirmation = consequentialWriteConfirmations[operation.sdkExportName];
+  if (confirmation) {
+    fields.push(
+      "  testMode: z.boolean().optional().default(true),",
+      `  confirmProductionWrite: z.literal(${JSON.stringify(confirmation)}).optional(),`,
+    );
+  }
+
   return fields.length === 0 ? "" : `\n${fields.join("\n")}\n`;
+}
+
+function renderToolHandler(operation: Operation): string {
+  const confirmation = consequentialWriteConfirmations[operation.sdkExportName];
+
+  if (!confirmation) {
+    return `async (input) =>
+      formatJsonResult(
+        await sdk.${operation.sdkExportName}(
+          input as Parameters<typeof sdk.${operation.sdkExportName}>[0],
+        ),
+      )`;
+  }
+
+  return `async (input) => {
+      const { testMode, confirmProductionWrite, ...sdkInput } = input as Parameters<
+        typeof sdk.${operation.sdkExportName}
+      >[0] & {
+        testMode?: boolean;
+        confirmProductionWrite?: string;
+      };
+
+      if (testMode !== false) {
+        return formatJsonResult({
+          testMode: true,
+          toolName: ${JSON.stringify(operation.toolName)},
+          sdkExportName: ${JSON.stringify(operation.sdkExportName)},
+          message:
+            "Preview only. Set testMode to false and confirmProductionWrite to ${confirmation} to execute this production write.",
+          input: sdkInput,
+        });
+      }
+
+      if (confirmProductionWrite !== ${JSON.stringify(confirmation)}) {
+        return formatJsonResult({
+          error: "confirmation_required",
+          message:
+            "This tool creates or mutates a production Streams campaign. Re-run with testMode false and confirmProductionWrite set to ${confirmation}.",
+          requiredConfirmation: ${JSON.stringify(confirmation)},
+        });
+      }
+
+      return formatJsonResult(await sdk.${operation.sdkExportName}(sdkInput));
+    }`;
 }
 
 function renderToolsFile(operations: Operation[]): string {
@@ -225,12 +282,7 @@ function renderToolsFile(operations: Operation[]): string {
       description: ${JSON.stringify(operation.description)},
       inputSchema: ${operation.sdkExportName}InputSchema,
     },
-    async (input) =>
-      formatJsonResult(
-        await sdk.${operation.sdkExportName}(
-          input as Parameters<typeof sdk.${operation.sdkExportName}>[0],
-        ),
-      ),
+    ${renderToolHandler(operation)},
   );`,
     )
     .join("\n\n");

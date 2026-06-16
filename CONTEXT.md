@@ -28,6 +28,10 @@ _Avoid_: Runtime introspection, dynamic tool discovery
 The first local `packages/mcp` package that exposes SDK Operations as MCP tools. Publication naming, package migration compatibility, and non-SDK capabilities are outside the MCP MVP.
 _Avoid_: Published MCP package, legacy MCP migration
 
+**MCP Product Layer**:
+Handwritten assistant tools, resources, and skills that make the SDK-derived MCP useful for distributor developers. This layer can generate code/config and compose SDK operations, but it should not add wallet signing, broadcasting, custody, or API behavior that bypasses the SDK.
+_Avoid_: Raw SDK dump, runtime trading agent
+
 **Wallet Capability**:
 Agent-facing wallet connection or transaction-signing behavior that is not part of the SDK Surface. Wallet Capability is outside the MCP Tool Surface for the SDK-derived MCP package.
 _Avoid_: SDK tool, generated MCP tool
@@ -57,6 +61,10 @@ Domain expert: "During MCP Update. The server should run from the generated MCP 
 Dev: "Should the SDK-derived MCP include wallet connection or signing tools?"
 
 Domain expert: "No. Wallet Capability is outside this MCP Tool Surface unless a separate package or explicit opt-in surface is defined later."
+
+Dev: "Can the MCP add scaffold or check tools that are not one SDK operation?"
+
+Domain expert: "Yes, in the MCP Product Layer. These tools should generate integration code/config or compose SDK operations, and must keep attribution and write guardrails explicit."
 
 Dev: "Should the deposit tool be called create_deposit or create_deposit_interaction?"
 
