@@ -6,11 +6,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(__dirname, "..");
 
-const expectedTools = [
-  "scaffold_earn_integration",
-  "generate_streams_config",
-  "check_attribution",
-] as const;
+const expectedTools = ["scaffold_earn_integration"] as const;
 
 const expectedResources = [
   "turtle://docs/sdk-overview",
@@ -95,6 +91,14 @@ try {
     !toolNames.has("create_deposit_interaction"),
     "Raw SDK deposit tool should not be registered by default.",
   );
+  assert(
+    !toolNames.has("generate_streams_config"),
+    "Streams config should be a resource/workflow, not a tool.",
+  );
+  assert(
+    !toolNames.has("check_attribution"),
+    "Attribution checking should be generated integration code, not a tool.",
+  );
 
   const resources = await client.listResources();
   const resourceUris = new Set(resources.resources.map((resource) => resource.uri));
@@ -135,24 +139,13 @@ try {
     "Scaffold must include attribution verification.",
   );
 
-  const streamsConfig = getRecord(
-    parseJsonToolResult(
-      await client.callTool({
-        name: "generate_streams_config",
-        arguments: {
-          streamKind: "point",
-          streamType: "fixed_apr",
-          targetTokenId: "target-token-smoke",
-          pointId: "00000000-0000-0000-0000-000000000001",
-          startTimestamp: "2026-07-01T00:00:00.000Z",
-        },
-      }),
-    ),
-    "generate_streams_config result",
-  );
+  const streamsRecipe = await client.readResource({
+    uri: "turtle://recipes/streams-campaign",
+  });
+  const streamsRecipeText = readTextResource(streamsRecipe);
   assert(
-    JSON.stringify(streamsConfig).includes("generate-only"),
-    "Streams config must show generate-only guardrail.",
+    streamsRecipeText.includes("does not execute raw Streams writes"),
+    "Streams recipe must keep production writes outside default MCP tools.",
   );
 
   console.log(

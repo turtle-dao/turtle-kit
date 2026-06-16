@@ -1,5 +1,4 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import * as sdk from "@turtlexyz/sdk";
 import { z } from "zod";
 import { formatJsonResult } from "./format-result.js";
 
@@ -12,44 +11,6 @@ const scaffoldEarnIntegrationInputSchema = z.object({
   baseUrlEnvVar: z.string().default("TURTLE_BASE_URL"),
   includeMembershipFlow: z.boolean().default(true),
 });
-
-const generateStreamsConfigInputSchema = z.object({
-  streamKind: z.enum(["token", "point"]),
-  streamType: z
-    .enum(["fixed_rate", "fixed_apr", "daily_budget", "airdrop", "yield_match"])
-    .default("fixed_apr"),
-  targetTokenId: z.string().min(1),
-  rewardTokenId: z.string().optional(),
-  pointId: z.string().optional(),
-  walletAddress: z.string().optional(),
-  totalAmount: z.string().optional(),
-  startTimestamp: z.string().datetime(),
-  endTimestamp: z.string().datetime().optional(),
-  apr: z.string().optional(),
-  targetApy: z.string().optional(),
-  apyOffset: z.string().optional(),
-  tokensPerUSD: z.string().optional(),
-  tokensPerDay: z.string().optional(),
-  includeExecuteExample: z.boolean().default(true),
-});
-
-const checkAttributionInputSchema = z.object({
-  distributorId: z.string().min(1),
-  chainId: z.number().int(),
-  txHash: z.string().min(1),
-  opportunityId: z.string().optional(),
-  productId: z.string().optional(),
-  recentDepositsLimit: z.number().int().min(1).max(100).default(20),
-});
-
-type SdkResult<T> = {
-  data?: T;
-  error?: unknown;
-};
-
-function getSdkData<T>(result: SdkResult<T>): T | undefined {
-  return result.data;
-}
 
 function renderServerSdkClient(
   distributorId: string,
@@ -155,91 +116,6 @@ function renderClientBroadcast(): string {
 }`;
 }
 
-function buildCustomArgs(
-  input: z.infer<typeof generateStreamsConfigInputSchema>,
-): Record<string, string> {
-  const args: Record<string, string> = {
-    targetTokenId: input.targetTokenId,
-  };
-
-  if (input.streamType === "fixed_rate") {
-    args.tokensPerUSD = input.tokensPerUSD ?? "1000000000000000";
-  }
-  if (input.streamType === "fixed_apr") {
-    args.apr = input.apr ?? "0.12";
-  }
-  if (input.streamType === "daily_budget") {
-    args.tokensPerDay = input.tokensPerDay ?? "1000000000000000000";
-  }
-  if (input.streamType === "yield_match") {
-    if (input.targetApy) args.targetApy = input.targetApy;
-    else args.apyOffset = input.apyOffset ?? "0";
-  }
-
-  return args;
-}
-
-function streamTypeToNumber(
-  streamType: z.infer<typeof generateStreamsConfigInputSchema>["streamType"],
-): number {
-  return {
-    fixed_rate: 1,
-    fixed_apr: 2,
-    daily_budget: 3,
-    airdrop: 4,
-    yield_match: 5,
-  }[streamType];
-}
-
-function buildStreamsBody(
-  input: z.infer<typeof generateStreamsConfigInputSchema>,
-): Record<string, unknown> {
-  const body: Record<string, unknown> = {
-    type: streamTypeToNumber(input.streamType),
-    startTimestamp: input.startTimestamp,
-    customArgs: buildCustomArgs(input),
-    adapters: [],
-  };
-
-  if (input.endTimestamp) body.endTimestamp = input.endTimestamp;
-  if (input.streamKind === "token") {
-    body.walletAddress = input.walletAddress ?? "0xADMIN_WALLET";
-    body.rewardTokenId = input.rewardTokenId ?? "REWARD_TOKEN_UUID";
-  } else {
-    body.pointId = input.pointId ?? "POINT_UUID";
-  }
-
-  if (input.streamType !== "daily_budget") {
-    body.totalAmount = input.totalAmount ?? "2500000000000000000000";
-  }
-
-  return body;
-}
-
-function renderCreateStreamCode(
-  body: Record<string, unknown>,
-  includeExecuteExample: boolean,
-): string {
-  const payload = JSON.stringify(body, null, 2);
-  const executeComment = includeExecuteExample
-    ? `
-// Review token IDs, timestamps, amounts, and org permissions before executing.
-// The default Turtle MCP server generates this code/config but does not execute
-// raw Streams writes for you.`
-    : "";
-
-  return `import { createStream } from "@turtlexyz/sdk";
-
-const streamConfig = ${payload};
-${executeComment}
-
-export async function createTurtleStream() {
-  return createStream({
-    body: streamConfig,
-  });
-}`;
-}
-
 export function registerProductTools(server: McpServer): void {
   server.registerTool(
     "scaffold_earn_integration",
@@ -295,77 +171,5 @@ export function registerProductTools(server: McpServer): void {
           "https://docs.turtle.xyz/sdk/earn/verify-attribution",
         ],
       }),
-  );
-
-  server.registerTool(
-    "generate_streams_config",
-    {
-      title: "Generate Streams Config",
-      description:
-        "Produce a Streams campaign request body and TypeScript create call. Defaults to code/config generation instead of production mutation.",
-      inputSchema: generateStreamsConfigInputSchema,
-    },
-    async (input) => {
-      const body = buildStreamsBody(input);
-
-      return formatJsonResult({
-        summary:
-          "Streams campaign config. Review token IDs, amounts, timestamps, and org permissions before SDK execution.",
-        streamKind: input.streamKind,
-        streamType: input.streamType,
-        body,
-        guardrail:
-          "Default MCP behavior is generate-only for Streams campaign creation. Review this config, then execute from your app/server with the SDK after human approval.",
-        code: renderCreateStreamCode(body, input.includeExecuteExample),
-        docs: ["https://docs.turtle.xyz/sdk/streams/create-stream"],
-      });
-    },
-  );
-
-  server.registerTool(
-    "check_attribution",
-    {
-      title: "Check Attribution",
-      description:
-        "Verify one transaction's Turtle tracking metadata and fetch recent distributor deposits to self-test an integration.",
-      inputSchema: checkAttributionInputSchema,
-    },
-    async (input) => {
-      const verify = await sdk.verifyTracking({
-        query: {
-          chainId: input.chainId,
-          txHash: input.txHash,
-        },
-      });
-      const deposits = await sdk.getDistributorDepositsV2({
-        path: {
-          distributorId: input.distributorId,
-        },
-        query: {
-          limit: input.recentDepositsLimit,
-          page: 1,
-          opportunityId: input.opportunityId,
-          productId: input.productId,
-        },
-      });
-
-      const verifyData = getSdkData<Record<string, unknown>>(verify);
-      const metadata =
-        verifyData && typeof verifyData.metadata === "object" && verifyData.metadata !== null
-          ? (verifyData.metadata as Record<string, unknown>)
-          : {};
-
-      return formatJsonResult({
-        distributorId: input.distributorId,
-        verified: Boolean(verifyData?.signatureValid),
-        distributorMatch: metadata.distributorId === input.distributorId,
-        verification: verify.data ?? verify.error,
-        recentDeposits: deposits.data ?? deposits.error,
-        docs: [
-          "https://docs.turtle.xyz/sdk/earn/verify-attribution",
-          "https://docs.turtle.xyz/sdk/earn-api/deposits",
-        ],
-      });
-    },
   );
 }

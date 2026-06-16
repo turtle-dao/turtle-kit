@@ -24,7 +24,7 @@ Use this skill to turn the Turtle MCP from raw SDK tools into an integration wor
    - `listOpportunities` or `getOpportunity` for vault selection.
    - `getMembership`, `createMembershipAgreementV2`, and `createMembershipV2` for wallet registration.
    - `createDepositInteraction` to build ordered transactions.
-   - `check_attribution` can verify attribution when the user provides a real tx hash.
+   - `verifyTracking` can verify attribution when the user provides a real tx hash.
 5. Remind implementers that amounts are raw integer strings in token base units.
 
 ## Streams Workflow
@@ -32,7 +32,7 @@ Use this skill to turn the Turtle MCP from raw SDK tools into an integration wor
 1. Read `turtle://recipes/streams-campaign` when available.
 2. Ask for token/point UUIDs, or generate SDK code that calls `getStreamTokens` / `getStreamPoints` from the distributor app/server.
 3. Use provided IDs in the generated config.
-4. Use `generate_streams_config` to produce reviewable campaign config and SDK code.
+4. Produce reviewable campaign config and SDK code from the Streams recipe/resource.
 5. Do not execute raw Streams writes through the default MCP server; hand reviewed config to the distributor app/server for SDK execution after human approval.
 
 ## Gotchas

@@ -49,7 +49,7 @@ Preferred workflow:
 3. If needed, use SDK createMembershipAgreementV2, ask the wallet to sign the returned message, then submit createMembershipV2.
 4. Build the deposit server-side with SDK createDepositInteraction. Always include distributorId in body.
 5. Return the ordered transactions array to the app. The user's wallet signs and broadcasts every transaction in order.
-6. After the deposit transaction confirms, call MCP check_attribution or SDK verifyTracking with chainId and txHash.
+6. After the deposit transaction confirms, call SDK verifyTracking with chainId and txHash from the distributor app/server.
 
 Gotchas:
 - Amounts are raw integer strings in the token's smallest unit, not human decimals.
@@ -65,7 +65,7 @@ Goal: help a distributor or campaign manager produce a correct Streams config.
 Preferred workflow:
 1. Use SDK getStreamTokens for rewardTokenId and targetTokenId discovery on the target chain.
 2. For point streams, use SDK getStreamPoints for discovery and generate the point creation payload as code/config.
-3. Use generate_streams_config to create a reviewable request body and TypeScript snippet.
+3. Generate a reviewable request body and TypeScript snippet in the distributor app/server.
 4. Review timestamps, stream type, token IDs, totalAmount, customArgs, and adapter config.
 5. Execute Streams creation from the distributor app/server with the SDK after human approval. The default MCP server does not execute raw Streams writes.
 
@@ -87,7 +87,7 @@ When asked to integrate Turtle Earn:
 
 When asked to set up Streams:
 - Start with turtle://recipes/streams-campaign.
-- Use generate_streams_config before any production write.
+- Generate reviewable SDK code/config before any production write.
 - Do not execute raw Streams writes through the default MCP server.
 
 Docs:

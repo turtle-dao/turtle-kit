@@ -7,11 +7,9 @@ MCP integration assistant for Turtle Earn and Streams.
 This package exposes a small product layer for distributor developers integrating Turtle:
 
 - `scaffold_earn_integration` generates an attributed Earn deposit scaffold with the distributor ID baked into server-side calls.
-- `generate_streams_config` produces reviewable Streams campaign config and TypeScript creation code.
-- `check_attribution` wraps transaction verification and distributor deposit reads for integration self-tests.
 - MCP resources expose Turtle SDK overview, Earn and Streams recipes, the integration-assistant guide, and the local OpenAPI spec.
 
-It intentionally omits WalletConnect, transaction signing, transaction broadcasting, MCP Apps UI resources, and raw SDK write tools. Deposit and withdraw scaffolds produce code that returns unsigned transactions for a wallet to sign outside the MCP.
+It intentionally omits WalletConnect, transaction signing, transaction broadcasting, MCP Apps UI resources, raw SDK write tools, Streams config execution tools, and attribution-check execution tools. Deposit and withdraw scaffolds produce code that returns unsigned transactions for a wallet to sign outside the MCP.
 
 ## SDK Tool Generator
 
@@ -34,7 +32,7 @@ bun run type-check
 bun run build
 ```
 
-`eval:smoke` starts the MCP over stdio and verifies the integration-assistant tools/resources without calling raw SDK write tools.
+`eval:smoke` starts the MCP over stdio and verifies the integration-assistant tool/resources without calling raw SDK write tools.
 
 The product-layer tools and resources live in `src/product-tools.ts` and `src/product-resources.ts`; they are handwritten and versioned.
 
@@ -102,4 +100,4 @@ mcp-inspector -e TURTLE_API_KEY=... bun run src/index.ts
 The repo-local skill lives at `skills/turtle-integration-assistant/SKILL.md`. It teaches agents to use the MCP as a build-time integration assistant:
 
 - Earn: membership -> deposit generation -> wallet broadcast -> attribution verification.
-- Streams: token/point discovery -> config generation -> human-reviewed SDK execution.
+- Streams: read recipe/resource guidance -> human-reviewed SDK execution.
