@@ -24,6 +24,7 @@
     "mcp:update": "bun run scripts/update-tools.ts",
     "build": "bun run mcp:update && bun run --cwd ../sdk build && tsup",
     "type-check": "bun run mcp:update && tsc --noEmit",
+    "eval:smoke": "bun run scripts/eval-smoke.ts",
     "dev": "bun run mcp:update && bun run --cwd ../sdk build && mcp-inspector bun run src/index.ts",
     "start": "node dist/index.js",
     "clean": "rm -rf dist src/generated"
