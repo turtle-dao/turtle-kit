@@ -14,3 +14,4 @@ export { createClient } from "./client/client";
 export { client } from "./client/client.gen";
 export * from "./client/sdk.gen";
 export * as types from "./client/types.gen";
+export * as schemas from "./client/zod.gen";

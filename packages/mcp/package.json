@@ -1,0 +1,43 @@
+{
+  "name": "@turtlexyz/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "MCP integration assistant for Turtle Earn and Streams",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "turtle-mcp": "./dist/index.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "resources",
+    "README.md"
+  ],
+  "scripts": {
+    "mcp:update": "bun run scripts/update-tools.ts",
+    "build": "bun run --cwd ../sdk codegen && bun run --cwd ../sdk build && tsup",
+    "type-check": "bun run --cwd ../sdk codegen && tsc --noEmit",
+    "dev": "bun run --cwd ../sdk codegen && bun run --cwd ../sdk build && mcp-inspector bun run src/index.ts",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist src/generated"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "@turtlexyz/sdk": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/inspector": "^0.22.0",
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:"
+  }
+}
