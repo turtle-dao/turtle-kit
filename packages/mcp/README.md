@@ -52,7 +52,6 @@ It regenerates `src/generated/` from the SDK operation and schema surfaces. Thos
 bun install
 
 cd packages/mcp
-bun run eval:smoke
 bun run type-check
 bun run build
 ```

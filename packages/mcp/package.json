@@ -48,7 +48,9 @@
   "files": [
     "dist",
     "resources",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "scripts": {
     "mcp:update": "bun run scripts/update-tools.ts",

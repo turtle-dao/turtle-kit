@@ -23,6 +23,12 @@ permissions:
   contents: write # to create the release tag
   id-token: write # OIDC token for npm trusted publishing (+ auto provenance)
 
+# Two quick merges to main could otherwise race past the registry check and
+# double-publish; queue runs instead (never cancel a publish mid-flight).
+concurrency:
+  group: publish-mcp
+  cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
