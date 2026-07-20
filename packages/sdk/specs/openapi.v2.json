@@ -515,6 +515,122 @@
         }
       }
     },
+    "/v2/interactions/": {
+      "get": {
+        "tags": [
+          "Interactions"
+        ],
+        "summary": "List Interactions",
+        "description": "Returns paginated verified earn interactions (deposits and withdrawals), ordered by date descending by default. Optionally filter by interactionType, distributorId, opportunityId and/or productId.",
+        "operationId": "ListInteractions",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "interactionType",
+            "in": "query",
+            "description": "Filter by interaction type: 'deposit' or 'withdraw' (absent returns both)",
+            "schema": {
+              "description": "Filter by interaction type: 'deposit' or 'withdraw' (absent returns both)",
+              "enum": [
+                "deposit",
+                "withdraw"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "distributorId",
+            "in": "query",
+            "description": "Optional distributor ID to scope interactions",
+            "schema": {
+              "description": "Optional distributor ID to scope interactions",
+              "type": "string"
+            }
+          },
+          {
+            "name": "opportunityId",
+            "in": "query",
+            "description": "Optional opportunity UUID to scope interactions",
+            "schema": {
+              "description": "Optional opportunity UUID to scope interactions",
+              "type": "string"
+            }
+          },
+          {
+            "name": "productId",
+            "in": "query",
+            "description": "Optional product UUID to scope interactions to opportunities belonging to that product",
+            "schema": {
+              "description": "Optional product UUID to scope interactions to opportunities belonging to that product",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "One of: date, usdValue, amount, opportunity, distributor, wallet, type (defaults to date)",
+            "schema": {
+              "description": "One of: date, usdValue, amount, opportunity, distributor, wallet, type (defaults to date)",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "description": "asc or desc (defaults to desc)",
+            "schema": {
+              "description": "asc or desc (defaults to desc)",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV1ActionsWalletActivityItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/membership/": {
       "get": {
         "tags": [
@@ -1070,6 +1186,60 @@
             }
           },
           {
+            "name": "directInteractionEnabled",
+            "in": "query",
+            "description": "When true, only opportunities with direct interaction enabled",
+            "schema": {
+              "description": "When true, only opportunities with direct interaction enabled",
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "routedSwapEnabled",
+            "in": "query",
+            "description": "When true, only opportunities with routed swap entry enabled",
+            "schema": {
+              "description": "When true, only opportunities with routed swap entry enabled",
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "depositEnabled",
+            "in": "query",
+            "description": "When true, only opportunities with deposits enabled",
+            "schema": {
+              "description": "When true, only opportunities with deposits enabled",
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withdrawEnabled",
+            "in": "query",
+            "description": "When true, only opportunities with withdrawals enabled",
+            "schema": {
+              "description": "When true, only opportunities with withdrawals enabled",
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "asyncDeposit",
+            "in": "query",
+            "description": "When true, only opportunities with asynchronous deposits",
+            "schema": {
+              "description": "When true, only opportunities with asynchronous deposits",
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "asyncWithdraw",
+            "in": "query",
+            "description": "When true, only opportunities with asynchronous withdrawals",
+            "schema": {
+              "description": "When true, only opportunities with asynchronous withdrawals",
+              "type": "boolean"
+            }
+          },
+          {
             "name": "sortBy",
             "in": "query",
             "description": "One of: tvl, name, type, apr, curator, provider (defaults to tvl)",
@@ -1101,6 +1271,285 @@
           },
           "400": {
             "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/opportunities/distributors/{distributorId}": {
+      "get": {
+        "tags": [
+          "Opportunities"
+        ],
+        "summary": "List Opportunities By Distributor",
+        "description": "Returns active opportunities visible to a distributor (per its earn details configuration), with the same pagination, filtering and sorting as /opportunities.",
+        "operationId": "ListOpportunitiesByDistributor",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Case-insensitive match on name, description or token address",
+            "schema": {
+              "description": "Case-insensitive match on name, description or token address",
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainIds",
+            "in": "query",
+            "description": "Comma-separated numeric chain IDs (deposit tokens), e.g. '1,43114'",
+            "schema": {
+              "description": "Comma-separated numeric chain IDs (deposit tokens), e.g. '1,43114'",
+              "type": "string"
+            }
+          },
+          {
+            "name": "depositToken",
+            "in": "query",
+            "description": "Deposit token in 'address-chainId' format, e.g. '0xb31f...-43114'",
+            "schema": {
+              "description": "Deposit token in 'address-chainId' format, e.g. '0xb31f...-43114'",
+              "type": "string"
+            }
+          },
+          {
+            "name": "depositTokenSymbols",
+            "in": "query",
+            "description": "Comma-separated deposit token symbols (case-insensitive, OR logic)",
+            "schema": {
+              "description": "Comma-separated deposit token symbols (case-insensitive, OR logic)",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tags",
+            "in": "query",
+            "description": "Comma-separated tag codes",
+            "schema": {
+              "description": "Comma-separated tag codes",
+              "type": "string"
+            }
+          },
+          {
+            "name": "curatorId",
+            "in": "query",
+            "description": "Comma-separated curator organization ids",
+            "schema": {
+              "description": "Comma-separated curator organization ids",
+              "type": "string"
+            }
+          },
+          {
+            "name": "providerId",
+            "in": "query",
+            "description": "Comma-separated provider organization ids",
+            "schema": {
+              "description": "Comma-separated provider organization ids",
+              "type": "string"
+            }
+          },
+          {
+            "name": "partnerId",
+            "in": "query",
+            "description": "Comma-separated partner organization ids",
+            "schema": {
+              "description": "Comma-separated partner organization ids",
+              "type": "string"
+            }
+          },
+          {
+            "name": "lendingProtocolId",
+            "in": "query",
+            "description": "Comma-separated lending protocol organization ids",
+            "schema": {
+              "description": "Comma-separated lending protocol organization ids",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tvlMin",
+            "in": "query",
+            "description": "Minimum TVL in USD",
+            "schema": {
+              "description": "Minimum TVL in USD",
+              "type": "number"
+            }
+          },
+          {
+            "name": "tvlMax",
+            "in": "query",
+            "description": "Maximum TVL in USD",
+            "schema": {
+              "description": "Maximum TVL in USD",
+              "type": "number"
+            }
+          },
+          {
+            "name": "minApr",
+            "in": "query",
+            "description": "Minimum estimated APR",
+            "schema": {
+              "description": "Minimum estimated APR",
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxApr",
+            "in": "query",
+            "description": "Maximum estimated APR",
+            "schema": {
+              "description": "Maximum estimated APR",
+              "type": "number"
+            }
+          },
+          {
+            "name": "featured",
+            "in": "query",
+            "description": "Filter by featured flag",
+            "schema": {
+              "description": "Filter by featured flag",
+              "type": [
+                "null",
+                "boolean"
+              ]
+            }
+          },
+          {
+            "name": "directInteractionEnabled",
+            "in": "query",
+            "description": "When true, only opportunities with direct interaction enabled",
+            "schema": {
+              "description": "When true, only opportunities with direct interaction enabled",
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "routedSwapEnabled",
+            "in": "query",
+            "description": "When true, only opportunities with routed swap entry enabled",
+            "schema": {
+              "description": "When true, only opportunities with routed swap entry enabled",
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "depositEnabled",
+            "in": "query",
+            "description": "When true, only opportunities with deposits enabled",
+            "schema": {
+              "description": "When true, only opportunities with deposits enabled",
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withdrawEnabled",
+            "in": "query",
+            "description": "When true, only opportunities with withdrawals enabled",
+            "schema": {
+              "description": "When true, only opportunities with withdrawals enabled",
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "asyncDeposit",
+            "in": "query",
+            "description": "When true, only opportunities with asynchronous deposits",
+            "schema": {
+              "description": "When true, only opportunities with asynchronous deposits",
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "asyncWithdraw",
+            "in": "query",
+            "description": "When true, only opportunities with asynchronous withdrawals",
+            "schema": {
+              "description": "When true, only opportunities with asynchronous withdrawals",
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "One of: tvl, name, type, apr, curator, provider (defaults to tvl)",
+            "schema": {
+              "description": "One of: tvl, name, type, apr, curator, provider (defaults to tvl)",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "description": "asc or desc (defaults to desc)",
+            "schema": {
+              "description": "asc or desc (defaults to desc)",
+              "type": "string"
+            }
+          },
+          {
+            "name": "distributorId",
+            "in": "path",
+            "description": "Distributor ID whose earn details config scopes the results",
+            "required": true,
+            "schema": {
+              "description": "Distributor ID whose earn details config scopes the results",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2OpportunitiesOpportunityResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
             "content": {
               "application/json": {
                 "schema": {
@@ -1177,10 +1626,10 @@
           {
             "name": "apyInterval",
             "in": "query",
-            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
+            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
             "schema": {
-              "default": 604800,
-              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
+              "default": 2592000,
+              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
               "minimum": 1,
               "type": "integer"
             }
@@ -1269,7 +1718,7 @@
           "Historical Data"
         ],
         "summary": "Get Vault Historical APR",
-        "description": "Simple-rate (non-compound) APR per point over [from, to]. Each point annualises share-price growth over the trailing apyInterval window (seconds); points are spaced by step (granularity), independent of apyInterval. Reward APR is reserved for future rewards indexing and is always 0.",
+        "description": "Simple-rate (non-compound) APR per point over [from, to]. Each point annualises share-price growth over the trailing apyInterval window (seconds); points are spaced by step (granularity), independent of apyInterval. Reward APR is reserved for future rewards indexing and is always 0. Returns 503 while the vault's position is being re-indexed.",
         "operationId": "GetOpportunityHistoricalAPR",
         "parameters": [
           {
@@ -1286,10 +1735,10 @@
           {
             "name": "apyInterval",
             "in": "query",
-            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
+            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
             "schema": {
-              "default": 604800,
-              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
+              "default": 2592000,
+              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
               "minimum": 1,
               "type": "integer"
             }
@@ -1368,6 +1817,16 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -1378,7 +1837,7 @@
           "Historical Data"
         ],
         "summary": "Get Vault Historical APY",
-        "description": "Compound APY per point over [from, to]. Each point annualises share-price growth over the trailing apyInterval window (seconds); points are spaced by step (granularity), independent of apyInterval. Reward APY is reserved for future rewards indexing and is always 0.",
+        "description": "Compound APY per point over [from, to]. Each point annualises share-price growth over the trailing apyInterval window (seconds); points are spaced by step (granularity), independent of apyInterval. Reward APY is reserved for future rewards indexing and is always 0. Returns 503 while the vault's position is being re-indexed.",
         "operationId": "GetOpportunityHistoricalAPY",
         "parameters": [
           {
@@ -1395,10 +1854,10 @@
           {
             "name": "apyInterval",
             "in": "query",
-            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
+            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
             "schema": {
-              "default": 604800,
-              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
+              "default": 2592000,
+              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
               "minimum": 1,
               "type": "integer"
             }
@@ -1477,6 +1936,16 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -1487,7 +1956,7 @@
           "Historical Data"
         ],
         "summary": "Get Vault Historical Share Price",
-        "description": "Get historical share-price time-series for a vault, bucketed by interval over [from, to]. Native is denominated in the vault's underlying (base) asset; USD is null when the underlying price is unavailable for the bucket.",
+        "description": "Get historical share-price time-series for a vault, bucketed by interval over [from, to]. Native is denominated in the vault's underlying (base) asset; USD is null when the underlying price is unavailable for the bucket. Returns 503 while the vault's position is being re-indexed.",
         "operationId": "GetOpportunityHistoricalSharePrice",
         "parameters": [
           {
@@ -1504,10 +1973,10 @@
           {
             "name": "apyInterval",
             "in": "query",
-            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
+            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
             "schema": {
-              "default": 604800,
-              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
+              "default": 2592000,
+              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
               "minimum": 1,
               "type": "integer"
             }
@@ -1586,6 +2055,16 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -1613,10 +2092,10 @@
           {
             "name": "apyInterval",
             "in": "query",
-            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
+            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
             "schema": {
-              "default": 604800,
-              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 604800 (7 days)",
+              "default": 2592000,
+              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
               "minimum": 1,
               "type": "integer"
             }
@@ -1932,6 +2411,73 @@
         }
       }
     },
+    "/v2/streams/bulk": {
+      "post": {
+        "tags": [
+          "Streams"
+        ],
+        "summary": "Get Streams Data (bulk)",
+        "description": "Get streams filtered by multiple stream IDs, organization IDs, target-token chains and/or target tokens. Same stream objects as GET /streams. Pagination is optional via the `page` and `limit` query params (`limit` is capped at 500); omit both to return all matching streams, except when no filter is provided, in which case a bounded `limit` is required. Uses POST because the multi-valued filters are sent in the request body; it is a read-only query and is not scoped to the API key's organization.",
+        "operationId": "PostStreamsBulk",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StreamsPostStreamsBulkInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreamsPostStreamsBulkOutput"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/streams/merkle_proofs": {
       "get": {
         "tags": [
@@ -2157,6 +2703,55 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/streams/wallets/{address}": {
+      "get": {
+        "tags": [
+          "Streams"
+        ],
+        "summary": "Get Streams For Wallet",
+        "description": "Retrieve all streams a wallet is participating in with its snapshot data per stream. By default only the latest snapshot per stream is returned; set withSnapshots=true to include full history. rewardsAccumulated and rewardsAccumulatedBase are in wei units.",
+        "operationId": "GetStreamsForWallet",
+        "parameters": [
+          {
+            "name": "withSnapshots",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreamsGetStreamsForWalletOutput"
                 }
               }
             }
@@ -2706,7 +3301,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProtocolsWalletPortfolioResponse"
+                  "$ref": "#/components/schemas/TypesWalletPortfolioResponse"
                 }
               }
             }
@@ -3671,6 +4266,10 @@
             "description": "Minimum deposit amount in USD",
             "type": "number"
           },
+          "minWithdrawAmount": {
+            "description": "Minimum withdraw amount in receipt-token units",
+            "type": "number"
+          },
           "name": {
             "description": "Opportunity display name",
             "type": "string"
@@ -3757,6 +4356,23 @@
         },
         "type": "object"
       },
+      "PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV1ActionsWalletActivityItem": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ActionsWalletActivityItem"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationPaginationMetadata"
+          }
+        },
+        "type": "object"
+      },
       "PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2OpportunitiesOpportunityResponse": {
         "properties": {
           "data": {
@@ -3838,161 +4454,6 @@
           },
           "totalPages": {
             "type": "integer"
-          }
-        },
-        "type": "object"
-      },
-      "ProtocolsPortfolioDetail": {
-        "properties": {
-          "borrow_token_list": {
-            "items": {
-              "$ref": "#/components/schemas/ProtocolsPortfolioToken"
-            },
-            "type": "array"
-          },
-          "description": {
-            "type": "string"
-          },
-          "reward_token_list": {
-            "items": {
-              "$ref": "#/components/schemas/ProtocolsPortfolioToken"
-            },
-            "type": "array"
-          },
-          "supply_token_list": {
-            "items": {
-              "$ref": "#/components/schemas/ProtocolsPortfolioToken"
-            },
-            "type": [
-              "array",
-              "null"
-            ]
-          }
-        },
-        "type": "object"
-      },
-      "ProtocolsPortfolioItem": {
-        "properties": {
-          "detail": {
-            "$ref": "#/components/schemas/ProtocolsPortfolioDetail"
-          },
-          "name": {
-            "type": "string"
-          },
-          "opportunity_id": {
-            "$ref": "#/components/schemas/UuidUUID"
-          },
-          "pool": {
-            "$ref": "#/components/schemas/ProtocolsPortfolioPool"
-          },
-          "stats": {
-            "$ref": "#/components/schemas/ProtocolsPortfolioStats"
-          },
-          "type": {
-            "type": "string"
-          }
-        },
-        "type": "object"
-      },
-      "ProtocolsPortfolioPool": {
-        "properties": {
-          "chain": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          }
-        },
-        "type": "object"
-      },
-      "ProtocolsPortfolioStats": {
-        "properties": {
-          "asset_usd_value": {
-            "type": "string"
-          },
-          "debt_usd_value": {
-            "type": "string"
-          },
-          "net_usd_value": {
-            "type": "string"
-          }
-        },
-        "type": "object"
-      },
-      "ProtocolsPortfolioToken": {
-        "properties": {
-          "address": {
-            "type": "string"
-          },
-          "amount": {
-            "type": "string"
-          },
-          "chain": {
-            "type": "string"
-          },
-          "decimals": {
-            "type": "integer"
-          },
-          "logo_url": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "opportunity_id": {
-            "$ref": "#/components/schemas/UuidUUID"
-          },
-          "price": {
-            "type": "string"
-          },
-          "symbol": {
-            "type": "string"
-          }
-        },
-        "type": "object"
-      },
-      "ProtocolsProtocolPositions": {
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "logo_url": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "portfolio_item_list": {
-            "items": {
-              "$ref": "#/components/schemas/ProtocolsPortfolioItem"
-            },
-            "type": [
-              "array",
-              "null"
-            ]
-          },
-          "site_url": {
-            "type": "string"
-          },
-          "stats": {
-            "$ref": "#/components/schemas/ProtocolsPortfolioStats"
-          }
-        },
-        "type": "object"
-      },
-      "ProtocolsWalletPortfolioResponse": {
-        "properties": {
-          "protocols": {
-            "items": {
-              "$ref": "#/components/schemas/ProtocolsProtocolPositions"
-            },
-            "type": [
-              "array",
-              "null"
-            ]
-          },
-          "total_stats": {
-            "$ref": "#/components/schemas/ProtocolsPortfolioStats"
           }
         },
         "type": "object"
@@ -4253,6 +4714,20 @@
         },
         "type": "object"
       },
+      "StreamsGetStreamsForWalletOutput": {
+        "properties": {
+          "streams": {
+            "items": {
+              "$ref": "#/components/schemas/StreamsWalletData"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
       "StreamsGetStreamsOutput": {
         "properties": {
           "streams": {
@@ -4340,6 +4815,64 @@
           "updatedAt": {
             "format": "date-time",
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "StreamsPostStreamsBulkInput": {
+        "properties": {
+          "ids": {
+            "$ref": "#/components/schemas/UuidUUIDs",
+            "description": "Filter by stream IDs"
+          },
+          "organizationIds": {
+            "$ref": "#/components/schemas/UuidUUIDs",
+            "description": "Filter by owning organization IDs"
+          },
+          "targetChainIds": {
+            "description": "Filter by streams whose target token is on these chains",
+            "items": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "targetTokens": {
+            "description": "Filter by streams whose target token matches these (chainId, address) tokens",
+            "items": {
+              "$ref": "#/components/schemas/UtilsEvmToken"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "usersCount": {
+            "type": "boolean"
+          },
+          "withSnapshots": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "StreamsPostStreamsBulkOutput": {
+        "properties": {
+          "pagination": {
+            "$ref": "#/components/schemas/UtilsPaginationResponse",
+            "description": "Pagination metadata; omitted when no pagination was requested"
+          },
+          "streams": {
+            "items": {
+              "$ref": "#/components/schemas/StreamsStream"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
           }
         },
         "type": "object"
@@ -4662,10 +5195,16 @@
           },
           "customMetrics": {},
           "rewardsAccumulated": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "rewardsAccumulatedBase": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "timestamp": {
             "format": "date-time",
@@ -4723,6 +5262,144 @@
           },
           "tokenInDecimals": {
             "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "TypesPortfolioDetail": {
+        "properties": {
+          "borrow_token_list": {
+            "items": {
+              "$ref": "#/components/schemas/TypesPortfolioToken"
+            },
+            "type": "array"
+          },
+          "description": {
+            "type": "string"
+          },
+          "reward_token_list": {
+            "items": {
+              "$ref": "#/components/schemas/TypesPortfolioToken"
+            },
+            "type": "array"
+          },
+          "supply_token_list": {
+            "items": {
+              "$ref": "#/components/schemas/TypesPortfolioToken"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "TypesPortfolioItem": {
+        "properties": {
+          "detail": {
+            "$ref": "#/components/schemas/TypesPortfolioDetail"
+          },
+          "name": {
+            "type": "string"
+          },
+          "opportunity_id": {
+            "$ref": "#/components/schemas/UuidUUID"
+          },
+          "pool": {
+            "$ref": "#/components/schemas/TypesPortfolioPool"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/TypesPortfolioStats"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TypesPortfolioPool": {
+        "properties": {
+          "chain": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TypesPortfolioStats": {
+        "properties": {
+          "asset_usd_value": {
+            "type": "string"
+          },
+          "debt_usd_value": {
+            "type": "string"
+          },
+          "net_usd_value": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TypesPortfolioToken": {
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "chain": {
+            "type": "string"
+          },
+          "decimals": {
+            "type": "integer"
+          },
+          "logo_url": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "opportunity_id": {
+            "$ref": "#/components/schemas/UuidUUID"
+          },
+          "price": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TypesProtocolPositions": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "logo_url": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "portfolio_item_list": {
+            "items": {
+              "$ref": "#/components/schemas/TypesPortfolioItem"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "site_url": {
+            "type": "string"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/TypesPortfolioStats"
           }
         },
         "type": "object"
@@ -4817,6 +5494,35 @@
           },
           "type": {
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TypesWalletPortfolioResponse": {
+        "properties": {
+          "protocols": {
+            "items": {
+              "$ref": "#/components/schemas/TypesProtocolPositions"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "total_stats": {
+            "$ref": "#/components/schemas/TypesPortfolioStats"
+          }
+        },
+        "type": "object"
+      },
+      "UtilsEvmToken": {
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "chainId": {
+            "minimum": 0,
+            "type": "integer"
           }
         },
         "type": "object"
