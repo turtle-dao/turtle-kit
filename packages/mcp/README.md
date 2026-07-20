@@ -2,6 +2,31 @@
 
 MCP integration assistant for Turtle Earn and Streams.
 
+## Installation
+
+The package ships a `turtle-mcp` binary; the simplest way to run it is with `npx`. Example MCP client configuration:
+
+```json
+{
+  "mcpServers": {
+    "turtle": {
+      "command": "npx",
+      "args": ["-y", "@turtlexyz/mcp"],
+      "env": {
+        "TURTLE_API_KEY": "...",
+        "TURTLE_BASE_URL": "https://earn.turtle.xyz"
+      }
+    }
+  }
+}
+```
+
+Or install it globally and point your client at `turtle-mcp`:
+
+```bash
+npm install -g @turtlexyz/mcp
+```
+
 ## Scope
 
 This package exposes a small product layer for distributor developers integrating Turtle:
@@ -27,7 +52,6 @@ It regenerates `src/generated/` from the SDK operation and schema surfaces. Thos
 bun install
 
 cd packages/mcp
-bun run eval:smoke
 bun run type-check
 bun run build
 ```
@@ -58,9 +82,9 @@ TURTLE_API_KEY=... bun run build
 TURTLE_API_KEY=... bun run start
 ```
 
-## MCP Client Config
+## MCP Client Config (local development)
 
-Example local MCP client configuration:
+Example MCP client configuration running the server from a monorepo checkout instead of npm:
 
 ```json
 {

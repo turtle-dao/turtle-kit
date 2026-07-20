@@ -8,7 +8,7 @@
     },
     "build": {
       "dependsOn": ["^build", "codegen"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**", "resources/openapi.v2.json"]
     },
     "type-check": {
       "dependsOn": ["^build", "codegen"]

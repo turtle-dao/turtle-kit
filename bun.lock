@@ -12,13 +12,13 @@
     },
     "packages/mcp": {
       "name": "@turtlexyz/mcp",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "bin": {
         "turtle-mcp": "./dist/index.js",
       },
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.26.0",
-        "@turtlexyz/sdk": "workspace:*",
+        "@turtlexyz/sdk": "workspace:^",
         "zod": "catalog:",
       },
       "devDependencies": {
@@ -30,7 +30,7 @@
     },
     "packages/sdk": {
       "name": "@turtlexyz/sdk",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "dependencies": {
         "@hey-api/client-fetch": "^0.13.1",
         "zod": "catalog:",
