@@ -53,6 +53,17 @@ const skillResources: CatalogResource[] = [
   },
 ];
 
+// In a monorepo checkout, the SDK spec is the source of truth (the gitignored
+// resources/ copy can go stale between builds). In the published package that
+// path never exists, so we fall back to the copy bundled by the build.
+function readSpec(): string {
+  try {
+    return readFileSync(resolve(repoRoot, "packages/sdk/specs/openapi.v2.json"), "utf8");
+  } catch {
+    return readFileSync(resolve(resourcesRoot, "openapi.v2.json"), "utf8");
+  }
+}
+
 function textResource(uri: URL, text: string, mimeType = "text/markdown") {
   return {
     contents: [
@@ -152,7 +163,7 @@ export function registerProductResources(server: McpServer): void {
     },
     (uri) => {
       try {
-        const spec = readFileSync(resolve(repoRoot, "packages/sdk/specs/openapi.v2.json"), "utf8");
+        const spec = readSpec();
         return textResource(uri, spec, "application/json");
       } catch (error) {
         return textResource(

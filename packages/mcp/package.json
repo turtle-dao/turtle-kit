@@ -1,9 +1,38 @@
 {
   "name": "@turtlexyz/mcp",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "type": "module",
   "description": "MCP integration assistant for Turtle Earn and Streams",
+  "author": {
+    "name": "Turtle",
+    "url": "https://www.turtle.xyz"
+  },
+  "license": "MIT",
+  "homepage": "https://www.turtle.xyz",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/turtle-dao/turtle-kit.git",
+    "directory": "packages/mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/turtle-dao/turtle-kit/issues"
+  },
+  "keywords": [
+    "turtle",
+    "mcp",
+    "model-context-protocol",
+    "earn",
+    "streams",
+    "defi"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=22"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -19,19 +48,21 @@
   "files": [
     "dist",
     "resources",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "mcp:update": "bun run scripts/update-tools.ts",
-    "build": "bun run --cwd ../sdk codegen && bun run --cwd ../sdk build && tsup",
+    "build": "bun run --cwd ../sdk codegen && bun run --cwd ../sdk build && tsup && cp ../sdk/specs/openapi.v2.json resources/openapi.v2.json",
     "type-check": "bun run --cwd ../sdk codegen && tsc --noEmit",
     "dev": "bun run --cwd ../sdk codegen && bun run --cwd ../sdk build && mcp-inspector bun run src/index.ts",
     "start": "node dist/index.js",
+    "prepublishOnly": "bun run build",
     "clean": "rm -rf dist src/generated"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
-    "@turtlexyz/sdk": "workspace:*",
+    "@turtlexyz/sdk": "workspace:^",
     "zod": "catalog:"
   },
   "devDependencies": {

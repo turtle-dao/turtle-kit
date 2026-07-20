@@ -1,0 +1,127 @@
+name: Publish MCP
+
+# Publishes @turtlexyz/mcp to npm when the version in packages/mcp/package.json
+# isn't already on the registry.
+#
+# Triggers:
+# - push to main touching packages/mcp/** (a version bump merged to main
+#   publishes automatically).
+# - workflow_dispatch for manual re-publish.
+#
+# The "Detect publishable version" step checks the npm registry directly:
+# if @turtlexyz/mcp@<version-in-package.json> already exists, the run is a
+# no-op. Idempotent — safe to re-run.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "packages/mcp/**"
+
+permissions:
+  contents: write # to create the release tag
+  id-token: write # OIDC token for npm trusted publishing (+ auto provenance)
+
+# Two quick merges to main could otherwise race past the registry check and
+# double-publish; queue runs instead (never cancel a publish mid-flight).
+concurrency:
+  group: publish-mcp
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Ensure npm supports OIDC trusted publishing
+        # node 22 ships npm 10.x; OIDC trusted publishing needs npm >= 11.5.1.
+        run: npm install -g npm@latest
+
+      - name: Detect publishable version
+        id: detect
+        working-directory: packages/mcp
+        run: |
+          name=$(node -p "require('./package.json').name")
+          version=$(node -p "require('./package.json').version")
+          echo "package=$name@$version"
+
+          # npm registry is the source of truth — git diff isn't reliable
+          # when the triggering commit doesn't itself include the bump
+          # (e.g. a retrigger).
+          if npm view "$name@$version" version --silent 2>/dev/null | grep -qx "$version"; then
+            echo "::notice::$name@$version already on npm — skipping"
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::$name@$version not on npm — will publish"
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+            echo "name=$name" >> "$GITHUB_OUTPUT"
+            echo "version=$version" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install dependencies
+        if: steps.detect.outputs.should_publish == 'true'
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        if: steps.detect.outputs.should_publish == 'true'
+        run: bun run --cwd packages/mcp build
+
+      # Two-step publish: bun packs, npm publishes.
+      #
+      # `bun pm pack` rewrites `catalog:` and `workspace:` references in
+      # package.json to actual semver ranges in the tarball.
+      #
+      # We publish the resulting tarball with `npm publish` (not `bun publish`)
+      # because trusted publishing over OIDC is not yet supported by bun.
+      # Provenance is required via `publishConfig.provenance: true` in
+      # packages/mcp/package.json — the publish FAILS loudly if it can't be
+      # generated, rather than silently shipping an unattested package.
+      - name: Pack tarball (resolves catalog refs)
+        if: steps.detect.outputs.should_publish == 'true'
+        working-directory: packages/mcp
+        run: bun pm pack --destination ./
+
+      - name: Publish to npm (trusted publishing via OIDC)
+        if: steps.detect.outputs.should_publish == 'true'
+        working-directory: packages/mcp
+        run: npm publish ./*.tgz --access public
+
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        if: steps.detect.outputs.should_publish == 'true'
+        env:
+          NAME: ${{ steps.detect.outputs.name }}
+          VERSION: ${{ steps.detect.outputs.version }}
+        run: |
+          notes_file="$(mktemp)"
+          awk -v ver="$VERSION" '
+            $0 ~ "^## \\[" ver "\\]" { capture=1; next }
+            capture && /^## / { exit }
+            capture { print }
+          ' packages/mcp/CHANGELOG.md > "$notes_file" || true
+
+          if [ ! -s "$notes_file" ]; then
+            echo "Published to npm as \`${NAME}@${VERSION}\`. See packages/mcp/CHANGELOG.md for details." > "$notes_file"
+          fi
+          echo "path=$notes_file" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        if: steps.detect.outputs.should_publish == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.detect.outputs.name }}@${{ steps.detect.outputs.version }}
+          name: ${{ steps.detect.outputs.name }}@${{ steps.detect.outputs.version }}
+          body_path: ${{ steps.notes.outputs.path }}
