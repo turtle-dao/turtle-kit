@@ -53,13 +53,14 @@ const skillResources: CatalogResource[] = [
   },
 ];
 
-// The build copies the SDK OpenAPI spec into resources/ so the published
-// package is self-contained; the monorepo path is the dev-time fallback.
+// In a monorepo checkout, the SDK spec is the source of truth (the gitignored
+// resources/ copy can go stale between builds). In the published package that
+// path never exists, so we fall back to the copy bundled by the build.
 function readSpec(): string {
   try {
-    return readFileSync(resolve(resourcesRoot, "openapi.v2.json"), "utf8");
-  } catch {
     return readFileSync(resolve(repoRoot, "packages/sdk/specs/openapi.v2.json"), "utf8");
+  } catch {
+    return readFileSync(resolve(resourcesRoot, "openapi.v2.json"), "utf8");
   }
 }
 
