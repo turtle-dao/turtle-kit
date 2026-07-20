@@ -9,5 +9,8 @@ export default defineConfig({
   treeshake: true,
   target: "es2022",
   outDir: "dist",
+  banner: {
+    js: "#!/usr/bin/env node",
+  },
   external: ["@modelcontextprotocol/sdk", "@turtlexyz/sdk", "zod"],
 });

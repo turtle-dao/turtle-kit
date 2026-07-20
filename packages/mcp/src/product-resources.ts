@@ -53,6 +53,16 @@ const skillResources: CatalogResource[] = [
   },
 ];
 
+// The build copies the SDK OpenAPI spec into resources/ so the published
+// package is self-contained; the monorepo path is the dev-time fallback.
+function readSpec(): string {
+  try {
+    return readFileSync(resolve(resourcesRoot, "openapi.v2.json"), "utf8");
+  } catch {
+    return readFileSync(resolve(repoRoot, "packages/sdk/specs/openapi.v2.json"), "utf8");
+  }
+}
+
 function textResource(uri: URL, text: string, mimeType = "text/markdown") {
   return {
     contents: [
@@ -152,7 +162,7 @@ export function registerProductResources(server: McpServer): void {
     },
     (uri) => {
       try {
-        const spec = readFileSync(resolve(repoRoot, "packages/sdk/specs/openapi.v2.json"), "utf8");
+        const spec = readSpec();
         return textResource(uri, spec, "application/json");
       } catch (error) {
         return textResource(
