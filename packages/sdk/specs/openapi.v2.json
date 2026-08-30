@@ -220,6 +220,16 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -367,6 +377,16 @@
                 }
               }
             }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -389,6 +409,20 @@
           },
           {
             "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageLimit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
             "in": "query",
             "schema": {
               "type": "integer"
@@ -533,6 +567,20 @@
           },
           {
             "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageLimit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
             "in": "query",
             "schema": {
               "type": "integer"
@@ -1057,6 +1105,20 @@
             }
           },
           {
+            "name": "pageLimit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
             "name": "search",
             "in": "query",
             "description": "Case-insensitive match on name, description or token address",
@@ -1310,6 +1372,20 @@
           },
           {
             "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageLimit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
             "in": "query",
             "schema": {
               "type": "integer"
@@ -1648,10 +1724,9 @@
           {
             "name": "endDate",
             "in": "query",
-            "description": "Inclusive upper bound (RFC3339/ISO-8601)",
-            "required": true,
+            "description": "Inclusive upper bound (RFC3339/ISO-8601). Omit it — or send a future instant — to mean \"the latest data available\"; clients that want a live trailing series should do that rather than sending a client clock, so the query key stays stable while the answer keeps moving.",
             "schema": {
-              "description": "Inclusive upper bound (RFC3339/ISO-8601)",
+              "description": "Inclusive upper bound (RFC3339/ISO-8601). Omit it — or send a future instant — to mean \"the latest data available\"; clients that want a live trailing series should do that rather than sending a client clock, so the query key stays stable while the answer keeps moving.",
               "format": "date-time",
               "type": "string"
             }
@@ -1718,7 +1793,7 @@
           "Historical Data"
         ],
         "summary": "Get Vault Historical APR",
-        "description": "Simple-rate (non-compound) APR per point over [from, to]. Each point annualises share-price growth over the trailing apyInterval window (seconds); points are spaced by step (granularity), independent of apyInterval. Reward APR is reserved for future rewards indexing and is always 0. Returns 503 while the vault's position is being re-indexed.",
+        "description": "Simple-rate (non-compound) APR per point over [from, to]. Each point annualises share-price growth over the trailing apyInterval window (seconds); points are spaced by step (granularity), independent of apyInterval. Reward APR is reserved for future rewards indexing and is always 0. Withheld series carry a machine-readable reason: INDEXING_NOT_STARTED or INDEXING_STALLED on 503 (both still resolvable, with a Retry-After hint), PROTOCOL_UNSUPPORTED on 404 (permanent — the vault's protocol has no price indexer, so no retry can ever succeed). Switch on reason rather than matching the error prose. The indexing-status endpoint reports the same state without erroring.",
         "operationId": "GetOpportunityHistoricalAPR",
         "parameters": [
           {
@@ -1757,10 +1832,9 @@
           {
             "name": "endDate",
             "in": "query",
-            "description": "Inclusive upper bound (RFC3339/ISO-8601)",
-            "required": true,
+            "description": "Inclusive upper bound (RFC3339/ISO-8601). Omit it — or send a future instant — to mean \"the latest data available\"; clients that want a live trailing series should do that rather than sending a client clock, so the query key stays stable while the answer keeps moving.",
             "schema": {
-              "description": "Inclusive upper bound (RFC3339/ISO-8601)",
+              "description": "Inclusive upper bound (RFC3339/ISO-8601). Omit it — or send a future instant — to mean \"the latest data available\"; clients that want a live trailing series should do that rather than sending a client clock, so the query key stays stable while the answer keeps moving.",
               "format": "date-time",
               "type": "string"
             }
@@ -1808,6 +1882,16 @@
               }
             }
           },
+          "404": {
+            "description": "The vault's protocol has no price indexer, so this series will never exist. Permanent — do not retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpportunitiesWithholdErrResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
@@ -1819,11 +1903,11 @@
             }
           },
           "503": {
-            "description": "Service Unavailable",
+            "description": "The vault's price series is withheld: the indexer has not checkpointed it yet (INDEXING_NOT_STARTED) or stalled and was withheld by the monitor (INDEXING_STALLED). Switch on reason; retry after the Retry-After response header (seconds).",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RestErrResponse"
+                  "$ref": "#/components/schemas/OpportunitiesWithholdErrResponse"
                 }
               }
             }
@@ -1837,7 +1921,7 @@
           "Historical Data"
         ],
         "summary": "Get Vault Historical APY",
-        "description": "Compound APY per point over [from, to]. Each point annualises share-price growth over the trailing apyInterval window (seconds); points are spaced by step (granularity), independent of apyInterval. Reward APY is reserved for future rewards indexing and is always 0. Returns 503 while the vault's position is being re-indexed.",
+        "description": "Compound APY per point over [from, to]. Each point annualises share-price growth over the trailing apyInterval window (seconds); points are spaced by step (granularity), independent of apyInterval. Reward APY is reserved for future rewards indexing and is always 0. Withheld series carry a machine-readable reason: INDEXING_NOT_STARTED or INDEXING_STALLED on 503 (both still resolvable, with a Retry-After hint), PROTOCOL_UNSUPPORTED on 404 (permanent — the vault's protocol has no price indexer, so no retry can ever succeed). Switch on reason rather than matching the error prose. The indexing-status endpoint reports the same state without erroring.",
         "operationId": "GetOpportunityHistoricalAPY",
         "parameters": [
           {
@@ -1876,10 +1960,9 @@
           {
             "name": "endDate",
             "in": "query",
-            "description": "Inclusive upper bound (RFC3339/ISO-8601)",
-            "required": true,
+            "description": "Inclusive upper bound (RFC3339/ISO-8601). Omit it — or send a future instant — to mean \"the latest data available\"; clients that want a live trailing series should do that rather than sending a client clock, so the query key stays stable while the answer keeps moving.",
             "schema": {
-              "description": "Inclusive upper bound (RFC3339/ISO-8601)",
+              "description": "Inclusive upper bound (RFC3339/ISO-8601). Omit it — or send a future instant — to mean \"the latest data available\"; clients that want a live trailing series should do that rather than sending a client clock, so the query key stays stable while the answer keeps moving.",
               "format": "date-time",
               "type": "string"
             }
@@ -1927,6 +2010,16 @@
               }
             }
           },
+          "404": {
+            "description": "The vault's protocol has no price indexer, so this series will never exist. Permanent — do not retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpportunitiesWithholdErrResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
@@ -1938,7 +2031,107 @@
             }
           },
           "503": {
-            "description": "Service Unavailable",
+            "description": "The vault's price series is withheld: the indexer has not checkpointed it yet (INDEXING_NOT_STARTED) or stalled and was withheld by the monitor (INDEXING_STALLED). Switch on reason; retry after the Retry-After response header (seconds).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpportunitiesWithholdErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/opportunities/{chainId}/{vaultAddress}/historical/lps": {
+      "get": {
+        "tags": [
+          "Historical Data"
+        ],
+        "summary": "Get Vault Historical LP Counts",
+        "description": "Get the LP-count time-series of the opportunities behind a vault: active and cumulative participated holders of its receipt tokens, both restricted to distributor-sourced positions and over every holder. Buckets are aligned inwards to the step, which defaults to 900 seconds and must be a positive multiple of it. A vault with no receipt tokens or no metrics answers 200 with an empty series.",
+        "operationId": "GetOpportunityHistoricalLPs",
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "Start of range (RFC3339). Aligned inwards to the bucket boundary",
+            "required": true,
+            "schema": {
+              "description": "Start of range (RFC3339). Aligned inwards to the bucket boundary",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "End of range (RFC3339). Aligned inwards to the bucket boundary",
+            "required": true,
+            "schema": {
+              "description": "End of range (RFC3339). Aligned inwards to the bucket boundary",
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "step",
+            "in": "query",
+            "description": "Bucket size in seconds (default 900). Must be a positive multiple of 900; maximum 10,000 buckets",
+            "schema": {
+              "description": "Bucket size in seconds (default 900). Must be a positive multiple of 900; maximum 10,000 buckets",
+              "minimum": 1,
+              "type": [
+                "null",
+                "integer"
+              ]
+            }
+          },
+          {
+            "name": "chainId",
+            "in": "path",
+            "description": "EVM chain ID (e.g. 1 for Ethereum)",
+            "required": true,
+            "schema": {
+              "description": "EVM chain ID (e.g. 1 for Ethereum)",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "vaultAddress",
+            "in": "path",
+            "description": "0x-prefixed 40-hex vault contract address",
+            "required": true,
+            "schema": {
+              "description": "0x-prefixed 40-hex vault contract address",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpportunitiesGetOpportunityHistoricalLPsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
             "content": {
               "application/json": {
                 "schema": {
@@ -1956,7 +2149,7 @@
           "Historical Data"
         ],
         "summary": "Get Vault Historical Share Price",
-        "description": "Get historical share-price time-series for a vault, bucketed by interval over [from, to]. Native is denominated in the vault's underlying (base) asset; USD is null when the underlying price is unavailable for the bucket. Returns 503 while the vault's position is being re-indexed.",
+        "description": "Get historical share-price time-series for a vault, bucketed by interval over [from, to]. Native is denominated in the vault's underlying (base) asset; USD is null when the underlying price is unavailable for the bucket. Withheld series carry a machine-readable reason: INDEXING_NOT_STARTED or INDEXING_STALLED on 503 (both still resolvable, with a Retry-After hint), PROTOCOL_UNSUPPORTED on 404 (permanent — the vault's protocol has no price indexer, so no retry can ever succeed). Switch on reason rather than matching the error prose. The indexing-status endpoint reports the same state without erroring.",
         "operationId": "GetOpportunityHistoricalSharePrice",
         "parameters": [
           {
@@ -1995,10 +2188,9 @@
           {
             "name": "endDate",
             "in": "query",
-            "description": "Inclusive upper bound (RFC3339/ISO-8601)",
-            "required": true,
+            "description": "Inclusive upper bound (RFC3339/ISO-8601). Omit it — or send a future instant — to mean \"the latest data available\"; clients that want a live trailing series should do that rather than sending a client clock, so the query key stays stable while the answer keeps moving.",
             "schema": {
-              "description": "Inclusive upper bound (RFC3339/ISO-8601)",
+              "description": "Inclusive upper bound (RFC3339/ISO-8601). Omit it — or send a future instant — to mean \"the latest data available\"; clients that want a live trailing series should do that rather than sending a client clock, so the query key stays stable while the answer keeps moving.",
               "format": "date-time",
               "type": "string"
             }
@@ -2046,6 +2238,16 @@
               }
             }
           },
+          "404": {
+            "description": "The vault's protocol has no price indexer, so this series will never exist. Permanent — do not retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpportunitiesWithholdErrResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
@@ -2057,11 +2259,11 @@
             }
           },
           "503": {
-            "description": "Service Unavailable",
+            "description": "The vault's price series is withheld: the indexer has not checkpointed it yet (INDEXING_NOT_STARTED) or stalled and was withheld by the monitor (INDEXING_STALLED). Switch on reason; retry after the Retry-After response header (seconds).",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RestErrResponse"
+                  "$ref": "#/components/schemas/OpportunitiesWithholdErrResponse"
                 }
               }
             }
@@ -2075,7 +2277,7 @@
           "Historical Data"
         ],
         "summary": "Get Vault Historical TVL",
-        "description": "Get historical TVL time-series for a vault, bucketed by interval over [from, to]. Values are denominated in the vault's underlying (base) asset; USD is null when the underlying price is unavailable for the bucket.",
+        "description": "Get historical TVL time-series for a vault over [from, to]. Values are the time-weighted average over each bucket; native is denominated in the vault's underlying (base) asset. Step is rounded up to a 15-minute grain, buckets without a share-price observation are omitted, and the series is never zero-filled. The first and last buckets may cover a partial step when step does not divide the aligned range. Withheld series carry a machine-readable reason: INDEXING_NOT_STARTED or INDEXING_STALLED on 503 (both still resolvable, with a Retry-After hint), PROTOCOL_UNSUPPORTED on 404 (permanent — the vault's protocol has no price indexer, so no retry can ever succeed). Switch on reason rather than matching the error prose. The indexing-status endpoint reports the same state without erroring.",
         "operationId": "GetOpportunityHistoricalTVL",
         "parameters": [
           {
@@ -2114,10 +2316,9 @@
           {
             "name": "endDate",
             "in": "query",
-            "description": "Inclusive upper bound (RFC3339/ISO-8601)",
-            "required": true,
+            "description": "Inclusive upper bound (RFC3339/ISO-8601). Omit it — or send a future instant — to mean \"the latest data available\"; clients that want a live trailing series should do that rather than sending a client clock, so the query key stays stable while the answer keeps moving.",
             "schema": {
-              "description": "Inclusive upper bound (RFC3339/ISO-8601)",
+              "description": "Inclusive upper bound (RFC3339/ISO-8601). Omit it — or send a future instant — to mean \"the latest data available\"; clients that want a live trailing series should do that rather than sending a client clock, so the query key stays stable while the answer keeps moving.",
               "format": "date-time",
               "type": "string"
             }
@@ -2165,12 +2366,32 @@
               }
             }
           },
+          "404": {
+            "description": "The vault's protocol has no price indexer, so this series will never exist. Permanent — do not retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpportunitiesWithholdErrResponse"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The vault's price series is withheld: the indexer has not checkpointed it yet (INDEXING_NOT_STARTED) or stalled and was withheld by the monitor (INDEXING_STALLED). Switch on reason; retry after the Retry-After response header (seconds).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpportunitiesWithholdErrResponse"
                 }
               }
             }
@@ -2254,6 +2475,20 @@
             "schema": {
               "type": "integer"
             }
+          },
+          {
+            "name": "pageLimit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -2286,7 +2521,7 @@
           "Streams"
         ],
         "summary": "Get Streams Data",
-        "description": "Get streams, optionally filtered by stream ID or organization ID.",
+        "description": "Get streams, optionally filtered by stream ID or organization ID. Use estimatedLiveApr for the rate a stream is currently distributing; lastSnapshot.apr is historical and stays populated after a stream is paused or ends.",
         "operationId": "GetStreams",
         "parameters": [
           {
@@ -2976,6 +3211,15 @@
               "minimum": 1,
               "type": "integer"
             }
+          },
+          {
+            "name": "quoteOnly",
+            "in": "query",
+            "description": "Skip balance validation for quote preview",
+            "schema": {
+              "description": "Skip balance validation for quote preview",
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -3001,6 +3245,16 @@
           },
           "500": {
             "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
             "content": {
               "application/json": {
                 "schema": {
@@ -3161,6 +3415,20 @@
             }
           },
           {
+            "name": "pageLimit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
             "name": "chainId",
             "in": "query",
             "description": "Filter by numeric chain ID",
@@ -3283,9 +3551,17 @@
           "Wallets"
         ],
         "summary": "Get Wallet Portfolio",
-        "description": "Get all DeFi positions for a wallet address across all supported protocols",
-        "operationId": "protocols/wallet.GetWalletPortfolioHandler",
+        "description": "Get a wallet's holdings: ERC-20 and native balances plus DeFi positions. Same payload as the main API GET /wallet/{address}/balance.",
+        "operationId": "turtle/portfolio.GetTurtleBalanceHandler",
         "parameters": [
+          {
+            "name": "includeProtocolTokens",
+            "in": "query",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
           {
             "name": "address",
             "in": "path",
@@ -3301,7 +3577,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TypesWalletPortfolioResponse"
+                  "$ref": "#/components/schemas/PortfolioGetTurtleBalanceOutput"
                 }
               }
             }
@@ -3464,6 +3740,10 @@
             "default": "direct",
             "description": "Mode: 'swap' to use router, 'direct' for direct deposit",
             "type": "string"
+          },
+          "quoteOnly": {
+            "description": "Skip balance validation for quote preview",
+            "type": "boolean"
           },
           "referralCode": {
             "description": "Optional referral code",
@@ -3632,6 +3912,26 @@
           "amount",
           "distributorId"
         ],
+        "type": "object"
+      },
+      "EntitiesUserEarnings": {
+        "properties": {
+          "productId": {
+            "$ref": "#/components/schemas/UuidUUID"
+          },
+          "referralsEarnings": {
+            "type": "number"
+          },
+          "rewardName": {
+            "type": "string"
+          },
+          "rewardType": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          }
+        },
         "type": "object"
       },
       "MetricsGetDistributorLPsOutput": {
@@ -3898,6 +4198,10 @@
       },
       "OpportunitiesGetOpportunityHistoricalAPRResponse": {
         "properties": {
+          "coverage": {
+            "$ref": "#/components/schemas/OpportunitiesHistoricalCoverage",
+            "description": "Span of this vault's APR series over all history, independent of the requested window; null when it could not be determined"
+          },
           "data": {
             "items": {
               "$ref": "#/components/schemas/OpportunitiesHistoricalAPRPoint"
@@ -3912,9 +4216,31 @@
       },
       "OpportunitiesGetOpportunityHistoricalAPYResponse": {
         "properties": {
+          "coverage": {
+            "$ref": "#/components/schemas/OpportunitiesHistoricalCoverage",
+            "description": "Span of this vault's APY series over all history, independent of the requested window; null when it could not be determined"
+          },
           "data": {
             "items": {
               "$ref": "#/components/schemas/OpportunitiesHistoricalAPYPoint"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesGetOpportunityHistoricalLPsResponse": {
+        "properties": {
+          "coverage": {
+            "$ref": "#/components/schemas/OpportunitiesHistoricalCoverage",
+            "description": "Span of this vault's LP series over all history, independent of the requested window; resolved only when the returned series is empty, null otherwise or when it could not be determined"
+          },
+          "timeseries": {
+            "items": {
+              "$ref": "#/components/schemas/OpportunitiesHistoricalLPsPoint"
             },
             "type": [
               "array",
@@ -3952,6 +4278,10 @@
             "$ref": "#/components/schemas/SharedTokenResponse",
             "description": "null when the vault has no price_observations snapshots yet or the underlying token is not registered in supported_tokens"
           },
+          "coverage": {
+            "$ref": "#/components/schemas/OpportunitiesHistoricalCoverage",
+            "description": "Span of this vault's share-price series over all history, independent of the requested window; null when it could not be determined"
+          },
           "data": {
             "items": {
               "$ref": "#/components/schemas/OpportunitiesHistoricalSharePricePoint"
@@ -3969,6 +4299,10 @@
           "baseAsset": {
             "$ref": "#/components/schemas/SharedTokenResponse",
             "description": "null when the vault has no snapshots yet or the underlying token is not registered in supported_tokens"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/OpportunitiesHistoricalCoverage",
+            "description": "Span of this vault's TVL series over all history, independent of the requested window; null when it could not be determined"
           },
           "data": {
             "items": {
@@ -4045,6 +4379,60 @@
         },
         "type": "object"
       },
+      "OpportunitiesHistoricalCoverage": {
+        "properties": {
+          "firstAt": {
+            "description": "Oldest point in the series over all history; null when the series has never held a point",
+            "format": "date-time",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "lastAt": {
+            "description": "Newest point in the series over all history; null when the series has never held a point. A window ending at now contains data exactly when lastAt is not older than the window start",
+            "format": "date-time",
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "OpportunitiesHistoricalLPsPoint": {
+        "properties": {
+          "activeAllLps": {
+            "description": "Wallets holding the vault at this bucket, whoever sourced the position",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "activeLps": {
+            "description": "Wallets holding the vault at this bucket that arrived through a distributor",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "participatedAllLps": {
+            "description": "Cumulative wallets that had ever held the vault by this bucket, whoever sourced the position",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "participatedLps": {
+            "description": "Cumulative wallets that had ever held the vault through a distributor by this bucket",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "timestamp": {
+            "description": "Bucket representative time",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "OpportunitiesHistoricalSharePricePoint": {
         "properties": {
           "blockNumber": {
@@ -4080,6 +4468,14 @@
           }
         },
         "type": "object"
+      },
+      "OpportunitiesHistoricalWithholdReason": {
+        "enum": [
+          "PROTOCOL_UNSUPPORTED",
+          "INDEXING_NOT_STARTED",
+          "INDEXING_STALLED"
+        ],
+        "type": "string"
       },
       "OpportunitiesIncentiveResponse": {
         "properties": {
@@ -4159,13 +4555,16 @@
       "OpportunitiesNativeUSDValue": {
         "properties": {
           "native": {
-            "type": "number"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "usd": {
             "description": "null when underlying USD price was not available for this bucket",
             "type": [
-              "null",
-              "number"
+              "string",
+              "null"
             ]
           }
         },
@@ -4356,6 +4755,35 @@
         },
         "type": "object"
       },
+      "OpportunitiesWithholdErrResponse": {
+        "properties": {
+          "code": {
+            "description": "Application-specific error code.",
+            "type": "integer"
+          },
+          "context": {
+            "additionalProperties": {},
+            "description": "Application context.",
+            "type": "object"
+          },
+          "error": {
+            "description": "Error message.",
+            "type": "string"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/OpportunitiesHistoricalWithholdReason",
+            "description": "Stable machine-readable failure reason; switch on this instead of matching the error prose"
+          },
+          "status": {
+            "description": "Status text.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "type": "object"
+      },
       "PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV1ActionsWalletActivityItem": {
         "properties": {
           "data": {
@@ -4449,11 +4877,220 @@
           "page": {
             "type": "integer"
           },
+          "pageLimit": {
+            "type": "integer"
+          },
           "total": {
             "type": "integer"
           },
           "totalPages": {
             "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PortfolioChainInfo": {
+        "properties": {
+          "chainId": {
+            "type": "string"
+          },
+          "ecosystem": {
+            "type": "string"
+          },
+          "explorerUrl": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PortfolioGetTurtleBalanceOutput": {
+        "properties": {
+          "portfolio": {
+            "$ref": "#/components/schemas/PortfolioPortfolio"
+          }
+        },
+        "type": "object"
+      },
+      "PortfolioHoldingsData": {
+        "properties": {
+          "chains": {
+            "items": {
+              "$ref": "#/components/schemas/PortfolioChainInfo"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "manualPositions": {
+            "items": {
+              "$ref": "#/components/schemas/PortfolioManualPositionData"
+            },
+            "type": "array"
+          },
+          "totalAmountInUSD": {
+            "type": "string"
+          },
+          "wallets": {
+            "items": {
+              "$ref": "#/components/schemas/PortfolioWalletData"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "PortfolioManualPositionData": {
+        "properties": {
+          "accountId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "accountName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "balance": {
+            "type": "number"
+          },
+          "entryPriceUsd": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "priceUsd": {
+            "type": "number"
+          },
+          "valueUsd": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "PortfolioPortfolio": {
+        "properties": {
+          "holdings": {
+            "$ref": "#/components/schemas/PortfolioHoldingsData"
+          },
+          "productsEarnings": {
+            "items": {
+              "$ref": "#/components/schemas/EntitiesUserEarnings"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "PortfolioTokenData": {
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "chain": {
+            "$ref": "#/components/schemas/PortfolioChainInfo"
+          },
+          "decimals": {
+            "type": "integer"
+          },
+          "entryPriceUsd": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "isNative": {
+            "type": "boolean"
+          },
+          "logoUrl": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "opportunityId": {
+            "$ref": "#/components/schemas/UuidUUID"
+          },
+          "price": {
+            "type": "string"
+          },
+          "rawAmount": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PortfolioWalletData": {
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "protocols": {
+            "items": {
+              "$ref": "#/components/schemas/TypesProtocolPositions"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "tokens": {
+            "items": {
+              "$ref": "#/components/schemas/PortfolioTokenData"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "totalAmountInUSD": {
+            "type": "string"
           }
         },
         "type": "object"
@@ -4926,6 +5563,13 @@
               "string"
             ]
           },
+          "estimatedLiveApr": {
+            "description": "Estimated APR the stream is currently distributing, taken from the last snapshot. Unlike lastSnapshot.apr — a historical value tied to its own timestamp — this is only set while the stream is actively accruing; it is null when snapshot computation is paused, the stream has ended, or the last snapshot is older than 24h.",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
           "hashCommitmentPaused": {
             "type": "boolean"
           },
@@ -4958,6 +5602,10 @@
           },
           "startTimestamp": {
             "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "description": "Lifecycle state computed server-side, currently one of live, scheduled, paused, delayed or ended. A stream that finished accruing is always reported as ended, even if paused afterward; short of that, paused and delayed take precedence, so a stream in either state may also have ended - compare endTimestamp to tell. Treat this as an open set: further values may be added, so handle an unrecognized status gracefully rather than failing on it.",
             "type": "string"
           },
           "strategy": {
@@ -5008,7 +5656,10 @@
             "items": {
               "type": "string"
             },
-            "type": "array"
+            "type": [
+              "array",
+              "null"
+            ]
           },
           "rootHash": {
             "type": "string"
@@ -5266,6 +5917,53 @@
         },
         "type": "object"
       },
+      "TypesLendingAccount": {
+        "properties": {
+          "available_borrows_base": {
+            "description": "Remaining borrow capacity in the pool base currency.",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "health_factor": {
+            "description": "Collateral / debt health factor. Omitted when the account has no debt.",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "liquidation_threshold": {
+            "description": "Weighted liquidation threshold.",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ltv": {
+            "description": "Current loan-to-value ratio.",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "total_collateral_base": {
+            "description": "Total collateral in the pool base currency.",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "total_debt_base": {
+            "description": "Total debt in the pool base currency.",
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "type": "object"
+      },
       "TypesPortfolioDetail": {
         "properties": {
           "borrow_token_list": {
@@ -5297,6 +5995,10 @@
       },
       "TypesPortfolioItem": {
         "properties": {
+          "account": {
+            "$ref": "#/components/schemas/TypesLendingAccount",
+            "description": "On-chain risk snapshot for one isolated lending market. Omitted when unavailable."
+          },
           "detail": {
             "$ref": "#/components/schemas/TypesPortfolioDetail"
           },
@@ -5351,6 +6053,13 @@
           "amount": {
             "type": "string"
           },
+          "apy": {
+            "description": "Signed APY percent. Borrow legs are negative; omitted on supply rows.",
+            "type": [
+              "null",
+              "number"
+            ]
+          },
           "chain": {
             "type": "string"
           },
@@ -5358,6 +6067,9 @@
             "type": "integer"
           },
           "logo_url": {
+            "type": "string"
+          },
+          "market_id": {
             "type": "string"
           },
           "name": {
@@ -5412,6 +6124,9 @@
           "from": {
             "$ref": "#/components/schemas/TypesTokenDetails"
           },
+          "protocol": {
+            "type": "string"
+          },
           "to": {
             "$ref": "#/components/schemas/TypesTokenDetails"
           }
@@ -5423,8 +6138,29 @@
           "amountOut": {
             "type": "string"
           },
+          "ensoFeeAmounts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "feeAmounts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "gas": {
             "type": "string"
+          },
+          "minAmountOut": {
+            "type": "string"
+          },
+          "priceImpactBps": {
+            "type": [
+              "null",
+              "number"
+            ]
           },
           "provider": {
             "type": "string"
@@ -5440,6 +6176,9 @@
               "array",
               "null"
             ]
+          },
+          "slippageBps": {
+            "type": "integer"
           }
         },
         "type": "object"
@@ -5494,23 +6233,6 @@
           },
           "type": {
             "type": "string"
-          }
-        },
-        "type": "object"
-      },
-      "TypesWalletPortfolioResponse": {
-        "properties": {
-          "protocols": {
-            "items": {
-              "$ref": "#/components/schemas/TypesProtocolPositions"
-            },
-            "type": [
-              "array",
-              "null"
-            ]
-          },
-          "total_stats": {
-            "$ref": "#/components/schemas/TypesPortfolioStats"
           }
         },
         "type": "object"
@@ -5682,7 +6404,7 @@
             ]
           },
           "popularTokens": {
-            "description": "Popular tokens for the requested chain. Empty when chainId is omitted",
+            "description": "Top tokens by TVL for the requested chain. Empty when chainId is omitted",
             "items": {
               "$ref": "#/components/schemas/V1SwapToken"
             },
