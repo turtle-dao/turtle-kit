@@ -1793,7 +1793,7 @@
           "Historical Data"
         ],
         "summary": "Get Vault Historical APR",
-        "description": "Simple-rate (non-compound) APR per point over [from, to]. Each point annualises share-price growth over the trailing apyInterval window (seconds); points are spaced by step (granularity), independent of apyInterval. Reward APR is reserved for future rewards indexing and is always 0. Withheld series carry a machine-readable reason: INDEXING_NOT_STARTED or INDEXING_STALLED on 503 (both still resolvable, with a Retry-After hint), PROTOCOL_UNSUPPORTED on 404 (permanent — the vault's protocol has no price indexer, so no retry can ever succeed). Switch on reason rather than matching the error prose. The indexing-status endpoint reports the same state without erroring.",
+        "description": "Simple-rate (non-compound) APR per point over [from, to]. Each point annualizes share-price growth over effectiveIntervalSeconds, the real span between its two snapshots, which is at least the trailing apyInterval window (seconds) and can exceed it on a sparse series; points are spaced by step (granularity), independent of apyInterval. Reward APR is reserved for future rewards indexing and is always 0. Withheld series carry a machine-readable reason: INDEXING_NOT_STARTED or INDEXING_STALLED on 503 (both still resolvable, with a Retry-After hint), PROTOCOL_UNSUPPORTED on 404 (permanent — the vault's protocol has no price indexer, so no retry can ever succeed). Switch on reason rather than matching the error prose. The indexing-status endpoint reports the same state without erroring.",
         "operationId": "GetOpportunityHistoricalAPR",
         "parameters": [
           {
@@ -1921,7 +1921,7 @@
           "Historical Data"
         ],
         "summary": "Get Vault Historical APY",
-        "description": "Compound APY per point over [from, to]. Each point annualises share-price growth over the trailing apyInterval window (seconds); points are spaced by step (granularity), independent of apyInterval. Reward APY is reserved for future rewards indexing and is always 0. Withheld series carry a machine-readable reason: INDEXING_NOT_STARTED or INDEXING_STALLED on 503 (both still resolvable, with a Retry-After hint), PROTOCOL_UNSUPPORTED on 404 (permanent — the vault's protocol has no price indexer, so no retry can ever succeed). Switch on reason rather than matching the error prose. The indexing-status endpoint reports the same state without erroring.",
+        "description": "Compound APY per point over [from, to]. Each point annualizes share-price growth over effectiveIntervalSeconds, the real span between its two snapshots, which is at least the trailing apyInterval window (seconds) and can exceed it on a sparse series; points are spaced by step (granularity), independent of apyInterval. Reward APY is reserved for future rewards indexing and is always 0. Withheld series carry a machine-readable reason: INDEXING_NOT_STARTED or INDEXING_STALLED on 503 (both still resolvable, with a Retry-After hint), PROTOCOL_UNSUPPORTED on 404 (permanent — the vault's protocol has no price indexer, so no retry can ever succeed). Switch on reason rather than matching the error prose. The indexing-status endpoint reports the same state without erroring.",
         "operationId": "GetOpportunityHistoricalAPY",
         "parameters": [
           {
@@ -4320,11 +4320,15 @@
         "properties": {
           "apr": {
             "$ref": "#/components/schemas/OpportunitiesAPRBreakdown",
-            "description": "Trailing-window simple-rate APR (annualised share-price growth over the apyInterval window)"
+            "description": "Trailing-window simple-rate APR: annualized share-price growth over effectiveIntervalSeconds"
           },
           "blockNumber": {
             "description": "On-chain block number of the snapshot chosen as the bucket representative",
             "minimum": 0,
+            "type": "integer"
+          },
+          "effectiveIntervalSeconds": {
+            "description": "Seconds actually spanned by the two snapshots this rate annualizes. At least apyInterval, and more when the series has no observation at the window edge",
             "type": "integer"
           },
           "timestamp": {
@@ -4339,11 +4343,15 @@
         "properties": {
           "apy": {
             "$ref": "#/components/schemas/OpportunitiesAPYBreakdown",
-            "description": "Trailing-window compound APY (annualised share-price growth over the apyInterval window)"
+            "description": "Trailing-window compound APY: annualized share-price growth over effectiveIntervalSeconds"
           },
           "blockNumber": {
             "description": "On-chain block number of the snapshot chosen as the bucket representative",
             "minimum": 0,
+            "type": "integer"
+          },
+          "effectiveIntervalSeconds": {
+            "description": "Seconds actually spanned by the two snapshots this rate annualizes. At least apyInterval, and more when the series has no observation at the window edge",
             "type": "integer"
           },
           "timestamp": {
