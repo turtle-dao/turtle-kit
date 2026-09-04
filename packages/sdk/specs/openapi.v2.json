@@ -2277,7 +2277,7 @@
           "Historical Data"
         ],
         "summary": "Get Vault Historical TVL",
-        "description": "Get historical TVL time-series for a vault over [from, to]. Values are the time-weighted average over each bucket; native is denominated in the vault's underlying (base) asset. Step is rounded up to a 15-minute grain, buckets without a share-price observation are omitted, and the series is never zero-filled. The first and last buckets may cover a partial step when step does not divide the aligned range. Withheld series carry a machine-readable reason: INDEXING_NOT_STARTED or INDEXING_STALLED on 503 (both still resolvable, with a Retry-After hint), PROTOCOL_UNSUPPORTED on 404 (permanent — the vault's protocol has no price indexer, so no retry can ever succeed). Switch on reason rather than matching the error prose. The indexing-status endpoint reports the same state without erroring.",
+        "description": "Get historical TVL time-series for a vault over [from, to]. Values are the time-weighted average over each bucket. USD comes from deposit_metrics. Native is denominated in the vault's underlying base asset and is null, together with blockNumber, when no share price matches the bucket. Missing share prices do not suppress USD TVL points. Step is rounded up to a 15-minute grain and the series is never zero-filled. The first and last buckets may cover a partial step when step does not divide the aligned range.",
         "operationId": "GetOpportunityHistoricalTVL",
         "parameters": [
           {
@@ -2366,32 +2366,12 @@
               }
             }
           },
-          "404": {
-            "description": "The vault's protocol has no price indexer, so this series will never exist. Permanent — do not retry.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OpportunitiesWithholdErrResponse"
-                }
-              }
-            }
-          },
           "500": {
             "description": "Internal Server Error",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RestErrResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "The vault's price series is withheld: the indexer has not checkpointed it yet (INDEXING_NOT_STARTED) or stalled and was withheld by the monitor (INDEXING_STALLED). Switch on reason; retry after the Retry-After response header (seconds).",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OpportunitiesWithholdErrResponse"
                 }
               }
             }
@@ -3197,6 +3177,7 @@
             "required": true,
             "schema": {
               "description": "Input amount in smallest unit (wei)",
+              "maxLength": 78,
               "type": "string"
             }
           },
@@ -3364,6 +3345,131 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/V1GetSwapTokensResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/swaps/": {
+      "get": {
+        "tags": [
+          "Swaps"
+        ],
+        "summary": "List Swaps",
+        "description": "Returns paginated swaps (history) for a single wallet, newest first. Excludes zap, created, and unbound rows by default.",
+        "operationId": "ListSwaps",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageLimit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "userAddress",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "enum": [
+                "created",
+                "submitted",
+                "filled",
+                "partial",
+                "expired",
+                "failed",
+                "cancelled",
+                "abandoned"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "chainId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeZaps",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "includeUnbound",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "includeCreated",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2SwapsSwapItem"
                 }
               }
             }
@@ -4298,11 +4404,11 @@
         "properties": {
           "baseAsset": {
             "$ref": "#/components/schemas/SharedTokenResponse",
-            "description": "null when the vault has no snapshots yet or the underlying token is not registered in supported_tokens"
+            "description": "Denomination of the native leg; null when the vault has no share-price series, no snapshots yet, or an underlying token that is not registered in supported_tokens"
           },
           "coverage": {
             "$ref": "#/components/schemas/OpportunitiesHistoricalCoverage",
-            "description": "Span of this vault's TVL series over all history, independent of the requested window; null when it could not be determined"
+            "description": "Span of this vault's TVL series over all history, independent of the requested window. Resolved only when data is empty; null otherwise, and null when it could not be determined"
           },
           "data": {
             "items": {
@@ -4462,9 +4568,12 @@
       "OpportunitiesHistoricalTVLPoint": {
         "properties": {
           "blockNumber": {
-            "description": "On-chain block number of the snapshot chosen as the bucket representative",
+            "description": "On-chain block number of the matching share-price snapshot; null when that bucket has no share price",
             "minimum": 0,
-            "type": "integer"
+            "type": [
+              "null",
+              "integer"
+            ]
           },
           "timestamp": {
             "description": "Bucket representative time",
@@ -4472,7 +4581,26 @@
             "type": "string"
           },
           "tvl": {
-            "$ref": "#/components/schemas/OpportunitiesNativeUSDValue"
+            "$ref": "#/components/schemas/OpportunitiesHistoricalTVLValue"
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesHistoricalTVLValue": {
+        "properties": {
+          "native": {
+            "description": "TVL denominated in the vault base asset; null when no share price matched this bucket",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "usd": {
+            "description": "Time-weighted USD TVL, read pre-denominated from deposit_metrics and independent of the share-price series",
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
         "type": "object"
@@ -4865,6 +4993,23 @@
           "data": {
             "items": {
               "$ref": "#/components/schemas/SharedTokenResponse"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PaginationPaginationMetadata"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationPaginatedResponseGithubComTurtleDAOTurtlePartnersGoServicesEarnHandlersV2SwapsSwapItem": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/SwapsSwapItem"
             },
             "type": [
               "array",
@@ -5889,6 +6034,121 @@
           },
           "userAddress": {
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SwapsSwapItem": {
+        "properties": {
+          "amountIn": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "dstChain": {
+            "$ref": "#/components/schemas/SharedChainResponse"
+          },
+          "expectedAmountOut": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "filledAmountIn": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "filledAmountOut": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "id": {
+            "$ref": "#/components/schemas/UuidUUID"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "minAmountOut": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "provider": {
+            "type": "string"
+          },
+          "providerOrderRef": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "slippageBps": {
+            "type": "integer"
+          },
+          "srcChain": {
+            "$ref": "#/components/schemas/SharedChainResponse"
+          },
+          "status": {
+            "type": "string"
+          },
+          "tokenIn": {
+            "$ref": "#/components/schemas/SwapsTokenInfo"
+          },
+          "tokenOut": {
+            "$ref": "#/components/schemas/SwapsTokenInfo"
+          },
+          "txHash": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "userAddress": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SwapsTokenInfo": {
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "decimals": {
+            "type": [
+              "null",
+              "integer"
+            ]
+          },
+          "logoUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "symbol": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
         "type": "object"
