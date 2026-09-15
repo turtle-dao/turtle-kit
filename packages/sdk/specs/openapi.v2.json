@@ -3446,7 +3446,7 @@
           "Swaps"
         ],
         "summary": "List Swaps",
-        "description": "Returns paginated swaps (history) for a single wallet, newest first. Excludes zap, created, and unbound rows by default.",
+        "description": "Returns paginated swaps history for a single wallet, newest first.",
         "operationId": "ListSwaps",
         "parameters": [
           {
@@ -3511,20 +3511,6 @@
           },
           {
             "name": "includeZaps",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "includeUnbound",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "includeCreated",
             "in": "query",
             "schema": {
               "type": "boolean"
