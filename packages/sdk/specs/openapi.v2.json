@@ -5297,6 +5297,24 @@
           "price": {
             "type": "string"
           },
+          "priceDelta1d": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "priceDelta30d": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "priceDelta7d": {
+            "type": [
+              "null",
+              "number"
+            ]
+          },
           "rawAmount": {
             "type": "string"
           },
@@ -6444,6 +6462,27 @@
           },
           "price": {
             "type": "string"
+          },
+          "price_delta_1d": {
+            "description": "Percent change over 1d. Filled by holdings routes and GET /wallet/{address}/portfolio.",
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "price_delta_30d": {
+            "description": "Percent change over 30d. Filled by holdings routes and GET /wallet/{address}/portfolio.",
+            "type": [
+              "null",
+              "number"
+            ]
+          },
+          "price_delta_7d": {
+            "description": "Percent change over 7d. Filled by holdings routes and GET /wallet/{address}/portfolio.",
+            "type": [
+              "null",
+              "number"
+            ]
           },
           "symbol": {
             "type": "string"
