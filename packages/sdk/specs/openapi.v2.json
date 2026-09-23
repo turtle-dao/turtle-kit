@@ -1759,10 +1759,11 @@
           {
             "name": "step",
             "in": "query",
-            "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
+            "description": "Point spacing (granularity) in seconds, at most 31536000 (365 days). Defaults to 86400 (1 day). The range may span at most 10,000 buckets at this step",
             "schema": {
               "default": 86400,
-              "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
+              "description": "Point spacing (granularity) in seconds, at most 31536000 (365 days). Defaults to 86400 (1 day). The range may span at most 10,000 buckets at this step",
+              "maximum": 31536000,
               "minimum": 1,
               "type": "integer"
             }
@@ -1770,10 +1771,11 @@
           {
             "name": "apyInterval",
             "in": "query",
-            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
+            "description": "APY/APR trailing window (lookback) in seconds, independent of step, at most 7776000 (90 days). Defaults to 2592000 (30 days)",
             "schema": {
               "default": 2592000,
-              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
+              "description": "APY/APR trailing window (lookback) in seconds, independent of step, at most 7776000 (90 days). Defaults to 2592000 (30 days)",
+              "maximum": 7776000,
               "minimum": 1,
               "type": "integer"
             }
@@ -1781,10 +1783,10 @@
           {
             "name": "startDate",
             "in": "query",
-            "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+            "description": "Inclusive lower bound (RFC3339/ISO-8601). At most 365 days before now",
             "required": true,
             "schema": {
-              "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+              "description": "Inclusive lower bound (RFC3339/ISO-8601). At most 365 days before now",
               "format": "date-time",
               "type": "string"
             }
@@ -1867,10 +1869,11 @@
           {
             "name": "step",
             "in": "query",
-            "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
+            "description": "Point spacing (granularity) in seconds, at most 31536000 (365 days). Defaults to 86400 (1 day). The range may span at most 10,000 buckets at this step",
             "schema": {
               "default": 86400,
-              "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
+              "description": "Point spacing (granularity) in seconds, at most 31536000 (365 days). Defaults to 86400 (1 day). The range may span at most 10,000 buckets at this step",
+              "maximum": 31536000,
               "minimum": 1,
               "type": "integer"
             }
@@ -1878,10 +1881,11 @@
           {
             "name": "apyInterval",
             "in": "query",
-            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
+            "description": "APY/APR trailing window (lookback) in seconds, independent of step, at most 7776000 (90 days). Defaults to 2592000 (30 days)",
             "schema": {
               "default": 2592000,
-              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
+              "description": "APY/APR trailing window (lookback) in seconds, independent of step, at most 7776000 (90 days). Defaults to 2592000 (30 days)",
+              "maximum": 7776000,
               "minimum": 1,
               "type": "integer"
             }
@@ -1889,10 +1893,10 @@
           {
             "name": "startDate",
             "in": "query",
-            "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+            "description": "Inclusive lower bound (RFC3339/ISO-8601). At most 365 days before now",
             "required": true,
             "schema": {
-              "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+              "description": "Inclusive lower bound (RFC3339/ISO-8601). At most 365 days before now",
               "format": "date-time",
               "type": "string"
             }
@@ -1995,10 +1999,11 @@
           {
             "name": "step",
             "in": "query",
-            "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
+            "description": "Point spacing (granularity) in seconds, at most 31536000 (365 days). Defaults to 86400 (1 day). The range may span at most 10,000 buckets at this step",
             "schema": {
               "default": 86400,
-              "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
+              "description": "Point spacing (granularity) in seconds, at most 31536000 (365 days). Defaults to 86400 (1 day). The range may span at most 10,000 buckets at this step",
+              "maximum": 31536000,
               "minimum": 1,
               "type": "integer"
             }
@@ -2006,10 +2011,11 @@
           {
             "name": "apyInterval",
             "in": "query",
-            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
+            "description": "APY/APR trailing window (lookback) in seconds, independent of step, at most 7776000 (90 days). Defaults to 2592000 (30 days)",
             "schema": {
               "default": 2592000,
-              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
+              "description": "APY/APR trailing window (lookback) in seconds, independent of step, at most 7776000 (90 days). Defaults to 2592000 (30 days)",
+              "maximum": 7776000,
               "minimum": 1,
               "type": "integer"
             }
@@ -2017,10 +2023,10 @@
           {
             "name": "startDate",
             "in": "query",
-            "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+            "description": "Inclusive lower bound (RFC3339/ISO-8601). At most 365 days before now",
             "required": true,
             "schema": {
-              "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+              "description": "Inclusive lower bound (RFC3339/ISO-8601). At most 365 days before now",
               "format": "date-time",
               "type": "string"
             }
@@ -2123,10 +2129,10 @@
           {
             "name": "startDate",
             "in": "query",
-            "description": "Start of range (RFC3339). Aligned inwards to the bucket boundary",
+            "description": "Start of range (RFC3339). Aligned inwards to the bucket boundary. At most 365 days before now",
             "required": true,
             "schema": {
-              "description": "Start of range (RFC3339). Aligned inwards to the bucket boundary",
+              "description": "Start of range (RFC3339). Aligned inwards to the bucket boundary. At most 365 days before now",
               "format": "date-time",
               "type": "string"
             }
@@ -2145,9 +2151,10 @@
           {
             "name": "step",
             "in": "query",
-            "description": "Bucket size in seconds (default 900). Must be a positive multiple of 900; maximum 10,000 buckets",
+            "description": "Bucket size in seconds (default 900). Must be a positive multiple of 900, at most 31536000 (365 days); maximum 10,000 buckets",
             "schema": {
-              "description": "Bucket size in seconds (default 900). Must be a positive multiple of 900; maximum 10,000 buckets",
+              "description": "Bucket size in seconds (default 900). Must be a positive multiple of 900, at most 31536000 (365 days); maximum 10,000 buckets",
+              "maximum": 31536000,
               "minimum": 1,
               "type": [
                 "null",
@@ -2223,10 +2230,11 @@
           {
             "name": "step",
             "in": "query",
-            "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
+            "description": "Point spacing (granularity) in seconds, at most 31536000 (365 days). Defaults to 86400 (1 day). The range may span at most 10,000 buckets at this step",
             "schema": {
               "default": 86400,
-              "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
+              "description": "Point spacing (granularity) in seconds, at most 31536000 (365 days). Defaults to 86400 (1 day). The range may span at most 10,000 buckets at this step",
+              "maximum": 31536000,
               "minimum": 1,
               "type": "integer"
             }
@@ -2234,10 +2242,11 @@
           {
             "name": "apyInterval",
             "in": "query",
-            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
+            "description": "APY/APR trailing window (lookback) in seconds, independent of step, at most 7776000 (90 days). Defaults to 2592000 (30 days)",
             "schema": {
               "default": 2592000,
-              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
+              "description": "APY/APR trailing window (lookback) in seconds, independent of step, at most 7776000 (90 days). Defaults to 2592000 (30 days)",
+              "maximum": 7776000,
               "minimum": 1,
               "type": "integer"
             }
@@ -2245,10 +2254,10 @@
           {
             "name": "startDate",
             "in": "query",
-            "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+            "description": "Inclusive lower bound (RFC3339/ISO-8601). At most 365 days before now",
             "required": true,
             "schema": {
-              "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+              "description": "Inclusive lower bound (RFC3339/ISO-8601). At most 365 days before now",
               "format": "date-time",
               "type": "string"
             }
@@ -2351,10 +2360,11 @@
           {
             "name": "step",
             "in": "query",
-            "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
+            "description": "Point spacing (granularity) in seconds, at most 31536000 (365 days). Defaults to 86400 (1 day). The range may span at most 10,000 buckets at this step",
             "schema": {
               "default": 86400,
-              "description": "Point spacing (granularity) in seconds. Defaults to 86400 (1 day)",
+              "description": "Point spacing (granularity) in seconds, at most 31536000 (365 days). Defaults to 86400 (1 day). The range may span at most 10,000 buckets at this step",
+              "maximum": 31536000,
               "minimum": 1,
               "type": "integer"
             }
@@ -2362,10 +2372,11 @@
           {
             "name": "apyInterval",
             "in": "query",
-            "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
+            "description": "APY/APR trailing window (lookback) in seconds, independent of step, at most 7776000 (90 days). Defaults to 2592000 (30 days)",
             "schema": {
               "default": 2592000,
-              "description": "APY/APR trailing window (lookback) in seconds, independent of step. Defaults to 2592000 (30 days)",
+              "description": "APY/APR trailing window (lookback) in seconds, independent of step, at most 7776000 (90 days). Defaults to 2592000 (30 days)",
+              "maximum": 7776000,
               "minimum": 1,
               "type": "integer"
             }
@@ -2373,10 +2384,10 @@
           {
             "name": "startDate",
             "in": "query",
-            "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+            "description": "Inclusive lower bound (RFC3339/ISO-8601). At most 365 days before now",
             "required": true,
             "schema": {
-              "description": "Inclusive lower bound (RFC3339/ISO-8601)",
+              "description": "Inclusive lower bound (RFC3339/ISO-8601). At most 365 days before now",
               "format": "date-time",
               "type": "string"
             }
