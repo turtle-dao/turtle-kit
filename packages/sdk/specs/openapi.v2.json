@@ -240,7 +240,7 @@
           "Actions"
         ],
         "summary": "Verify Tracking Handler",
-        "description": "Verify tracking data in a transaction",
+        "description": "Verify the Turtle attribution carried by a transaction",
         "operationId": "VerifyTracking",
         "parameters": [
           {
@@ -3958,14 +3958,22 @@
           },
           "metadata": {
             "$ref": "#/components/schemas/TrackingEarnTrackingMetadata",
-            "description": "The parsed tracking metadata"
+            "description": "Tracking metadata of the transaction"
+          },
+          "schema": {
+            "description": "Attribution format found in the transaction. Omitted when the transaction carries none",
+            "enum": [
+              "erc8021",
+              "legacy"
+            ],
+            "type": "string"
           },
           "signatureValid": {
-            "description": "Whether the signature is from our attribution wallet",
+            "description": "Whether the transaction's attribution was issued by Turtle",
             "type": "boolean"
           },
           "tag": {
-            "description": "The tracking tag found in the transaction",
+            "description": "Tracking tag found in the transaction. Only present for the legacy format",
             "type": "string"
           }
         },
