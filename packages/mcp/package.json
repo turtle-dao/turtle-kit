@@ -1,6 +1,6 @@
 {
   "name": "@turtlexyz/mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "MCP integration assistant for Turtle Earn and Streams",
   "author": {
