@@ -1,6 +1,6 @@
 name: Publish SDK
 
-# Publishes @turtleclub/sdk to npm when the version in packages/sdk/package.json
+# Publishes @turtlexyz/sdk to npm when the version in packages/sdk/package.json
 # isn't already on the registry.
 #
 # Triggers:
@@ -11,7 +11,7 @@ name: Publish SDK
 # - workflow_dispatch for manual re-publish.
 #
 # The "Detect publishable version" step checks the npm registry directly:
-# if @turtleclub/sdk@<version-in-package.json> already exists, the run is a
+# if @turtlexyz/sdk@<version-in-package.json> already exists, the run is a
 # no-op. Idempotent — safe to re-run.
 
 on:
