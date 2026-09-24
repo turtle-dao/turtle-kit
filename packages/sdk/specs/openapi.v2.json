@@ -3989,7 +3989,7 @@
           },
           "metadata": {
             "$ref": "#/components/schemas/TrackingEarnTrackingMetadata",
-            "description": "Tracking metadata of the transaction"
+            "description": "Attribution metadata. Present only when the signature is valid"
           },
           "schema": {
             "description": "Attribution format found in the transaction. Omitted when the transaction carries none",
@@ -4004,7 +4004,7 @@
             "type": "boolean"
           },
           "tag": {
-            "description": "Tracking tag found in the transaction. Only present for the legacy format",
+            "description": "Tracking tag of a legacy marker. Absent under erc8021 and when the signature is invalid",
             "type": "string"
           }
         },
