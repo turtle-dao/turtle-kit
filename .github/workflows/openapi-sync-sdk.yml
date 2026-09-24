@@ -38,7 +38,7 @@ jobs:
       new_version: ${{ steps.decide.outputs.new_version }}
       partners_ref: ${{ steps.partners-ref.outputs.ref }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Resolve partners ref
         id: partners-ref
@@ -67,7 +67,7 @@ jobs:
 
       - name: Check for breaking changes (oasdiff)
         id: breaking
-        uses: oasdiff/oasdiff-action/breaking@v0.0.47
+        uses: oasdiff/oasdiff-action/breaking@6147a58e5d1249a12f42fc864ab791d571a30015 # v0.0.47
         continue-on-error: true
         with:
           base: ./${{ env.SPEC_PATH_IN_KIT }}
@@ -75,7 +75,7 @@ jobs:
           fail-on: ERR
 
       - name: Generate changelog (oasdiff)
-        uses: oasdiff/oasdiff-action/changelog@v0.0.47
+        uses: oasdiff/oasdiff-action/changelog@6147a58e5d1249a12f42fc864ab791d571a30015 # v0.0.47
         continue-on-error: true
         with:
           base: ./${{ env.SPEC_PATH_IN_KIT }}
@@ -85,7 +85,7 @@ jobs:
 
       - name: Detect structural diff (to tell minor from patch)
         id: structural
-        uses: oasdiff/oasdiff-action/diff@v0.0.47
+        uses: oasdiff/oasdiff-action/diff@6147a58e5d1249a12f42fc864ab791d571a30015 # v0.0.47
         continue-on-error: true
         with:
           base: ./${{ env.SPEC_PATH_IN_KIT }}
@@ -121,7 +121,7 @@ jobs:
           echo "::notice::next version: v$new ($bump)"
 
       - name: Upload classify artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: classify-output
           path: |
@@ -137,16 +137,16 @@ jobs:
     needs: classify
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: classify-output
 
       - name: Promote new spec as the kit's baseline
         run: mv openapi.v2.json.new ${{ env.SPEC_PATH_IN_KIT }}
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.3.10
 
@@ -215,7 +215,7 @@ jobs:
           mv CHANGELOG.new.md CHANGELOG.md
 
       - name: Upload regenerated tree
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: regenerate-output
           # src/client is gitignored generated code (regenerated on every
@@ -234,13 +234,13 @@ jobs:
     needs: [classify, regenerate]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: classify-output
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: regenerate-output
 
@@ -297,7 +297,7 @@ jobs:
 
       - name: Create or update PR
         id: cpr
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           # Commit through the GitHub API so GitHub signs it with its own key
