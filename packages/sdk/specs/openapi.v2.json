@@ -1390,6 +1390,15 @@
             }
           },
           {
+            "name": "includeDeltas",
+            "in": "query",
+            "description": "When true, include each opportunity's TVL, LP count and APY with their movement over the trailing day, week and month",
+            "schema": {
+              "description": "When true, include each opportunity's TVL, LP count and APY with their movement over the trailing day, week and month",
+              "type": "boolean"
+            }
+          },
+          {
             "name": "sortBy",
             "in": "query",
             "description": "One of: tvl, name, type, apr, curator, provider (defaults to tvl)",
@@ -1659,6 +1668,15 @@
             "description": "When true, only opportunities with asynchronous withdrawals",
             "schema": {
               "description": "When true, only opportunities with asynchronous withdrawals",
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "includeDeltas",
+            "in": "query",
+            "description": "When true, include each opportunity's TVL, LP count and APY with their movement over the trailing day, week and month",
+            "schema": {
+              "description": "When true, include each opportunity's TVL, LP count and APY with their movement over the trailing day, week and month",
               "type": "boolean"
             }
           },
@@ -4155,6 +4173,121 @@
         },
         "type": "object"
       },
+      "DeltasAPYDelta": {
+        "properties": {
+          "asOf": {
+            "description": "Instant of the observation the rate was computed from",
+            "format": "date-time",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "current": {
+            "description": "Trailing 30-day APY in percent (8.24 = 8.24%)",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "d1": {
+            "description": "Change in basis points against the trailing 30-day APY of 24 hours ago",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "d30": {
+            "description": "Change in basis points against the trailing 30-day APY of 30 days ago",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "d7": {
+            "description": "Change in basis points against the trailing 30-day APY of 7 days ago",
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "DeltasMeasureDelta": {
+        "properties": {
+          "asOf": {
+            "description": "Instant the current value was measured at",
+            "format": "date-time",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "current": {
+            "description": "Value at asOf, in the measure's own unit",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "d1": {
+            "description": "Percent change over the trailing 24 hours",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "d30": {
+            "description": "Percent change over the trailing 30 days",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "d7": {
+            "description": "Percent change over the trailing 7 days",
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "DeltasOpportunityDeltas": {
+        "properties": {
+          "growthApy": {
+            "$ref": "#/components/schemas/DeltasAPYDelta",
+            "description": "Trailing 30-day APY from the growth series, and its movement. On the turtle listing it is not the apy field there, which carries native-yield rates per window from a different source. Null when the opportunity has no usable growth source or has more than one receipt token"
+          },
+          "lps": {
+            "$ref": "#/components/schemas/DeltasMeasureDelta",
+            "description": "Wallets holding a positive position, from every source, and its percent change"
+          },
+          "tvl": {
+            "$ref": "#/components/schemas/DeltasMeasureDelta",
+            "description": "TVL in USD summed from deposit data, from every source, and its percent change. Computed from a different source than the listing's own tvl field and will not always match it"
+          },
+          "unavailable": {
+            "description": "Measures whose read failed or ran out of time. A measure named here is null because we could not read it, not because the opportunity has none",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": [
+          "object",
+          "null"
+        ]
+      },
       "EntitiesUserEarnings": {
         "properties": {
           "productId": {
@@ -4891,6 +5024,10 @@
           "curator": {
             "$ref": "#/components/schemas/OpportunitiesCuratorResponse",
             "description": "Curator organization for the opportunity"
+          },
+          "deltas": {
+            "$ref": "#/components/schemas/DeltasOpportunityDeltas",
+            "description": "Per-measure movement over the trailing day, week and month. Present only when includeDeltas is set, and absent when it could not be computed"
           },
           "depositTokens": {
             "description": "Tokens accepted for deposit",
