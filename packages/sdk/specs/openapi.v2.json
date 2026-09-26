@@ -2262,7 +2262,7 @@
           "Historical Data"
         ],
         "summary": "Get Vault Historical Share Price",
-        "description": "Historical share prices from one canonical growth source over [from, to]. Native is in the source's base asset; rebasing receipts have native price 1. USD uses the base asset's historical price bucket and is null when unavailable. NAV sources and ambiguous source mappings return 412. Missing or unindexed sources return 503 INDEXING_NOT_STARTED; paused or withheld sources return 503 INDEXING_STALLED. Coverage describes the selected growth source. The indexing-status endpoint still reports the legacy vault indexer.",
+        "description": "Historical share prices from one canonical growth source over [from, to]. Native is in the source's base asset; rebasing receipts have native price 1. USD uses the base asset's historical price bucket and is null when unavailable. NAV sources return their stored USD value directly, with native and baseAsset null. Ambiguous source mappings return 412. Missing or unindexed sources return 503 INDEXING_NOT_STARTED; paused or withheld sources return 503 INDEXING_STALLED. Coverage describes the selected growth source.",
         "operationId": "GetOpportunityHistoricalSharePrice",
         "parameters": [
           {
@@ -4649,8 +4649,15 @@
       "OpportunitiesGetOpportunityHistoricalSharePriceResponse": {
         "properties": {
           "baseAsset": {
-            "$ref": "#/components/schemas/SharedTokenResponse",
-            "description": "null when the vault is unmapped or the source's underlying token is not registered in supported_tokens"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SharedTokenResponse",
+                "description": "null for NAV sources, when the vault is unmapped or the source's underlying token is not registered in supported_tokens"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "coverage": {
             "$ref": "#/components/schemas/OpportunitiesHistoricalCoverage",
@@ -4823,12 +4830,31 @@
             "type": "integer"
           },
           "sharePrice": {
-            "$ref": "#/components/schemas/OpportunitiesNativeUSDValue"
+            "$ref": "#/components/schemas/OpportunitiesHistoricalSharePriceValue"
           },
           "timestamp": {
             "description": "Bucket representative time",
             "format": "date-time",
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OpportunitiesHistoricalSharePriceValue": {
+        "properties": {
+          "native": {
+            "description": "Share price in the source's base asset; null for USD-denominated NAV sources",
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "usd": {
+            "description": "Share price in USD; NAV values are already USD, other modes use historical base-asset prices; null when unavailable",
+            "type": [
+              "null",
+              "string"
+            ]
           }
         },
         "type": "object"
