@@ -42,16 +42,24 @@ jobs:
 
       - name: Resolve partners ref
         id: partners-ref
+        env:
+          REF: ${{ github.event.client_payload.source_commit || github.event.client_payload.ref || inputs.partners_commit || 'main' }}
         run: |
-          REF="${{ github.event.client_payload.source_commit || github.event.client_payload.ref || inputs.partners_commit || 'main' }}"
+          # REF comes from the dispatch payload or a free-text input. It is
+          # written to $GITHUB_OUTPUT and used in URLs, so accept only a
+          # plain branch name or SHA.
+          if ! [[ "$REF" =~ ^[A-Za-z0-9._/-]+$ ]]; then
+            echo "::error::Invalid partners ref: must match ^[A-Za-z0-9._/-]+\$"
+            exit 1
+          fi
           echo "ref=$REF" >> "$GITHUB_OUTPUT"
           echo "::notice::Reading spec from ${{ env.PARTNERS_REPO }}@$REF"
 
       - name: Download fresh spec from turtle-partners
         env:
           GH_TOKEN: ${{ secrets.PARTNERS_READ_TOKEN }}
+          REF: ${{ steps.partners-ref.outputs.ref }}
         run: |
-          REF="${{ steps.partners-ref.outputs.ref }}"
           PATH_IN_PARTNERS="${{ env.SPEC_PATH_IN_PARTNERS }}"
 
           if [ -n "${GH_TOKEN:-}" ]; then
