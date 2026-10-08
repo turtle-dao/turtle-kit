@@ -1,0 +1,13 @@
+version: 2
+updates:
+  # Workflows pin every action to a commit SHA (security audit F-027). Dependabot
+  # bumps the SHA and its `# vX.Y.Z` comment together, so the pins don't rot.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      # One PR for all non-breaking bumps; each major still gets its own PR.
+      github-actions:
+        patterns: ["*"]
+        update-types: [minor, patch]
