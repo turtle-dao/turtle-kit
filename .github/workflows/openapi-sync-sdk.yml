@@ -77,7 +77,7 @@ jobs:
 
       - name: Check for breaking changes (oasdiff)
         id: breaking
-        uses: oasdiff/oasdiff-action/breaking@6147a58e5d1249a12f42fc864ab791d571a30015 # v0.0.47
+        uses: oasdiff/oasdiff-action/breaking@b9325c9e0a27ab65b0da3b766522cedec6be81dc # v0.1.18
         continue-on-error: true
         with:
           base: ./${{ env.SPEC_PATH_IN_KIT }}
@@ -85,7 +85,7 @@ jobs:
           fail-on: ERR
 
       - name: Generate changelog (oasdiff)
-        uses: oasdiff/oasdiff-action/changelog@6147a58e5d1249a12f42fc864ab791d571a30015 # v0.0.47
+        uses: oasdiff/oasdiff-action/changelog@b9325c9e0a27ab65b0da3b766522cedec6be81dc # v0.1.18
         continue-on-error: true
         with:
           base: ./${{ env.SPEC_PATH_IN_KIT }}
@@ -95,7 +95,7 @@ jobs:
 
       - name: Detect structural diff (to tell minor from patch)
         id: structural
-        uses: oasdiff/oasdiff-action/diff@6147a58e5d1249a12f42fc864ab791d571a30015 # v0.0.47
+        uses: oasdiff/oasdiff-action/diff@b9325c9e0a27ab65b0da3b766522cedec6be81dc # v0.1.18
         continue-on-error: true
         with:
           base: ./${{ env.SPEC_PATH_IN_KIT }}
