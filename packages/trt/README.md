@@ -8,13 +8,18 @@ It is a separate tool from Turtle's Go `trt` (the server and ops binary).
 
 ## Run it
 
+Node 22 or later:
+
 ```bash
 export TURTLE_API_KEY=sk_live_…        # your personal API key
 export TURTLE_ORG_ID=<organization id>  # optional: the default --org
 
-bun run trt -- --help                                    # from packages/trt
-bun run compile && ./dist/trt sonar contacts list --limit 5   # a single binary for this machine
+npx @turtlexyz/trt --help
+npm install -g @turtlexyz/trt && trt sonar contacts list --limit 5
 ```
+
+`bunx @turtlexyz/trt` and `deno run -A npm:@turtlexyz/trt` work too. `trt.md`, in the package,
+is the short version of this page for an AI agent.
 
 | Variable         | Use                                                    |
 | ---------------- | ------------------------------------------------------ |
@@ -76,11 +81,21 @@ does. When the fetch fails, a stale cache is used with a warning.
 ## Develop
 
 ```bash
-bun run test         # bun test, against src/__fixtures__/openapi.json and a mocked fetch
+bun run trt -- --help   # run the source with Bun
+bun run test            # bun test, against src/__fixtures__/openapi.json and a mocked fetch
 bun run type-check
+bun run build           # dist/trt.js, the Node bin npm ships
+bun run compile         # dist/trt, a single binary for this machine (not published)
 ```
 
 Lint is Biome, from the repo root (`bun run lint`).
 
 `src/__fixtures__/openapi.json` is a subset of the real spec, reflected from the API's own
-handlers. Not published anywhere yet: the package is private, with no release or npm package.
+handlers.
+
+## Release
+
+`.github/workflows/publish-trt.yml` publishes to npm when a merge to `main` touches
+`packages/trt/` with a version the registry does not have yet: bump `version` in
+`package.json` and add its entry to `CHANGELOG.md` in the same PR. It publishes with npm
+trusted publishing (OIDC, with provenance) and tags a GitHub release `@turtlexyz/trt@<version>`.
