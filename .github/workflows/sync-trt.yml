@@ -1,0 +1,128 @@
+name: Sync trt from turtle-agents
+
+# One-way mirror of trt's source into packages/trt. trt is developed in
+# turtle-agents, beside the sonar CLI; turtle-kit only packages and publishes it.
+#
+#   turtle-agents data/system/trt/cli/   → packages/trt/src/   (rsync --delete)
+#   turtle-agents data/system/trt/trt.md → packages/trt/trt.md
+#
+# It reads turtle-agents' `next` (what the agents run), writes
+# packages/trt/mirror.json with the commit it came from, and opens or updates
+# one PR. A sync bumps no version, so merging it publishes nothing: a release is
+# its own PR, a version bump plus a CHANGELOG entry (see publish-trt.yml).
+#
+# turtle-agents is private: AGENTS_READ_TOKEN is a read-only credential for it
+# (a fine-grained token with Contents: read on turtle-dao/turtle-agents only).
+# The PR itself is opened with the default GITHUB_TOKEN.
+
+on:
+  schedule:
+    - cron: "17 6 * * *" # daily
+  workflow_dispatch:
+    inputs:
+      agents_ref:
+        description: "turtle-agents ref to mirror (default: next)"
+        required: false
+        default: next
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-trt
+  cancel-in-progress: true
+
+env:
+  AGENTS_REPO: turtle-dao/turtle-agents
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Resolve the turtle-agents commit
+        id: source
+        env:
+          GH_TOKEN: ${{ secrets.AGENTS_READ_TOKEN }}
+          REF: ${{ inputs.agents_ref || 'next' }}
+        run: |
+          # REF can come from a free-text input and ends up in a URL, so accept
+          # only a plain branch name or SHA.
+          if ! [[ "$REF" =~ ^[A-Za-z0-9._/-]+$ ]]; then
+            echo "::error::Invalid turtle-agents ref: must match ^[A-Za-z0-9._/-]+\$"
+            exit 1
+          fi
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::AGENTS_READ_TOKEN is not set: turtle-agents is private"
+            exit 1
+          fi
+          sha=$(gh api "repos/${AGENTS_REPO}/commits/${REF}" --jq .sha)
+          echo "::notice::Mirroring ${AGENTS_REPO}@${REF} (${sha})"
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "short=${sha:0:9}" >> "$GITHUB_OUTPUT"
+
+      - name: Download data/system/trt at that commit
+        env:
+          GH_TOKEN: ${{ secrets.AGENTS_READ_TOKEN }}
+          SHA: ${{ steps.source.outputs.sha }}
+        run: |
+          src="$RUNNER_TEMP/turtle-agents"
+          mkdir -p "$src"
+          gh api "repos/${AGENTS_REPO}/tarball/${SHA}" > "$RUNNER_TEMP/agents.tgz"
+          # The tarball's top folder is <owner>-<repo>-<sha>; drop it.
+          tar -xzf "$RUNNER_TEMP/agents.tgz" -C "$src" --strip-components=1 \
+            --wildcards '*/data/system/trt/*'
+          test -f "$src/data/system/trt/cli/main.ts"
+          test -f "$src/data/system/trt/trt.md"
+
+      - name: Mirror into packages/trt
+        env:
+          REF: ${{ steps.source.outputs.ref }}
+          SHA: ${{ steps.source.outputs.sha }}
+        run: |
+          src="$RUNNER_TEMP/turtle-agents/data/system/trt"
+          rsync -a --delete "$src/cli/" packages/trt/src/
+          cp "$src/trt.md" packages/trt/trt.md
+          # The marker moves only with the code: a new turtle-agents commit that
+          # leaves trt alone opens no PR.
+          if [ -n "$(git status --porcelain -- packages/trt/src packages/trt/trt.md)" ]; then
+            jq -n \
+              --arg sourceRepo "$AGENTS_REPO" \
+              --arg sourceRef "$REF" \
+              --arg sourceSha "$SHA" \
+              '{
+                sourceRepo: $sourceRepo,
+                sourceRef: $sourceRef,
+                sourcePaths: ["data/system/trt/cli", "data/system/trt/trt.md"],
+                sourceSha: $sourceSha
+              }' > packages/trt/mirror.json
+          else
+            echo "::notice::packages/trt is up to date with ${AGENTS_REPO}@${SHA}"
+          fi
+
+      - name: Create or update the sync PR
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # Commit through the GitHub API so GitHub signs it.
+          sign-commits: true
+          commit-message: "chore(trt): sync from turtle-agents@${{ steps.source.outputs.short }}"
+          title: "chore(trt): sync from turtle-agents@${{ steps.source.outputs.short }}"
+          body: |
+            Automated mirror of trt's source from `${{ env.AGENTS_REPO }}` `${{ steps.source.outputs.ref }}` at `${{ steps.source.outputs.sha }}`:
+
+            - `data/system/trt/cli/` → `packages/trt/src/`
+            - `data/system/trt/trt.md` → `packages/trt/trt.md`
+
+            It bumps no version, so merging it publishes nothing.
+          branch: chore/sync-trt
+          delete-branch: true
+          add-paths: |
+            packages/trt/src
+            packages/trt/trt.md
+            packages/trt/mirror.json

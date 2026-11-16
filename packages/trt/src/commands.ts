@@ -1,5 +1,5 @@
-import type { HttpMethod, OpenAPIDocument, Operation, Parameter } from "./spec";
-import { HTTP_METHODS } from "./spec";
+import type { HttpMethod, OpenAPIDocument, Operation, Parameter } from "./spec.ts";
+import { HTTP_METHODS } from "./spec.ts";
 
 /** One API operation, addressed as `trt <product> [resource] <method>`. */
 export interface Command {

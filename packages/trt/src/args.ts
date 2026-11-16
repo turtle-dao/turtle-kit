@@ -1,7 +1,7 @@
-import type { Command } from "./commands";
-import { EXIT_USAGE, TrtError } from "./io";
-import type { JsonSchema, OpenAPIDocument, Parameter } from "./spec";
-import { schemaRefName } from "./spec";
+import type { Command } from "./commands.ts";
+import { EXIT_USAGE, TrtError } from "./io.ts";
+import type { JsonSchema, OpenAPIDocument, Parameter } from "./spec.ts";
+import { schemaRefName } from "./spec.ts";
 
 /** Flags every command takes that hold no value. */
 export const GLOBAL_SWITCHES = ["yes", "dry-run", "page-all", "refresh", "help"] as const;

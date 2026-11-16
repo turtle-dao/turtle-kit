@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
 
-import type { CommandArgs } from "./args";
-import type { Command } from "./commands";
-import type { Io } from "./io";
-import { EXIT_API_ERROR, EXIT_UNREACHABLE, EXIT_USAGE, TrtError } from "./io";
+import type { CommandArgs } from "./args.ts";
+import type { Command } from "./commands.ts";
+import type { Io } from "./io.ts";
+import { EXIT_API_ERROR, EXIT_UNREACHABLE, EXIT_USAGE, TrtError } from "./io.ts";
 
 /** The request a command makes, as printed by `--dry-run` and an unconfirmed write. */
 export interface ApiRequest {

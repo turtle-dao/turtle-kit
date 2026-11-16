@@ -3,8 +3,8 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 
-import type { Io } from "./io";
-import { EXIT_UNREACHABLE, EXIT_USAGE, TrtError } from "./io";
+import type { Io } from "./io.ts";
+import { EXIT_UNREACHABLE, EXIT_USAGE, TrtError } from "./io.ts";
 
 /** The parts of an OpenAPI 3.1 document trt reads. */
 export interface OpenAPIDocument {

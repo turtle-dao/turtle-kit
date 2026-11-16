@@ -1,7 +1,7 @@
-import type { Command } from "./commands";
-import { commandKey } from "./commands";
-import type { JsonSchema, OpenAPIDocument } from "./spec";
-import { schemaRefName } from "./spec";
+import type { Command } from "./commands.ts";
+import { commandKey } from "./commands.ts";
+import type { JsonSchema, OpenAPIDocument } from "./spec.ts";
+import { schemaRefName } from "./spec.ts";
 
 /** What `trt schema <product.resource.method>` prints: the call's input and output. */
 export function describeCommand(command: Command, spec: OpenAPIDocument) {

@@ -8,13 +8,18 @@ It is a separate tool from Turtle's Go `trt` (the server and ops binary).
 
 ## Run it
 
+Node 22 or later:
+
 ```bash
 export TURTLE_API_KEY=sk_live_…        # your personal API key
 export TURTLE_ORG_ID=<organization id>  # optional: the default --org
 
-bun run trt -- --help                                    # from packages/trt
-bun run compile && ./dist/trt sonar contacts list --limit 5   # a single binary for this machine
+npx @turtlexyz/trt --help
+npm install -g @turtlexyz/trt && trt sonar contacts list --limit 5
 ```
+
+`bunx @turtlexyz/trt` and `deno run -A npm:@turtlexyz/trt` work too. `trt.md`, in the package,
+is the short version of this page for an AI agent.
 
 | Variable         | Use                                                    |
 | ---------------- | ------------------------------------------------------ |
@@ -73,14 +78,28 @@ The spec is fetched with your key and cached for 24 hours, one file per API URL,
 switching to a key with another role: a turtle admin's session sees `/admin`, a key never
 does. When the fetch fails, a stale cache is used with a warning.
 
-## Develop
+## Where the source lives
+
+`src/` and `trt.md` are a **mirror**: trt is developed in turtle-agents, beside the sonar
+CLI, in `data/system/trt/cli/` (with its tests) and `data/system/trt/trt.md`. Never edit them
+here: `.github/workflows/sync-trt.yml` copies them from turtle-agents' `next` with
+`rsync --delete` and opens a PR, so an edit made here is gone by the next sync. A change to
+trt is a turtle-agents PR. `mirror.json` names the turtle-agents commit the mirror came from,
+and ships in the package.
+
+This folder holds the packaging: `package.json`, the build, this README, the changelog.
 
 ```bash
-bun run test         # bun test, against src/__fixtures__/openapi.json and a mocked fetch
+bun run trt -- --help   # run the source with Bun
 bun run type-check
+bun run build           # dist/trt.js, the Node bin npm ships
+bun run compile         # dist/trt, a single binary for this machine (not published)
 ```
 
-Lint is Biome, from the repo root (`bun run lint`).
+## Release
 
-`src/__fixtures__/openapi.json` is a subset of the real spec, reflected from the API's own
-handlers. Not published anywhere yet: the package is private, with no release or npm package.
+`.github/workflows/publish-trt.yml` publishes to npm when a merge to `main` touches
+`packages/trt/` with a version the registry does not have yet: bump `version` in
+`package.json` and add its entry to `CHANGELOG.md` in the same PR. A sync PR alone changes
+no version, so it publishes nothing. It publishes with npm trusted publishing (OIDC, with
+provenance) and tags a GitHub release `@turtlexyz/trt@<version>`.

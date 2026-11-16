@@ -1,15 +1,15 @@
-import type { GlobalSwitch } from "./args";
-import { parseCommandArgs, splitArgs } from "./args";
-import type { Command, CommandTree } from "./commands";
-import { buildCommandTree, findCommand } from "./commands";
-import { commandHelp, productHelp, resourceHelp, rootHelp } from "./help";
-import type { Io } from "./io";
-import { EXIT_USAGE, TrtError } from "./io";
-import type { ApiRequest } from "./request";
-import { buildRequest, DEFAULT_PAGE_LIMIT, pageAll, send } from "./request";
-import { describeCommand } from "./schema";
-import type { OpenAPIDocument } from "./spec";
-import { DEFAULT_API_URL, loadSpec } from "./spec";
+import type { GlobalSwitch } from "./args.ts";
+import { parseCommandArgs, splitArgs } from "./args.ts";
+import type { Command, CommandTree } from "./commands.ts";
+import { buildCommandTree, findCommand } from "./commands.ts";
+import { commandHelp, productHelp, resourceHelp, rootHelp } from "./help.ts";
+import type { Io } from "./io.ts";
+import { EXIT_USAGE, TrtError } from "./io.ts";
+import type { ApiRequest } from "./request.ts";
+import { buildRequest, DEFAULT_PAGE_LIMIT, pageAll, send } from "./request.ts";
+import { describeCommand } from "./schema.ts";
+import type { OpenAPIDocument } from "./spec.ts";
+import { DEFAULT_API_URL, loadSpec } from "./spec.ts";
 
 /** Runs trt with argv (without the program name) and answers the exit code. */
 export async function run(argv: string[], io: Io): Promise<number> {

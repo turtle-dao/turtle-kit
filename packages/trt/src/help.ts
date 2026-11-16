@@ -1,8 +1,8 @@
-import { schemaType } from "./args";
-import type { Command, CommandTree } from "./commands";
-import { commandKey, commandWords } from "./commands";
-import { DEFAULT_PAGE_LIMIT } from "./request";
-import type { OpenAPIDocument } from "./spec";
+import { schemaType } from "./args.ts";
+import type { Command, CommandTree } from "./commands.ts";
+import { commandKey, commandWords } from "./commands.ts";
+import { DEFAULT_PAGE_LIMIT } from "./request.ts";
+import type { OpenAPIDocument } from "./spec.ts";
 
 const GLOBAL_FLAGS = `Flags on every call:
   --org <id>          the organization for /organization/{id}/ paths (default: $TURTLE_ORG_ID)

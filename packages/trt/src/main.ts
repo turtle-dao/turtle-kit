@@ -1,7 +1,6 @@
-#!/usr/bin/env bun
 import process from "node:process";
 
-import { run } from "./cli";
+import { run } from "./cli.ts";
 
 const exitCode = await run(process.argv.slice(2), {
   env: process.env,

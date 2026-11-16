@@ -1,7 +1,6 @@
 {
   "name": "@turtlexyz/trt",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "description": "trt: the Turtle API from the command line, with commands built from the API's own OpenAPI spec",
   "author": {
@@ -23,18 +22,34 @@
     "cli",
     "openapi"
   ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "provenance": true
+  },
   "engines": {
     "node": ">=22"
   },
+  "bin": {
+    "trt": "./dist/trt.js"
+  },
+  "files": [
+    "dist/trt.js",
+    "README.md",
+    "CHANGELOG.md",
+    "trt.md",
+    "mirror.json"
+  ],
   "scripts": {
     "trt": "bun src/main.ts",
+    "build": "bun build src/main.ts --target=node --banner '#!/usr/bin/env node' --outfile dist/trt.js",
     "compile": "bun build --compile --minify src/main.ts --outfile dist/trt",
     "type-check": "tsc --noEmit",
-    "test": "bun test",
+    "prepublishOnly": "bun run build",
     "clean": "rm -rf dist"
   },
   "devDependencies": {
-    "@types/bun": "1.3.10",
+    "@types/node": "catalog:",
     "typescript": "catalog:"
   }
 }
