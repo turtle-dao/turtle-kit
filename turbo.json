@@ -13,6 +13,7 @@
     "type-check": {
       "dependsOn": ["^build", "codegen"]
     },
+    "test": {},
     "clean": {
       "cache": false
     }
