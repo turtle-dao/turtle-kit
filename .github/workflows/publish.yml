@@ -32,6 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          persist-credentials: false
           # Force main HEAD — workflow_run defaults to the SHA of the
           # upstream run, which may pre-date the merge commit produced by
           # auto-merge.
