@@ -1,0 +1,55 @@
+{
+  "name": "@turtlexyz/trt",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "trt: the Turtle API from the command line, with commands built from the API's own OpenAPI spec",
+  "author": {
+    "name": "Turtle",
+    "url": "https://www.turtle.xyz"
+  },
+  "license": "MIT",
+  "homepage": "https://www.turtle.xyz",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/turtle-dao/turtle-kit.git",
+    "directory": "packages/trt"
+  },
+  "bugs": {
+    "url": "https://github.com/turtle-dao/turtle-kit/issues"
+  },
+  "keywords": [
+    "turtle",
+    "cli",
+    "openapi"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "trt": "./dist/trt.js"
+  },
+  "files": [
+    "dist/trt.js",
+    "README.md",
+    "CHANGELOG.md",
+    "trt.md",
+    "mirror.json"
+  ],
+  "scripts": {
+    "trt": "bun src/main.ts",
+    "build": "bun build src/main.ts --target=node --banner '#!/usr/bin/env node' --outfile dist/trt.js",
+    "compile": "bun build --compile --minify src/main.ts --outfile dist/trt",
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "bun run build",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}
