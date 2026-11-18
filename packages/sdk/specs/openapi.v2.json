@@ -2678,6 +2678,15 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "onlyVerifiedOrgs",
+            "in": "query",
+            "description": "Keep only streams owned by a verified organization",
+            "schema": {
+              "description": "Keep only streams owned by a verified organization",
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -2972,7 +2981,7 @@
           "Streams"
         ],
         "summary": "Create Stream Point",
-        "description": "Create a point for the organization associated with the API key.",
+        "description": "Create a point for the organization associated with the API key. An organization can have at most 5 points.",
         "operationId": "CreateStreamPoint",
         "requestBody": {
           "content": {
@@ -3016,6 +3025,16 @@
           },
           "403": {
             "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestErrResponse"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Precondition Failed",
             "content": {
               "application/json": {
                 "schema": {
@@ -3536,9 +3555,9 @@
           {
             "name": "quoteOnly",
             "in": "query",
-            "description": "Skip balance validation for quote preview",
+            "description": "Quote preview: skip the balance check, return no approve transactions and do not prepare an intent order",
             "schema": {
-              "description": "Skip balance validation for quote preview",
+              "description": "Quote preview: skip the balance check, return no approve transactions and do not prepare an intent order",
               "type": "boolean"
             }
           }
@@ -3546,6 +3565,14 @@
         "responses": {
           "200": {
             "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "style": "simple",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -3966,7 +3993,7 @@
           "Swaps"
         ],
         "summary": "List Swaps",
-        "description": "Returns paginated swaps history for a single wallet, newest first.",
+        "description": "Returns paginated swaps history for a single wallet, newest first: settled swaps and closed intent orders.",
         "operationId": "ListSwaps",
         "parameters": [
           {
@@ -6127,6 +6154,24 @@
         },
         "type": "object"
       },
+      "SafetextLogoURL": {
+        "maxLength": 1000000,
+        "pattern": "^ *(?:(?:[Hh][Tt][Tt][Pp][Ss]?://|[Dd][Aa][Tt][Aa]:[Ii][Mm][Aa][Gg][Ee]/)[\\s\\S]*)?$",
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "SafetextName": {
+        "maxLength": 100,
+        "pattern": "^[\\p{L}\\p{M}\\p{N} ,\u0026()_!?+:/.'’-]*$",
+        "type": "string"
+      },
+      "SafetextSymbol": {
+        "maxLength": 32,
+        "pattern": "^[A-Za-z0-9._$€-]*$",
+        "type": "string"
+      },
       "SharedChainResponse": {
         "properties": {
           "chainId": {
@@ -6265,16 +6310,13 @@
             ]
           },
           "logoUrl": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "$ref": "#/components/schemas/SafetextLogoURL"
           },
           "name": {
-            "type": "string"
+            "$ref": "#/components/schemas/SafetextName"
           },
           "symbol": {
-            "type": "string"
+            "$ref": "#/components/schemas/SafetextSymbol"
           }
         },
         "type": "object"
@@ -6574,6 +6616,10 @@
           "ids": {
             "$ref": "#/components/schemas/UuidUUIDs",
             "description": "Filter by stream IDs"
+          },
+          "onlyVerifiedOrgs": {
+            "description": "Keep only streams owned by a verified organization",
+            "type": "boolean"
           },
           "organizationIds": {
             "$ref": "#/components/schemas/UuidUUIDs",
@@ -7099,6 +7145,20 @@
           },
           "srcChain": {
             "$ref": "#/components/schemas/SharedChainResponse"
+          },
+          "state": {
+            "description": "Earn order state, set for intent orders only. status is derived from it: finalized is filled, expired or cancelled with an executed part is partial, refunded is failed. cancelled also covers an order the provider cancelled on its own timeout.",
+            "enum": [
+              "finalized",
+              "expired",
+              "cancelled",
+              "failed",
+              "refunded"
+            ],
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "status": {
             "type": "string"
@@ -7637,6 +7697,30 @@
           "null"
         ]
       },
+      "V2AuthorizationAction": {
+        "properties": {
+          "authorizationActionId": {
+            "type": "string"
+          },
+          "transaction": {
+            "$ref": "#/components/schemas/TypesTransaction"
+          },
+          "type": {
+            "description": "transaction: send transaction from the wallet before signing; nothing is sent back. signTypedData: sign typedData and send the signature back under authorizationActionId",
+            "enum": [
+              "transaction",
+              "signTypedData"
+            ],
+            "type": "string"
+          },
+          "typedData": {}
+        },
+        "required": [
+          "authorizationActionId",
+          "type"
+        ],
+        "type": "object"
+      },
       "V2BuildSwapOrderRequest": {
         "properties": {
           "actionId": {
@@ -7832,8 +7916,52 @@
             "$ref": "#/components/schemas/UuidUUID",
             "description": "Unique identifier embedded in the swap tx tracking metadata"
           },
+          "amountIn": {
+            "type": "string"
+          },
+          "amountOut": {
+            "description": "Expected output",
+            "type": "string"
+          },
+          "authorizationActions": {
+            "description": "What the wallet does before accepting, in order: the approve transactions it sends, then the EIP-712 payloads it signs and sends back with the actionId",
+            "items": {
+              "$ref": "#/components/schemas/V2AuthorizationAction"
+            },
+            "type": "array"
+          },
+          "chainId": {
+            "type": "integer"
+          },
+          "expiresAt": {
+            "description": "RFC 3339 time after which the signed authorization is no longer accepted",
+            "format": "date-time",
+            "type": "string"
+          },
+          "kind": {
+            "description": "transaction: the wallet sends the swap transaction; intent: the wallet signs authorizationActions and a solver fills the order",
+            "enum": [
+              "transaction",
+              "intent"
+            ],
+            "type": "string"
+          },
+          "minAmountOut": {
+            "description": "Protected minimum output",
+            "type": "string"
+          },
+          "recipient": {
+            "description": "Wallet that receives the output: the requesting wallet",
+            "type": "string"
+          },
+          "tokenIn": {
+            "type": "string"
+          },
+          "tokenOut": {
+            "type": "string"
+          },
           "transactions": {
-            "description": "Ordered list of transactions to execute (approve + swap)",
+            "description": "Ordered list of transactions to execute (approve + swap); a quoteOnly preview has no approve transactions",
             "items": {
               "$ref": "#/components/schemas/TypesTxResponseItem"
             },
