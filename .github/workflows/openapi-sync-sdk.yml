@@ -77,7 +77,7 @@ jobs:
 
       - name: Check for breaking changes (oasdiff)
         id: breaking
-        uses: oasdiff/oasdiff-action/breaking@8a211b41745fcecdfa4a86531ffbf08934fb14f6 # v0.1.23
+        uses: oasdiff/oasdiff-action/breaking@0546e2ebdc9d3589d594cfcef445c61ca02cabf1 # v0.2.0
         continue-on-error: true
         with:
           base: ./${{ env.SPEC_PATH_IN_KIT }}
@@ -85,7 +85,7 @@ jobs:
           fail-on: ERR
 
       - name: Generate changelog (oasdiff)
-        uses: oasdiff/oasdiff-action/changelog@8a211b41745fcecdfa4a86531ffbf08934fb14f6 # v0.1.23
+        uses: oasdiff/oasdiff-action/changelog@0546e2ebdc9d3589d594cfcef445c61ca02cabf1 # v0.2.0
         continue-on-error: true
         with:
           base: ./${{ env.SPEC_PATH_IN_KIT }}
@@ -95,7 +95,7 @@ jobs:
 
       - name: Detect structural diff (to tell minor from patch)
         id: structural
-        uses: oasdiff/oasdiff-action/diff@8a211b41745fcecdfa4a86531ffbf08934fb14f6 # v0.1.23
+        uses: oasdiff/oasdiff-action/diff@0546e2ebdc9d3589d594cfcef445c61ca02cabf1 # v0.2.0
         continue-on-error: true
         with:
           base: ./${{ env.SPEC_PATH_IN_KIT }}
@@ -131,7 +131,7 @@ jobs:
           echo "::notice::next version: v$new ($bump)"
 
       - name: Upload classify artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: classify-output
           path: |
@@ -151,7 +151,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: classify-output
 
@@ -227,7 +227,7 @@ jobs:
           mv CHANGELOG.new.md CHANGELOG.md
 
       - name: Upload regenerated tree
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: regenerate-output
           # src/client is gitignored generated code (regenerated on every
@@ -250,11 +250,11 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: classify-output
 
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: regenerate-output
 
@@ -311,7 +311,7 @@ jobs:
 
       - name: Create or update PR
         id: cpr
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8.1.3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           # Commit through the GitHub API so GitHub signs it with its own key
