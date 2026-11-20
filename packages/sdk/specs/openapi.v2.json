@@ -3778,7 +3778,7 @@
           "Swap Orders"
         ],
         "summary": "Build Swap Order",
-        "description": "Build a 1inch Fusion order for a member wallet",
+        "description": "Build a 1inch Fusion order for a wallet",
         "operationId": "BuildSwapOrder",
         "requestBody": {
           "content": {
@@ -8150,6 +8150,14 @@
           "address": {
             "description": "Token contract address",
             "type": "string"
+          },
+          "asyncDeposit": {
+            "description": "Whether a known vault for this receipt token requires asynchronous deposits; false when no vault config is known",
+            "type": "boolean"
+          },
+          "asyncWithdraw": {
+            "description": "Whether a known vault for this receipt token requires asynchronous withdrawals; false when no vault config is known",
+            "type": "boolean"
           },
           "chainId": {
             "description": "Numeric chain ID this token belongs to",
