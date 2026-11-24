@@ -1,6 +1,6 @@
 # @turtlexyz/sdk
 
-TypeScript SDK for the [Turtle API](https://docs.turtle.xyz) — yield opportunities, deposits, attribution, and Streams.
+TypeScript SDK for the [Turtle API](https://docs.turtle.xyz) — yield opportunities, deposits, attribution, and Streams — and for [Sonar](#sonar)'s CRM.
 
 ## Install
 
@@ -108,29 +108,76 @@ The SDK wraps the full [Turtle API](https://earn.turtle.xyz/docs/openapi.json):
 - **Wallet** — `protocolsWalletGetWalletPortfolio`, `getWalletActivity`
 - **Reference** — `getChains`, `getProtocols`, `getTokens`, `getTokenByAddress`
 
+## Sonar
+
+[Sonar](https://docs.turtle.xyz/sdk/sonar/overview)'s CRM API (v1, at
+`https://sonar.turtle.xyz/v1`) lives under `sonar`, one group per resource,
+the same groups as the docs' API reference:
+
+```ts
+import { sonar } from "@turtlexyz/sdk";
+
+// Set TURTLE_API_KEY in your environment: the same key as Earn's.
+const organizationId = "your-organization-uuid";
+
+const { data: contacts } = await sonar.contacts.listContacts({
+  path: { organizationId },
+  query: { limit: 50 },
+});
+
+const { data: deal } = await sonar.engagements.getEngagement({
+  path: { organizationId, engagementId: "engagement-uuid" },
+});
+```
+
+| Variable                | Default                       | Description                       |
+|-------------------------|-------------------------------|-----------------------------------|
+| `TURTLE_API_KEY`        | —                             | API key from dashboard.turtle.xyz |
+| `TURTLE_SONAR_BASE_URL` | `https://sonar.turtle.xyz/v1` | Override for testing              |
+
+Sonar has its own client (`sonar.client`, `sonar.createClient`), types
+(`sonar.types`) and Zod schemas (`sonar.schemas`), so it can be pointed or
+keyed apart from Earn. Calls return `{ data, error, request, response }`, as
+Earn's do.
+
+A group is named after its tag in the spec, with any gloss in parentheses
+dropped and camelCased: `organizations`, `contacts`, `contactRoles`,
+`engagements`, `threads`, `tasks`, `documents`, `wallets`, `reports`, `events`,
+`meetings`, `messages`, `changeLogAndDrafts`, `pipelines`, `entityCards`,
+`rules`, `permissions`, `sensingScope`, `webhookDeliveries`, `dataAndRetention`
+and `agentKeys`. A method is the operation's id without the word "sonar":
+`sonarListContacts` is `sonar.contacts.listContacts`.
+
 ## How it works
 
-Types and functions are auto-generated from the OpenAPI spec using
+Types and functions are auto-generated from the OpenAPI specs using
 [hey-api](https://github.com/hey-api/openapi-ts). Request and response payloads
-are validated at runtime with Zod. When the API changes, the SDK regenerates
+are validated at runtime with Zod. When the Earn API changes, the SDK regenerates
 automatically.
 
 ## Development
 
 ```bash
-bun run codegen    # regenerate client from specs/openapi.v2.json
+bun run codegen    # regenerate the clients from specs/openapi.v2.json and specs/sonar.v1.json
 bun run build      # codegen + tsup bundle
 bun run type-check # tsc --noEmit
 ```
 
-The generated code (`src/client/`) is gitignored and recreated on every build.
-The source of truth is `specs/openapi.v2.json`, kept in sync with `turtle-partners`
-by the `openapi-sync-sdk.yml` workflow.
+The generated code (`src/client/`, `src/sonar/client/`) is gitignored and
+recreated on every build. The sources of truth are the specs:
+
+- `specs/openapi.v2.json`, kept in sync with `turtle-partners` by the
+  `openapi-sync-sdk.yml` workflow;
+- `specs/sonar.v1.json`, a copy of `turtle-partners`'
+  `go/services/api/specs/sonar.v1.json`, the spec
+  `https://sonar.turtle.xyz/v1/openapi.json` serves. It is copied by hand
+  for now.
 
 ## Docs
 
 - [docs.turtle.xyz](https://docs.turtle.xyz) — full API documentation
 - [OpenAPI spec](https://earn.turtle.xyz/docs/openapi.json) — machine-readable spec
+- [Sonar v1 OpenAPI spec](https://sonar.turtle.xyz/v1/openapi.json) — Sonar's machine-readable spec
 
 ## License
 
