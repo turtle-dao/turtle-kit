@@ -1,0 +1,9 @@
+{
+  "sourceRepo": "turtle-dao/turtle-agents",
+  "sourceRef": "next",
+  "sourcePaths": [
+    "data/system/trt/cli",
+    "data/system/trt/trt.md"
+  ],
+  "sourceSha": "1a402d466b79c33fe03d3f709a081d026bff1908"
+}

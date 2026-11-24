@@ -30,7 +30,7 @@
     },
     "packages/sdk": {
       "name": "@turtlexyz/sdk",
-      "version": "6.8.0",
+      "version": "7.0.0",
       "dependencies": {
         "@hey-api/client-fetch": "^0.13.1",
         "zod": "catalog:",
@@ -44,6 +44,17 @@
       },
       "peerDependencies": {
         "typescript": "^5.0.0",
+      },
+    },
+    "packages/trt": {
+      "name": "@turtlexyz/trt",
+      "version": "0.1.0",
+      "bin": {
+        "trt": "./dist/trt.js",
+      },
+      "devDependencies": {
+        "@types/node": "catalog:",
+        "typescript": "catalog:",
       },
     },
   },
@@ -326,6 +337,8 @@
     "@turtlexyz/mcp": ["@turtlexyz/mcp@workspace:packages/mcp"],
 
     "@turtlexyz/sdk": ["@turtlexyz/sdk@workspace:packages/sdk"],
+
+    "@turtlexyz/trt": ["@turtlexyz/trt@workspace:packages/trt"],
 
     "@types/estree": ["@types/estree@1.0.8", "", {}, "sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w=="],
 
