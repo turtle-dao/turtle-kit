@@ -8,18 +8,35 @@ export interface Command {
   resource: string;
   method: string;
   httpMethod: HttpMethod;
+  /** The path the call is sent to, under its API's base. */
   path: string;
   operation: Operation;
   /** Path and query parameters, path-level ones merged in. */
   parameters: Parameter[];
   /** The path parameter `--org` fills, on `/organization/{…}/` paths. */
   orgParam?: string;
+  /** The spec the operation is in: its schemas are that spec's. */
+  spec: OpenAPIDocument;
+  /** The base the call goes to when it is not the gateway's: Sonar v1's. */
+  baseUrl?: string;
 }
 
 /** product → resource → method → command. */
 export type CommandTree = Map<string, Map<string, Map<string, Command>>>;
 
+/** Sonar v1's spec, and where its calls go. */
+export interface SonarSpec {
+  spec: OpenAPIDocument;
+  baseUrl: string;
+}
+
 const ORGANIZATION_SEGMENT = "organization";
+
+/** A gateway Sonar path, `/organization/{id}/sonar/<rest>`, as v1 names it:
+ *  `/organization/{id}/<rest>`. */
+const GATEWAY_SONAR_PATH = /^(\/organization\/\{[^/}]+\})\/sonar(\/.+)$/;
+/** A v1 path, `/organization/{id}/<rest>`, which the commands name as the gateway's. */
+const SONAR_V1_PATH = /^(\/organization\/\{[^/}]+\})(\/.+)$/;
 
 /**
  * Derives the command tree from the spec's paths.
@@ -34,22 +51,37 @@ const ORGANIZATION_SEGMENT = "organization";
  *   the method and the resource is what comes before it.
  * - Two operations that land on the same command both fall back to a method
  *   named after their operationId (`sonarMergeContact` → `merge-contact`).
+ *
+ * With Sonar v1's spec, `trt sonar` calls v1: each operation it lists is a
+ * command named as the gateway's (`/organization/{id}/contacts` is
+ * `trt sonar contacts list`), sent to v1's base. The gateway's own Sonar
+ * operation stands only where v1 lists none.
  */
-export function buildCommandTree(spec: OpenAPIDocument): CommandTree {
-  const commands: Command[] = [];
-  for (const [path, item] of Object.entries(spec.paths ?? {})) {
-    for (const httpMethod of HTTP_METHODS) {
-      const operation = item[httpMethod];
-      if (!operation) {
-        continue;
-      }
-      const parameters = mergeParameters(item.parameters, operation.parameters);
-      const command = deriveCommand(path, httpMethod, operation, parameters);
-      if (command) {
-        commands.push(command);
-      }
+export function buildCommandTree(spec: OpenAPIDocument, sonar?: SonarSpec): CommandTree {
+  const inV1 = new Set<string>();
+  const v1Commands: Command[] = [];
+  for (const { path, httpMethod, operation, parameters } of operationsOf(sonar?.spec)) {
+    const named = path.match(SONAR_V1_PATH);
+    const command =
+      named && deriveCommand(`${named[1]}/sonar${named[2]}`, httpMethod, operation, parameters);
+    if (sonar && command) {
+      inV1.add(`${httpMethod} ${path}`);
+      v1Commands.push({ ...command, path, spec: sonar.spec, baseUrl: sonar.baseUrl });
     }
   }
+
+  const commands: Command[] = [];
+  for (const { path, httpMethod, operation, parameters } of operationsOf(spec)) {
+    const v1 = path.match(GATEWAY_SONAR_PATH);
+    if (v1 && inV1.has(`${httpMethod} ${v1[1]}${v1[2]}`)) {
+      continue;
+    }
+    const command = deriveCommand(path, httpMethod, operation, parameters);
+    if (command) {
+      commands.push({ ...command, spec });
+    }
+  }
+  commands.push(...v1Commands);
 
   const byKey = new Map<string, Command[]>();
   for (const command of commands) {
@@ -69,7 +101,8 @@ export function buildCommandTree(spec: OpenAPIDocument): CommandTree {
   return tree;
 }
 
-/** `product.resource.method`, the name `trt schema` takes. */
+/** The command's words joined by dots, the name `trt schema` takes: `sonar.contacts.list`,
+ *  or `streams.list` where a product has no resource. */
 export function commandKey(command: Pick<Command, "product" | "resource" | "method">): string {
   return [command.product, command.resource, command.method].filter(Boolean).join(".");
 }
@@ -79,7 +112,7 @@ export function commandWords(command: Command): string[] {
   return [command.product, command.resource, command.method].filter(Boolean);
 }
 
-/** Finds the command a dotted `product.resource.method` names. */
+/** Finds the command a dotted name names. */
 export function findCommand(tree: CommandTree, key: string): Command | undefined {
   for (const resources of tree.values()) {
     for (const methods of resources.values()) {
@@ -93,12 +126,47 @@ export function findCommand(tree: CommandTree, key: string): Command | undefined
   return undefined;
 }
 
+/** The commands a name that matched none may have meant: the same product's with the same
+ *  last word (`streams.streams.list` → `streams.list`), at most five. */
+export function nearCommands(tree: CommandTree, key: string): string[] {
+  const parts = key.split(".");
+  const near: string[] = [];
+  for (const resources of tree.values()) {
+    for (const methods of resources.values()) {
+      for (const command of methods.values()) {
+        const name = commandKey(command);
+        const words = name.split(".");
+        if (words[0] === parts[0] && words.at(-1) === parts.at(-1)) near.push(name);
+      }
+    }
+  }
+  return near.sort().slice(0, 5);
+}
+
+/** Every operation a spec lists, its path-level parameters merged into its own. */
+function* operationsOf(spec: OpenAPIDocument | undefined): Generator<{
+  path: string;
+  httpMethod: HttpMethod;
+  operation: Operation;
+  parameters: Parameter[];
+}> {
+  for (const [path, item] of Object.entries(spec?.paths ?? {})) {
+    for (const httpMethod of HTTP_METHODS) {
+      const operation = item[httpMethod];
+      if (operation) {
+        const parameters = mergeParameters(item.parameters, operation.parameters);
+        yield { path, httpMethod, operation, parameters };
+      }
+    }
+  }
+}
+
 function deriveCommand(
   path: string,
   httpMethod: HttpMethod,
   operation: Operation,
   parameters: Parameter[],
-): Command | undefined {
+): Omit<Command, "spec"> | undefined {
   let segments = path.split("/").filter(Boolean);
   let orgParam: string | undefined;
   if (segments[0] === ORGANIZATION_SEGMENT && segments[1] && isParam(segments[1])) {

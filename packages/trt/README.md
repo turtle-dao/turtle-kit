@@ -21,13 +21,15 @@ npm install -g @turtlexyz/trt && trt sonar contacts list --limit 5
 `bunx @turtlexyz/trt` and `deno run -A npm:@turtlexyz/trt` work too. `trt.md`, in the package,
 is the short version of this page for an AI agent.
 
-| Variable         | Use                                                    |
-| ---------------- | ------------------------------------------------------ |
-| `TURTLE_API_KEY` | sent as `Authorization: Bearer …`                      |
-| `TURTLE_API_URL` | the API, default `https://api.turtle.xyz`              |
-| `TURTLE_ORG_ID`  | the default `--org`                                    |
-| `TRT_SPEC`       | read the spec from this file instead of the API        |
-| `TRT_CACHE_DIR`  | where the fetched spec is cached (see below)           |
+| Variable           | Use                                                              |
+| ------------------ | ---------------------------------------------------------------- |
+| `TURTLE_API_KEY`   | sent as `Authorization: Bearer …`                                |
+| `TURTLE_API_URL`   | the API, default `https://api.turtle.xyz`                        |
+| `TURTLE_SONAR_URL` | Sonar v1, where `trt sonar` calls go, default `https://sonar.turtle.xyz/v1` |
+| `TURTLE_ORG_ID`    | the default `--org`                                              |
+| `TRT_SPEC`         | read the spec from this file instead of the API                  |
+| `TRT_SONAR_SPEC`   | with `TRT_SPEC`, read Sonar v1's spec from this file             |
+| `TRT_CACHE_DIR`    | where the fetched specs are cached (see below)                   |
 
 ## Commands
 
@@ -42,6 +44,9 @@ is the short version of this page for an AI agent.
   `trt sonar contacts merge`.
 - Two operations that land on the same command are both named after their operationId
   instead (`sonarPlanRevert` → `plan-revert`).
+- `trt sonar` is Sonar v1, the public, versioned Sonar API at `sonar.turtle.xyz/v1`: its
+  commands come from v1's own spec (`GET /v1/openapi.json`) and its calls go there. When
+  that spec can't be read, `trt sonar` falls back to the API's own Sonar routes and says so.
 
 Flags come from the operation: `--<name> <value>` for each path and query parameter (a
 boolean one needs no value), repeated for an array. Any other flag is refused. `--org` fills
@@ -72,11 +77,12 @@ server's role checks stay the real boundary.
 
 ## The spec cache
 
-The spec is fetched with your key and cached for 24 hours, one file per API URL, under
-`$XDG_CACHE_HOME/trt` (`~/.cache/trt`) on Linux, `~/Library/Caches/trt` on macOS and
-`%LOCALAPPDATA%\trt\cache` on Windows. `--refresh` fetches it again, for example after
+The spec is fetched with your key (Sonar v1's is public) and cached for an hour, one file
+per API URL, under `$XDG_CACHE_HOME/trt` (`~/.cache/trt`) on Linux, `~/Library/Caches/trt`
+on macOS and `%LOCALAPPDATA%\trt\cache` on Windows. `--refresh` fetches it again, for example after
 switching to a key with another role: a turtle admin's session sees `/admin`, a key never
-does. When the fetch fails, a stale cache is used with a warning.
+does. A command the cached spec lacks fetches it again before trt says there is no such
+command. When the fetch fails, a stale cache is used with a warning.
 
 ## Where the source lives
 

@@ -3,7 +3,7 @@ import { commandKey } from "./commands.ts";
 import type { JsonSchema, OpenAPIDocument } from "./spec.ts";
 import { schemaRefName } from "./spec.ts";
 
-/** What `trt schema <product.resource.method>` prints: the call's input and output. */
+/** What `trt schema <command>` prints: the call's input and output. */
 export function describeCommand(command: Command, spec: OpenAPIDocument) {
   const { operation } = command;
   const success = Object.entries(operation.responses ?? {}).find(([code]) =>

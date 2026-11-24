@@ -4,11 +4,14 @@ import type { CommandArgs } from "./args.ts";
 import type { Command } from "./commands.ts";
 import type { Io } from "./io.ts";
 import { EXIT_API_ERROR, EXIT_UNREACHABLE, EXIT_USAGE, TrtError } from "./io.ts";
+import { sonarHostFor } from "./spec.ts";
 
 /** The request a command makes, as printed by `--dry-run` and an unconfirmed write. */
 export interface ApiRequest {
   method: string;
   url: string;
+  /** The Host it names, where that is not the URL's: Sonar v1 on a local stack. */
+  host?: string;
   body?: unknown;
 }
 
@@ -18,7 +21,8 @@ export const DEFAULT_PAGE_LIMIT = 10;
 /**
  * Builds the request from the command's flags: path parameters filled in
  * (`--org`, else `TURTLE_ORG_ID`, for the organization's), query parameters
- * appended, the body read from `--json '<json>'` or `--json @file`.
+ * appended, the body read from `--json '<json>'` or `--json @file`. The URL is
+ * under the command's own base (Sonar v1's), else under baseUrl, the gateway's.
  */
 export function buildRequest(
   io: Io,
@@ -56,11 +60,15 @@ export function buildRequest(
 
   const request: ApiRequest = {
     method: command.httpMethod.toUpperCase(),
-    url: `${baseUrl}${path}`,
+    url: `${command.baseUrl ?? baseUrl}${path}`,
   };
   const search = query.toString();
   if (search) {
     request.url += `?${search}`;
+  }
+  const host = command.baseUrl ? sonarHostFor(request.url) : undefined;
+  if (host) {
+    request.host = host;
   }
 
   const json = args.values.get("json")?.[0];
@@ -89,6 +97,9 @@ export async function send(io: Io, request: ApiRequest): Promise<unknown> {
   }
   if (request.body !== undefined) {
     headers["Content-Type"] = "application/json";
+  }
+  if (request.host) {
+    headers.Host = request.host;
   }
 
   let response: Response;

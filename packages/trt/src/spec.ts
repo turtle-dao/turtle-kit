@@ -4,7 +4,7 @@ import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 
 import type { Io } from "./io.ts";
-import { EXIT_UNREACHABLE, EXIT_USAGE, TrtError } from "./io.ts";
+import { EXIT_API_ERROR, EXIT_UNREACHABLE, EXIT_USAGE, TrtError } from "./io.ts";
 
 /** The parts of an OpenAPI 3.1 document trt reads. */
 export interface OpenAPIDocument {
@@ -57,9 +57,39 @@ export function schemaRefName(ref: unknown): string | undefined {
 }
 
 /** How long a fetched spec is trusted before trt fetches it again. */
-export const SPEC_TTL_MS = 24 * 60 * 60 * 1000;
+export const SPEC_TTL_MS = 60 * 60 * 1000;
 
 export const DEFAULT_API_URL = "https://api.turtle.xyz";
+
+/** Sonar v1, the public versioned Sonar API: where `trt sonar` calls go. */
+export const DEFAULT_SONAR_URL = "https://sonar.turtle.xyz/v1";
+
+/** The host Sonar v1 answers on. The API tells v1 apart by the Host a request names, not by
+ *  its path, so a v1 base elsewhere (a local stack's `http://localhost:8080/v1`) is sent
+ *  with this Host. */
+export const SONAR_HOST = "sonar.turtle.xyz";
+
+/** The Host a call to Sonar v1 at `url` names: SONAR_HOST, where the URL names another; else
+ *  none, and the URL's own goes. */
+export function sonarHostFor(url: string): string | undefined {
+  return new URL(url).hostname === SONAR_HOST ? undefined : SONAR_HOST;
+}
+
+/** The spec, and whether it came from the cache rather than the API just now. */
+export interface LoadedSpec {
+  spec: OpenAPIDocument;
+  fromCache: boolean;
+}
+
+/** Where a spec comes from: the gateway's, read with the key, or Sonar v1's, which is public. */
+export interface SpecSource {
+  /** `<baseUrl>/openapi.json` is the spec; the cache is keyed by it. */
+  baseUrl: string;
+  /** A file to read the spec from instead (`TRT_SPEC`, `TRT_SONAR_SPEC`). */
+  file?: string;
+  /** Sonar v1's: no key is sent, and its Host is named (sonarHostFor). */
+  sonar?: boolean;
+}
 
 interface CachedSpec {
   fetchedAt: number;
@@ -68,17 +98,17 @@ interface CachedSpec {
 }
 
 /**
- * Loads the API's spec: from `TRT_SPEC` when set (offline use and tests), else
- * from the cache when it is younger than a day, else from
+ * Loads a spec: from its file when one is named (offline use and tests), else
+ * from the cache when it is younger than an hour, else from
  * `GET <base>/openapi.json`. A failed fetch falls back to a stale cache, with a
  * warning, rather than leaving the CLI with no commands.
  */
 export async function loadSpec(
   io: Io,
-  baseUrl: string,
+  source: SpecSource,
   refresh: boolean,
-): Promise<OpenAPIDocument> {
-  const specFile = io.env.TRT_SPEC;
+): Promise<LoadedSpec> {
+  const { baseUrl, file: specFile } = source;
   if (specFile) {
     let text: string;
     try {
@@ -89,27 +119,29 @@ export async function loadSpec(
         EXIT_UNREACHABLE,
       );
     }
-    return parseSpec(text, specFile);
+    return { spec: parseSpec(text, specFile), fromCache: false };
   }
 
   const cacheFile = specCacheFile(io, baseUrl);
   const cached = readCache(cacheFile);
   if (cached && !refresh && io.now() - cached.fetchedAt < SPEC_TTL_MS) {
-    return cached.spec;
+    return { spec: cached.spec, fromCache: true };
   }
 
   try {
-    const spec = await fetchSpec(io, baseUrl);
+    const spec = await fetchSpec(io, source);
     writeCache(io, cacheFile, { fetchedAt: io.now(), baseUrl, spec });
-    return spec;
+    return { spec, fromCache: false };
   } catch (error) {
-    if (!cached) {
+    // Only an API out of reach falls back: a key the API refuses would answer every call the
+    // same way, and an old spec would hide that behind commands that all fail
+    if (!cached || !(error instanceof TrtError) || error.exitCode !== EXIT_UNREACHABLE) {
       throw error;
     }
     io.stderr(
       `trt: ${(error as Error).message}; using the cached spec from ${new Date(cached.fetchedAt).toISOString()}\n`,
     );
-    return cached.spec;
+    return { spec: cached.spec, fromCache: false };
   }
 }
 
@@ -137,20 +169,28 @@ function cacheDir(io: Io): string {
   return join(io.env.XDG_CACHE_HOME || join(home, ".cache"), "trt");
 }
 
-async function fetchSpec(io: Io, baseUrl: string): Promise<OpenAPIDocument> {
-  const apiKey = io.env.TURTLE_API_KEY;
-  if (!apiKey) {
-    throw new TrtError(
-      "TURTLE_API_KEY is not set: it is needed to fetch the API's spec",
-      EXIT_USAGE,
-    );
+async function fetchSpec(io: Io, source: SpecSource): Promise<OpenAPIDocument> {
+  const url = `${source.baseUrl}/openapi.json`;
+  const headers: Record<string, string> = { Accept: "application/json" };
+  if (source.sonar) {
+    // the published contract: read with no key
+    const host = sonarHostFor(url);
+    if (host) {
+      headers.Host = host;
+    }
+  } else {
+    const apiKey = io.env.TURTLE_API_KEY;
+    if (!apiKey) {
+      throw new TrtError(
+        "TURTLE_API_KEY is not set: it is needed to fetch the API's spec",
+        EXIT_USAGE,
+      );
+    }
+    headers.Authorization = `Bearer ${apiKey}`;
   }
-  const url = `${baseUrl}/openapi.json`;
   let response: Response;
   try {
-    response = await io.fetch(url, {
-      headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" },
-    });
+    response = await io.fetch(url, { headers });
   } catch (error) {
     throw new TrtError(`fetch ${url}: ${(error as Error).message}`, EXIT_UNREACHABLE);
   }
@@ -159,6 +199,14 @@ async function fetchSpec(io: Io, baseUrl: string): Promise<OpenAPIDocument> {
     text = await response.text();
   } catch (error) {
     throw new TrtError(`fetch ${url}: ${(error as Error).message}`, EXIT_UNREACHABLE);
+  }
+  if (!source.sonar && (response.status === 401 || response.status === 403)) {
+    throw new TrtError(
+      `the API refuses TURTLE_API_KEY (HTTP ${response.status}): the key is revoked, ` +
+        "expired or wrong, so no call will work until the member makes a new one",
+      EXIT_API_ERROR,
+      response.status,
+    );
   }
   if (!response.ok) {
     const detail = text.trim().slice(0, 200);

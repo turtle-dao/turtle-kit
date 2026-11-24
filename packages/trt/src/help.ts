@@ -15,10 +15,12 @@ const GLOBAL_FLAGS = `Flags on every call:
   --help, -h          this help`;
 
 const ENVIRONMENT = `Environment:
-  TURTLE_API_KEY  your personal API key (sk_live_…), sent as a bearer token
-  TURTLE_API_URL  the API (default https://api.turtle.xyz)
-  TURTLE_ORG_ID   the default --org
-  TRT_SPEC        read the spec from this file instead of the API`;
+  TURTLE_API_KEY    your personal API key (sk_live_…), sent as a bearer token
+  TURTLE_API_URL    the API (default https://api.turtle.xyz)
+  TURTLE_SONAR_URL  Sonar v1, where trt sonar calls go (default https://sonar.turtle.xyz/v1)
+  TURTLE_ORG_ID     the default --org
+  TRT_SPEC          read the spec from this file instead of the API
+  TRT_SONAR_SPEC    with TRT_SPEC, Sonar v1's spec from this file (else trt sonar is the API's own)`;
 
 export function rootHelp(tree: CommandTree): string {
   const products = [...tree.entries()]
@@ -28,7 +30,7 @@ export function rootHelp(tree: CommandTree): string {
 
 Usage:
   trt <product> <resource> <method> [flags]
-  trt schema <product.resource.method>    the call's parameters, body and response as JSON
+  trt schema <command words>              the call's parameters, body and response as JSON
 
 Products:
 ${products}

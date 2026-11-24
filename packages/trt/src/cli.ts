@@ -1,15 +1,15 @@
 import type { GlobalSwitch } from "./args.ts";
 import { parseCommandArgs, splitArgs } from "./args.ts";
-import type { Command, CommandTree } from "./commands.ts";
-import { buildCommandTree, findCommand } from "./commands.ts";
+import type { Command, CommandTree, SonarSpec } from "./commands.ts";
+import { buildCommandTree, findCommand, nearCommands } from "./commands.ts";
 import { commandHelp, productHelp, resourceHelp, rootHelp } from "./help.ts";
 import type { Io } from "./io.ts";
 import { EXIT_USAGE, TrtError } from "./io.ts";
 import type { ApiRequest } from "./request.ts";
 import { buildRequest, DEFAULT_PAGE_LIMIT, pageAll, send } from "./request.ts";
 import { describeCommand } from "./schema.ts";
-import type { OpenAPIDocument } from "./spec.ts";
-import { DEFAULT_API_URL, loadSpec } from "./spec.ts";
+import type { LoadedSpec, OpenAPIDocument } from "./spec.ts";
+import { DEFAULT_API_URL, DEFAULT_SONAR_URL, loadSpec } from "./spec.ts";
 
 /** Runs trt with argv (without the program name) and answers the exit code. */
 export async function run(argv: string[], io: Io): Promise<number> {
@@ -32,11 +32,18 @@ export async function run(argv: string[], io: Io): Promise<number> {
 async function dispatch(argv: string[], io: Io): Promise<number> {
   const { words, switches, rest } = splitArgs(argv);
   const baseUrl = (io.env.TURTLE_API_URL || DEFAULT_API_URL).replace(/\/+$/, "");
-  const spec = await loadSpec(io, baseUrl, switches.has("refresh"));
-  const tree = buildCommandTree(spec);
+  const sonarUrl = (io.env.TURTLE_SONAR_URL || DEFAULT_SONAR_URL).replace(/\/+$/, "");
+  let specs = await loadSpecs(io, baseUrl, sonarUrl, switches.has("refresh"));
+  let tree = buildCommandTree(specs.gateway, specs.sonar);
+  // A name the cached spec lacks may be a call the API gained since, or one the key's role
+  // reaches now: fetch the spec again before saying there is no such command.
+  if (specs.fromCache && namesUnknown(tree, words)) {
+    specs = await loadSpecs(io, baseUrl, sonarUrl, true);
+    tree = buildCommandTree(specs.gateway, specs.sonar);
+  }
 
   if (words[0] === "schema") {
-    return printSchema(io, tree, spec, words.slice(1), rest);
+    return printSchema(io, tree, words.slice(1), rest);
   }
 
   const resolved = resolveCommand(tree, words);
@@ -50,12 +57,50 @@ async function dispatch(argv: string[], io: Io): Promise<number> {
 
   const { command } = resolved;
   if (switches.has("help")) {
-    io.stderr(commandHelp(command, spec));
+    io.stderr(commandHelp(command, command.spec));
     return 0;
   }
-  const args = parseCommandArgs(rest, command, spec);
+  const args = parseCommandArgs(rest, command, command.spec);
   const request = buildRequest(io, baseUrl, command, args);
   return execute(io, command, request, switches, args.values.get("page-limit")?.[0]);
+}
+
+/** The specs the commands come from: the gateway's, and Sonar v1's for `trt sonar`. */
+interface Specs {
+  gateway: OpenAPIDocument;
+  sonar?: SonarSpec;
+  /** Either came from the cache rather than the API just now. */
+  fromCache: boolean;
+}
+
+/**
+ * Loads the gateway's spec, and Sonar v1's. Offline (`TRT_SPEC`), v1's is read from
+ * `TRT_SONAR_SPEC`, or not at all. Without v1's, from either, `trt sonar` is the gateway's
+ * own Sonar routes, and a v1 spec that could not be read says so on stderr.
+ */
+async function loadSpecs(
+  io: Io,
+  baseUrl: string,
+  sonarUrl: string,
+  refresh: boolean,
+): Promise<Specs> {
+  const gateway = await loadSpec(io, { baseUrl, file: io.env.TRT_SPEC }, refresh);
+  const sonarFile = io.env.TRT_SONAR_SPEC;
+  let sonar: LoadedSpec | undefined;
+  if (sonarFile || !io.env.TRT_SPEC) {
+    try {
+      sonar = await loadSpec(io, { baseUrl: sonarUrl, file: sonarFile, sonar: true }, refresh);
+    } catch (error) {
+      io.stderr(
+        `trt: Sonar v1: ${(error as Error).message}; trt sonar calls the gateway's Sonar routes\n`,
+      );
+    }
+  }
+  return {
+    gateway: gateway.spec,
+    ...(sonar ? { sonar: { spec: sonar.spec, baseUrl: sonarUrl } } : {}),
+    fromCache: gateway.fromCache || (sonar?.fromCache ?? false),
+  };
 }
 
 async function execute(
@@ -89,29 +134,43 @@ async function execute(
   return 0;
 }
 
-function printSchema(
-  io: Io,
-  tree: CommandTree,
-  spec: OpenAPIDocument,
-  words: string[],
-  rest: string[],
-): number {
-  const [key, ...extra] = [...words, ...rest];
-  if (!key || extra.length > 0) {
+function printSchema(io: Io, tree: CommandTree, words: string[], rest: string[]): number {
+  if (words.length === 0 || rest.length > 0) {
     throw new TrtError(
-      "usage: trt schema <product.resource.method>, e.g. trt schema sonar.contacts.list",
+      "usage: trt schema <command>, its words as you run it: trt schema streams drafts create " +
+        "(or joined by dots: streams.drafts.create)",
       EXIT_USAGE,
     );
   }
+  // `streams list` and `streams.list` name the same command: a product with no resource
+  // has two words, not three
+  const key = words.join(".");
   const command = findCommand(tree, key);
   if (!command) {
-    throw new TrtError(`no command ${key}; run trt --help for the products`, EXIT_USAGE);
+    const near = nearCommands(tree, key);
+    throw new TrtError(
+      near.length > 0
+        ? `no command ${key}; did you mean ${near.join(", ")}?`
+        : `no command ${key}; run trt --help for the products`,
+      EXIT_USAGE,
+    );
   }
-  writeJson(io, describeCommand(command, spec));
+  writeJson(io, describeCommand(command, command.spec));
   return 0;
 }
 
-type Resolution = { command: Command } | { command?: undefined; help: string; problem: string };
+type Resolution =
+  | { command: Command }
+  | { command?: undefined; help: string; problem: string; unknown?: boolean };
+
+/** Whether words name a product, resource, method or schema the spec does not have. */
+function namesUnknown(tree: CommandTree, words: string[]): boolean {
+  if (words[0] === "schema") {
+    return words.length > 1 && !findCommand(tree, words.slice(1).join("."));
+  }
+  const resolved = resolveCommand(tree, words);
+  return !resolved.command && resolved.unknown === true;
+}
 
 /**
  * Finds the command the words name. The resource word is left out for a
@@ -127,6 +186,7 @@ function resolveCommand(tree: CommandTree, words: string[]): Resolution {
     return {
       help: rootHelp(tree),
       problem: `no product "${product}"; run trt --help for the list`,
+      unknown: true,
     };
   }
   if (second === undefined) {
@@ -148,7 +208,11 @@ function resolveCommand(tree: CommandTree, words: string[]): Resolution {
         : extra.length > 0
           ? `unexpected argument "${extra[0]}"`
           : `no method "${third}" on trt ${product} ${second}`;
-    return { help: resourceHelp(methods), problem };
+    return {
+      help: resourceHelp(methods),
+      problem,
+      unknown: third !== undefined && extra.length === 0,
+    };
   }
 
   const productMethods = resources.get("");
@@ -161,6 +225,7 @@ function resolveCommand(tree: CommandTree, words: string[]): Resolution {
   return {
     help: productHelp(product, resources),
     problem: `no resource "${second}" in trt ${product}; run trt ${product} --help`,
+    unknown: true,
   };
 }
 
