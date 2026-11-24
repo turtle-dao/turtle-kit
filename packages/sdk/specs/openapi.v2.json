@@ -1921,7 +1921,7 @@
           "Historical Data"
         ],
         "summary": "Get Vault Historical APR",
-        "description": "Simple-rate APR from one canonical growth source over [from, to]. Each point annualizes growth over effectiveIntervalSeconds, the actual span between snapshots, at least the trailing apyInterval. Points are spaced by step. Reward APR is always 0. Missing or unindexed sources return 503 INDEXING_NOT_STARTED; paused or withheld sources return 503 INDEXING_STALLED. Ambiguous source mappings return 412. Coverage describes the selected growth source. The indexing-status endpoint still reports the legacy vault indexer.",
+        "description": "Simple-rate APR from one canonical growth source over [from, to]. Each point annualizes growth over effectiveIntervalSeconds, the actual span between snapshots, at least the trailing apyInterval. Points are spaced by step. Reward APR is always 0. Missing or unindexed sources return 503 INDEXING_NOT_STARTED; paused or withheld sources return 503 INDEXING_STALLED. Ambiguous source mappings return 412. Coverage describes the selected growth source.",
         "operationId": "GetOpportunityHistoricalAPR",
         "parameters": [
           {
@@ -2051,7 +2051,7 @@
           "Historical Data"
         ],
         "summary": "Get Vault Historical APY",
-        "description": "Compound APY from one canonical growth source over [from, to]. Each point annualizes growth over effectiveIntervalSeconds, the actual span between snapshots, at least the trailing apyInterval. Points are spaced by step. NAV sources measure USD growth. Reward APY is always 0. Missing or unindexed sources return 503 INDEXING_NOT_STARTED; paused or withheld sources return 503 INDEXING_STALLED. Ambiguous source mappings return 412. Coverage describes the selected growth source. The indexing-status endpoint still reports the legacy vault indexer.",
+        "description": "Compound APY from one canonical growth source over [from, to]. Each point annualizes growth over effectiveIntervalSeconds, the actual span between snapshots, at least the trailing apyInterval. Points are spaced by step. NAV sources measure USD growth. Reward APY is always 0. Missing or unindexed sources return 503 INDEXING_NOT_STARTED; paused or withheld sources return 503 INDEXING_STALLED. Ambiguous source mappings return 412. Coverage describes the selected growth source.",
         "operationId": "GetOpportunityHistoricalAPY",
         "parameters": [
           {
@@ -3778,7 +3778,7 @@
           "Swap Orders"
         ],
         "summary": "Build Swap Order",
-        "description": "Build a 1inch Fusion order for a member wallet",
+        "description": "Build a 1inch Fusion order for a wallet",
         "operationId": "BuildSwapOrder",
         "requestBody": {
           "content": {
@@ -8150,6 +8150,14 @@
           "address": {
             "description": "Token contract address",
             "type": "string"
+          },
+          "asyncDeposit": {
+            "description": "Whether a known vault for this receipt token requires asynchronous deposits; false when no vault config is known",
+            "type": "boolean"
+          },
+          "asyncWithdraw": {
+            "description": "Whether a known vault for this receipt token requires asynchronous withdrawals; false when no vault config is known",
+            "type": "boolean"
           },
           "chainId": {
             "description": "Numeric chain ID this token belongs to",
