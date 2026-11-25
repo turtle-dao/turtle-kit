@@ -3,8 +3,14 @@
   "globalDependencies": [".env", "tsconfig.base.json"],
   "tasks": {
     "codegen": {
-      "inputs": ["openapi-ts.config.ts", "src/runtime-config.ts", "specs/openapi.v2.json"],
-      "outputs": ["src/client/**"]
+      "inputs": [
+        "openapi-ts.config.ts",
+        "src/runtime-config.ts",
+        "src/sonar/runtime-config.ts",
+        "specs/openapi.v2.json",
+        "specs/sonar.v1.json"
+      ],
+      "outputs": ["src/client/**", "src/sonar/client/**"]
     },
     "build": {
       "dependsOn": ["^build", "codegen"],

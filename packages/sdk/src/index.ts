@@ -1,6 +1,6 @@
-// Turtle Earn SDK — v2 only.
+// Turtle SDK: Earn v2 at the root, Sonar v1 under `sonar`.
 //
-// Exports flat functions directly from the hey-api–generated client.
+// Earn exports flat functions directly from the hey-api–generated client.
 // The client is pre-configured via runtime-config.ts (reads
 // TURTLE_API_KEY and TURTLE_BASE_URL from process.env).
 //
@@ -15,3 +15,8 @@ export { client } from "./client/client.gen";
 export * from "./client/sdk.gen";
 export * as types from "./client/types.gen";
 export * as schemas from "./client/zod.gen";
+
+// Sonar v1, grouped by resource: `sonar.contacts.listContacts(...)`.
+// Its own client, types and schemas live under the namespace too, so
+// nothing in it collides with Earn's.
+export * as sonar from "./sonar";
